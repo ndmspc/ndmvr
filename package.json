@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ndmspc/ndmvr-aframe": "1.0.0-rc.13",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
     "@react-three/rapier": "^2.1.0",
@@ -20,6 +21,7 @@
     "jsroot": "^7.9.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "rxjs": "^7.8.2",
     "three": "^0.175.0"
   },
   "devDependencies": {

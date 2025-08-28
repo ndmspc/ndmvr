@@ -1,97 +1,90 @@
 import { Canvas } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createXRStore, XR, XROrigin } from "@react-three/xr";
-import { PerspectiveCamera, Sky, KeyboardControls } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import Scene from "./components/Scene";
-import Histogram from "./Histogram";
-import VRMovement from "./components/VRMovement";
-import VRUI from "./VRUI";
-import { useColorStore } from "./utils/colorStore";
-import { Button } from "@react-three/uikit-default";
+import Controllers from "./components/Controllers";
+import VRUI from "./components/VRUI/VRUI";
+import Switch from "./components/Switch";
+import CameraSync from "./components/CameraSync";
 
-const store = createXRStore();
+// eslint-disable-next-line react-refresh/only-export-components
+export const store = createXRStore();
 
 function App() {
   const xrOriginRef = useRef();
-  const toggleColor = useColorStore((s) => s.toggleColor);
+  const cameraRef = useRef();
+  const [show2D, setShow2D] = useState(false);
+  const [showMenu, setShowMenu] = useState(true);
+
+  const JSROOT_IMAGE_ID = "histo";
 
   return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        height: "100vh",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          display: show2D ? "none" : "block",
+          width: "100%",
+          height: "100vh",
+        }}
+      >
+        <Canvas shadows>
+          <color attach="background" args={["#ececec"]} />
+          <PerspectiveCamera
+            ref={cameraRef}
+            makeDefault
+            position={[0, 1.6, 10]}
+            fov={90}
+          />
 
-    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
-      <div style={{ width: "50%", height: "100vh", position: "relative" }}>
-        <KeyboardControls
-          map={[
-            { name: "forward", keys: ["ArrowUp", "KeyW"] },
-            { name: "backward", keys: ["ArrowDown", "KeyS"] },
-            { name: "left", keys: ["ArrowLeft", "KeyA"] },
-            { name: "right", keys: ["ArrowRight", "KeyD"] },
-            { name: "jump", keys: ["Space"] },
-          ]}
-        >
-          <Canvas shadows>
-            <color attach="background" args={["#ececec"]} />
-            <PerspectiveCamera makeDefault position={[0, 1.6, 10]} fov={90} />
-            <Sky />
-            <fog attach="fog" args={["#997D31", 5, 60]} />
+          <XR store={store}>
+            <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
+           
+            <Scene />
 
-            <XR store={store}>
-              <Histogram />
-              <Scene />
-              <VRUI />
-              <VRMovement originRef={xrOriginRef} speed={2} />
-              <XROrigin ref={xrOriginRef} position={[0, 1.6, 10]} />
-            </XR>
-          </Canvas>
-        </KeyboardControls>
+            {showMenu && <VRUI originRef={xrOriginRef} />}
 
-        {/* Enter VR Button */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "20px",
-            zIndex: 10,
-          }}
-        >
-          <button
-            onClick={() => store.enterVR({ optionalFeatures: [] })}
-            style={{
-              fontSize: "20px",
-              padding: "10px 20px",
-              cursor: "pointer",
-            }}
-          >
-            Enter VR
-          </button>
-        </div>
+            <Controllers
+              originRef={xrOriginRef}
+              cameraRef={cameraRef}
+              showMenu={showMenu}
+              setShowMenu={setShowMenu}
+            />
+            <XROrigin ref={xrOriginRef} position={[0, 1.6, 10]} />
+          </XR>
+
+        </Canvas>
       </div>
 
       <div
+        id="histogram"
         style={{
-          width: "50%",
+          display: !show2D ? "none" : "block",
+          width: "100%",
           height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
-          background: "#f0f0f0",
         }}
       >
-        <button
-          onClick={toggleColor}
-          style={{
-            fontSize: "24px",
-            padding: "16px 32px",
-            cursor: "pointer",
-          }}
-        >
-          Change Color
-        </button>
-        {/* <Canvas><Button variant="outline"  > Buttton</Button></Canvas> */}
-        <div
-          id="histo"
-          style={{ position: "relative", width: "800px", height: "600px" }}
-        ></div>
+        <div id={JSROOT_IMAGE_ID} style={{ width: "800px", height: "800px" }}></div>
+      </div>
+
+      <div
+
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "20px",
+          zIndex: 10,
+        }}
+      >
+        <Switch checked onToggle={(checked) => setShow2D(checked)} />
       </div>
     </div>
   );
