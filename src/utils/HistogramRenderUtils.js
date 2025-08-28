@@ -1,4 +1,3 @@
-
 export function computeBinSizePos(rootObj, relPos, padding, overallSize = { x: 1, y: 1, z: 1 }) {
   const getAxisData = (axis) => {
     const bins = rootObj[axis].fNbins;

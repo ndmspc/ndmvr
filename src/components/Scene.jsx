@@ -1,9 +1,18 @@
 import * as THREE from "three";
-import { Text } from "@react-three/drei"; 
+import { Sky } from "@react-three/drei";
+
+import Raycaster from "./Raycaster.jsx";
+import NestedHistogramWrapper from "./NestedHistogramWrapper";
+import BinInfo from "./VRUI/BinInfo.jsx";
 
 export default function Scene() {
   return (
     <>
+      <Raycaster />
+      <NestedHistogramWrapper id="nh" />
+
+      <Sky />
+      <fog attach="fog" args={["#997D31", 5, 60]} />
       <ambientLight intensity={0.4} />
       <directionalLight position={[0, 5, 5]} intensity={1} />
 
@@ -12,24 +21,12 @@ export default function Scene() {
         <meshStandardMaterial color="lightgray" />
       </mesh>
 
+      <group position={[0, 1.4, -2]}>
+        <BinInfo />
+      </group>
+
       <primitive object={new THREE.GridHelper(100, 100)} />
-
-      {/* <mesh position={[0, 1, -10]}>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshStandardMaterial color="red" />
-      </mesh> */}
-
       <primitive object={new THREE.AxesHelper(5)} />
-
-      {/* <Text
-        position={[5, 1.5, -10]}
-        color="black"
-        anchorX="center"
-        anchorY="middle"
-      >
-        Drei Static Text
-      </Text> */}
-
     </>
   );
 }
