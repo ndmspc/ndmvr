@@ -1,12 +1,14 @@
 import { Canvas } from "@react-three/fiber";
-import { useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import { createXRStore, XR, XROrigin } from "@react-three/xr";
 import { PerspectiveCamera } from "@react-three/drei";
-import Scene from "./components/Scene";
+import Scene from "./lib/components/Scene.jsx";
 import Controllers from "./components/Controllers";
 import VRUI from "./components/VRUI/VRUI";
 import Switch from "./components/Switch";
 import CameraSync from "./components/CameraSync";
+import config from './config.json';
+import {configSubjectGet} from "@ndmspc/ndmvr-aframe";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
@@ -16,6 +18,12 @@ function App() {
   const cameraRef = useRef();
   const [show2D, setShow2D] = useState(false);
   const [showMenu, setShowMenu] = useState(true);
+
+
+    useEffect(() => {
+        if (config)
+        configSubjectGet().next(config);
+    }, []);
 
   const JSROOT_IMAGE_ID = "histo";
 

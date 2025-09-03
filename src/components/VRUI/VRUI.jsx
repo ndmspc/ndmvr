@@ -75,9 +75,22 @@ export default function VRUI({ originRef }) {
         const rootObj = parse(obj);
 
         histogramSubjectGet().next({
+          //nested histogram
           id: "nh",
+          opts: {
+            render: "nested"
+          },
+          //jsroot histogram
+          // id: "nh-jsroot",
           histogram: rootObj.arr?.[0] ?? rootObj,
         });
+        console.log('send', {
+          //nested histogram
+          id: "nh",
+          //jsroot histogram
+          // id: "nh-jsroot",
+          histogram: rootObj.arr?.[0] ?? rootObj,
+        })
         jsrootRedraw(rootObj.arr?.[0] ?? rootObj);
 
         setHttpLoaded(true);

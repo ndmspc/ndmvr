@@ -1,16 +1,34 @@
 {
-  "name": "ndmvr-r3f",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@ndmspc/ndmvr-r3f",
+  "version": "0.0.1",
+  "description": "Ndmvr r3f",
+  "author": "Martin Vala",
+  "repository": "https://gitlab.com/ndmspc/ndmvr-r3f.git",
+  "license": "MIT",
+  "keywords": [],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
+  "main": "./dist/ndmvr-r3f.umd.js",
+  "module": "./dist/ndmvr-r3f.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/ndmvr-r3f.es.js",
+      "require": "./dist/ndmvr-r3f.umd.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build-app": "vite build -c vite.config.app.js",
+    "watch": "vite build --watch",
+    "lint": "eslint ./src --ext js,jsx --report-unused-disable-directives .gitignore",
+    "preview": "vite -c vite.config.app.js"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-aframe": "1.0.0-rc.13",
+    "@ndmspc/ndmvr-aframe": "^1.0.0-rc.20",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
     "@react-three/rapier": "^2.1.0",
