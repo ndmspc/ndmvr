@@ -1,11 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import {
-  functionSubjectGet,
-  histogramSubjectGet,
-  NestedHistogram,
-} from "@ndmspc/ndmvr-aframe";
+import {functionSubjectGet, histogramSubjectGet, NestedHistogram} from "@ndmspc/ndmvr-aframe";
+// import {functionSubjectGet, histogramSubjectGet, NestedHistogram} from "../../../ndmvr-aframe/index.js";
 import { filter } from "rxjs";
 
 export default function NestedHistogramWrapper({

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Sky } from "@react-three/drei";
-import {NdmvrRaycaster} from "@ndmspc/ndmvr-aframe";
+import {configSubjectGet, NdmvrRaycaster} from "@ndmspc/ndmvr-aframe";
+// import {configSubjectGet, NdmvrRaycaster} from "../../../../ndmvr-aframe/index.js";
 
 import NestedHistogramWrapper from "../../components/NestedHistogramWrapper.jsx";
 import BinInfo from "../../components/VRUI/BinInfo.jsx";
@@ -13,6 +14,15 @@ import HistogramWrapper from "./HistogramWrapper.jsx";
 export default function Scene() {
   const { scene } = useThree();
   const [raycaster, setRaycaster] = useState(null);
+  const [config, setConfig] = useState(null);
+
+  useEffect(() => {
+      const configSub = configSubjectGet().getObservable()
+          .subscribe(c =>{
+              setConfig(c.config);
+          })
+      return () => configSub.unsubscribe();
+  }, [])
 
   useEffect(() => {
     if (scene) {
@@ -25,6 +35,10 @@ export default function Scene() {
         <CanvasComponent id="nh-cinema"/>
       {/*<NestedHistogramWrapper id="nh" />*/}
       {/*<JsrootHistogramWrapper id="nh-jsroot" />*/}
+        {config?.histogramPads?.map((object) => (
+            <HistogramWrapper key={object.id} id={object.id} />
+        ))}
+
         <HistogramWrapper id="nh"/>
 
       <Sky />

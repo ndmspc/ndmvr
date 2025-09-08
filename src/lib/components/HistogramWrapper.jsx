@@ -1,38 +1,46 @@
 import {useThree} from "@react-three/fiber";
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {filter} from "rxjs";
-import {histogramSubjectGet, NestedHistogram, HistogramJsrootClass} from "@ndmspc/ndmvr-aframe";
-
+import {histogramSubjectGet, NestedHistogram, HistogramJsrootClass, configSubjectGet} from "@ndmspc/ndmvr-aframe";
+import * as THREE from "three";
+// import {histogramSubjectGet, NestedHistogram, HistogramJsrootClass} from '../../../../ndmvr-aframe/index.js';
 
 
 export default function HistogramWrapper({
-     id,
-     px = 0.1,
-     py = 0.1,
-     pz = 0.1,
- }) {
+                                             id,
+                                             px = 0.1,
+                                             py = 0.1,
+                                             pz = 0.1,
+                                         }) {
 
     const {scene} = useThree();
     const jsrootHistogram = useRef();
     const nestedHistogram = useRef();
-    const histoSub = useRef();
+    const [config, setConfig] = useState(null);
 
-    useEffect(() => {
-
-        return () =>{
-            // if (jsrootHistogram.current) jsrootHistogram.current.remove();
-            // if (nestedHistogram.current) nestedHistogram.current.remove();
-            if (histoSub.current) histoSub.current.unsubscribe();
-        }
-    }, []);
 
     useEffect(() => {
         console.log(id)
-
-        histoSub.current = histogramSubjectGet().getStream()
+        const configSub = configSubjectGet().getObservable()
             // .pipe(
             //     filter(e => e.id === id)
             // )
+            .subscribe(c => {
+                setConfig(c.config);
+            })
+
+        return () => {
+            console.log('UNSUB');
+            configSub.unsubscribe();
+        }
+    }, [scene]);
+
+    useEffect(() => {
+        if (!config) return;
+        const histoSub = histogramSubjectGet().getStream(id)
+            .pipe(
+                filter(e => e.id === id)
+            )
             .subscribe((histo) => {
                 console.log('dojdeeee', histo)
                 // histo.opts ??= {};
@@ -48,7 +56,6 @@ export default function HistogramWrapper({
                         jsrootHistogram.current.updateHistogram(histo.histogram);
                     } else {
                         jsrootHistogram.current = new HistogramJsrootClass(id, histo.histogram);
-                        console.log(jsrootHistogram.current.getHistogramMesh());
                         scene.add(jsrootHistogram.current.getHistogramMesh());
                     }
                 } else {
@@ -66,9 +73,11 @@ export default function HistogramWrapper({
                     }
                 }
             });
-        // jsrootHistogram.current = new HistogramJsrootClass(id);
-        // scene.add(jsrootHistogram.current.getHistogramMesh());
-    }, [scene]);
+        return () => {
+            console.log('UNSUB');
+            histoSub.unsubscribe();
+        }
+    }, [config]);
 
     return null;
 }

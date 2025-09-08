@@ -8,7 +8,9 @@ import VRUI from "./components/VRUI/VRUI";
 import Switch from "./components/Switch";
 import CameraSync from "./components/CameraSync";
 import config from './config.json';
-import {configSubjectGet} from "@ndmspc/ndmvr-aframe";
+import {histogramSubjectGet, configSubjectGet} from "@ndmspc/ndmvr-aframe";
+// import {histogramSubjectGet, configSubjectGet} from "../../ndmvr-aframe/index.js";
+import h3scat from './data/TH3D.json';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
@@ -18,6 +20,20 @@ function App() {
   const cameraRef = useRef();
   const [show2D, setShow2D] = useState(false);
   const [showMenu, setShowMenu] = useState(true);
+    const effectRan = useRef(false);
+
+    useEffect(() =>{
+        if (effectRan.current) return;
+        effectRan.current = true;
+        console.log('SENDING');
+        histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
+        histogramSubjectGet().next({id: 'histogram2', opts: {render: "nested"}, histogram: h3scat});
+        // histogramSubjectGet().next({id: 'histogram3', opts: {render: "jsroot"}, histogram: h3scat});
+        histogramSubjectGet().next({id: 'histogram4', opts: {render: "nested"}, histogram: h3scat});
+        setTimeout(() => {
+            histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
+        }, 4000)
+    }, [])
 
 
     useEffect(() => {

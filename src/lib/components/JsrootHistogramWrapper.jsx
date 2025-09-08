@@ -1,6 +1,7 @@
 import {useThree} from "@react-three/fiber";
 import {useEffect, useRef} from "react";
 import {HistogramJsrootClass} from "@ndmspc/ndmvr-aframe";
+// import {HistogramJsrootClass} from "../../../../ndmvr-aframe/index.js";
 import * as THREE from "three";
 
 
