@@ -1,6 +1,7 @@
 import {useThree} from "@react-three/fiber";
 import {useEffect, useRef} from "react";
 import {CanvasClass} from "@ndmspc/ndmvr-aframe";
+// import {CanvasClass} from "../../../../ndmvr-aframe/index.js";
 
 export default function CanvasComponent({
     id= "nh-canvas",

@@ -10,40 +10,32 @@
     "canvas": {
       "position": {
         "x": 0,
-        "y": 20,
-        "z": -10
+        "y": 5,
+        "z": -15
       }, "rotation": {
         "x": 10,
         "y": 0,
         "z": 0
       }, "scale": {
-        "x": 3,
-        "y": 3,
+        "x": 10,
+        "y": 10,
         "z": 0
       }
     },
-    "histogramMatrix": {
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
+    "histogramPads": {
+      "type": "grid2x1x2",
       "scale": {
         "x": 10,
         "y": 5,
         "z": 10
-      }
-    },
-    "jsrootHistogramMatrix": {
-      "position": {
+      }, "padding" : {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }, "origin": {
         "x": 0,
-        "y": 0.3,
-        "z": 0
-      },
-      "scale": {
-        "x": 0.65,
-        "y": 0.65,
-        "z": 0.65
+        "y": 3,
+        "z": 5
       }
     },
     "padding": {
