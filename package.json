@@ -28,14 +28,14 @@
     "preview": "vite -c vite.config.app.js"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-aframe": "^1.0.0-rc.21",
+    "@ndmspc/ndmvr-aframe": "^1.0.0-rc.23",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
-    "@react-three/rapier": "^2.1.0",
     "@react-three/uikit": "^0.8.21",
     "@react-three/uikit-apfel": "^0.8.21",
     "@react-three/uikit-default": "^0.8.21",
     "@react-three/xr": "^6.6.17",
+    "d3-selection": "^3.0.0",
     "jsroot": "^7.9.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

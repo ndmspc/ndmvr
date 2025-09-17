@@ -1,13 +1,13 @@
-import {useThree} from "@react-three/fiber";
-import {useEffect, useRef} from "react";
-import {HistogramJsrootClass} from "@ndmspc/ndmvr-aframe";
+import { useThree } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
+import { HistogramJsrootClass } from "@ndmspc/ndmvr-aframe";
 // import {HistogramJsrootClass} from "../../../../ndmvr-aframe/index.js";
-import * as THREE from "three";
+// import * as THREE from "three";
 
 
-export default function JsrootHistogramWrapper({id}) {
+export default function JsrootHistogramWrapper({ id }) {
 
-    const {scene} = useThree();
+    const { scene } = useThree();
     const jsrootHistogram = useRef();
 
     useEffect(() => {
