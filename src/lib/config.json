@@ -1,5 +1,6 @@
 {
   "config": {
+    "state": "default",
     "scale": {
       "default": {
         "min": 0.2,

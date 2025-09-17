@@ -1,10 +1,8 @@
 import { create } from "zustand";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { parse as jsrootParse } from "jsroot";
-// import { brokerManagerGet, histogramSubjectGet } from "../../../../ndmvr-aframe/index.js";
-import { jsrootRedraw } from "../../utils/helpers";
-import { STAT, ERR, HISTOGRAM_ID } from "./constants";
-import { interceptWsProperty } from "./helpers";
+import { STAT, ERR, HISTOGRAM_ID } from "./constants.js";
+import { interceptWsProperty } from "./helpers.js";
 
 export const useBrokerStore = create((set, get) => ({
     wsUrl: null,
@@ -41,7 +39,6 @@ export const useBrokerStore = create((set, get) => ({
 
         const sub = manager.getSubject().subscribe((msg) => {
             const obj = jsrootParse(msg);
-            jsrootRedraw(obj.arr?.[1] || obj);
             histogramSubjectGet().next({ id: HISTOGRAM_ID, histogram: obj.arr?.[1] || obj });
         });
         set({ sub });

@@ -5,19 +5,22 @@ import {
     configSubjectGet,
     NdmvrRaycaster,
 } from "@ndmspc/ndmvr-aframe";
-// import {configSubjectGet, NdmvrRaycaster} from "../../../../ndmvr-aframe/index.js";
-
 import { useThree } from "@react-three/fiber";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CanvasComponent from "./CanvasComponent.jsx";
-// import JsrootHistogramWrapper from "./JsrootHistogramWrapper.jsx";
 import HistogramWrapper from "./HistogramWrapper.jsx";
-import RaycasterBridge from "../../components/RaycasterBridge.jsx";
+import RaycasterBridge from "./RaycasterBridge.jsx";
+import ControlsHelp from "../ui/shared/ControlsHelp.jsx";
 
-export default function Scene({ originRef }) {
+import "../../styles/index.css";
+
+export default function NdmvrScene({ originRef }) {
     const { scene } = useThree();
     const [raycaster, setRaycaster] = useState(null);
     const [config, setConfig] = useState(null);
+
+    const grid = useMemo(() => new THREE.GridHelper(100, 100), []);
+    const axes = useMemo(() => new THREE.AxesHelper(5), []);
 
     useEffect(() => {
         const configSub = configSubjectGet()
@@ -46,26 +49,35 @@ export default function Scene({ originRef }) {
 
     return (
         <>
-            <CanvasComponent id="nh-cinema"/>
+            {/*<CanvasComponent id="nh-cinema"/>*/}
 
             {config?.histogramPads?.map((object) => (
                 <HistogramWrapper key={object.id} id={object.id}/>
             ))}
+
+            {config?.state === "default" & <HistogramWrapper id="first"/>}
+
+            <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4, 0]}>
+                <ControlsHelp/>
+            </group>
+            <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4 + Math.PI, 0]}>
+                <ControlsHelp/>
+            </group>
 
             <Sky/>
             <fog attach="fog" args={["#997D31", 5, 60]}/>
             <ambientLight intensity={0.4}/>
             <directionalLight position={[0, 5, 5]} intensity={1}/>
 
-            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <mesh toneMapped={false} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]}/>
                 <meshStandardMaterial color="lightgray"/>
             </mesh>
 
             <RaycasterBridge rc={raycaster} originRef={originRef}/>
 
-            <primitive object={new THREE.GridHelper(100, 100)}/>
-            <primitive object={new THREE.AxesHelper(5)}/>
+            <primitive object={grid}/>
+            <primitive object={axes}/>
         </>
     );
 }

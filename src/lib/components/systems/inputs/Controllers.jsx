@@ -1,13 +1,16 @@
 import { useXR } from "@react-three/xr";
 
-import VRController from "./VRController";
-import DesktopController from "./DesktopController";
+import VRController from "./VRController.jsx";
+import DesktopController from "./DesktopController.jsx";
 
 export default function Controllers({
     originRef,
     cameraRef,
     setShowMenu,
     setShowBinInfo,
+    desktopSpeed = 5,
+    vrHSpeed = 2,
+    vrVSpeed = 2,
 }) {
 
     const session = useXR((state) => state.session);
@@ -16,7 +19,8 @@ export default function Controllers({
         return (
             <VRController
                 originRef={originRef}
-                speed={2}
+                speed={vrHSpeed}
+                verticalSpeed={vrVSpeed}
                 onToggleMenu={() => setShowMenu((p) => !p)}
                 onToggleBinInfo={() => setShowBinInfo((p) => !p)}
             />
@@ -31,6 +35,7 @@ export default function Controllers({
                 onToggleBinInfo={() => {
                     setShowBinInfo((p) => !p)
                 }}
+                speed={desktopSpeed}
             />
         );
     }
