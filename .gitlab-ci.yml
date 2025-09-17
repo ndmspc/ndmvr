@@ -14,6 +14,7 @@ test-prod:
     - CI=true npm run build-app
   except:
     - main
+    - tags
 
 deploy:
   stage: deploy
@@ -45,5 +46,5 @@ pages:
   artifacts:
     paths:
       - public
-  # only:
-  #   - main
+    only:
+      - main

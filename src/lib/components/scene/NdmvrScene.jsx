@@ -55,8 +55,6 @@ export default function NdmvrScene({ originRef }) {
                 <HistogramWrapper key={object.id} id={object.id}/>
             ))}
 
-            {config?.state === "default" & <HistogramWrapper id="first"/>}
-
             <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4, 0]}>
                 <ControlsHelp/>
             </group>
