@@ -1,4 +1,4 @@
-import { STAT, ERR, RECONNECT_TIMEOUT_MS } from "./constants";
+import { STAT, ERR, RECONNECT_TIMEOUT_MS } from "./constants.js";
 
 export function interceptWsProperty(broker, url, set, get) {
     if (broker.__wsIntercepted) return;

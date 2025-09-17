@@ -5,7 +5,7 @@ import * as THREE from "three";
 export default function DesktopController({
     originRef,
     cameraRef,
-    speed = 2,
+    speed = 5,
     onToggleMenu,
     onToggleBinInfo,
 }) {

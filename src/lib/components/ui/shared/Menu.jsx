@@ -5,12 +5,10 @@ import { Container, Root, Text } from "@react-three/uikit";
 import { Button, Card, Defaults } from "@react-three/uikit-apfel";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import { histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
-// import { histogramSubjectGet } from "../../../../ndmvr-aframe/index.js";
 import { parse } from "jsroot";
 
 import { useBrokerStore } from "../../../stores/broker/store.js";
-import { store } from "../../../App.jsx";
-import { jsrootRedraw } from "../../../utils/helpers.js";
+import { store } from "../../env/NdmvrEnv.jsx";
 import InputCard from "./InputCard.jsx";
 import WebsocketBanner from "./WebsocketBanner.jsx";
 
@@ -66,7 +64,7 @@ export default function Menu({
         }
 
         if (type === "http") {
-            if(httpLoading) return;
+            if (httpLoading) return;
 
             setHttpLoading(true);
             setHttpLoaded(false);
@@ -79,25 +77,12 @@ export default function Menu({
                 const rootObj = parse(obj);
 
                 histogramSubjectGet().next({
-                    //nested histogram
-                    // id: "nh",
                     id: "histogram1",
                     opts: {
                         render: "nested"
                     },
-                    //jsroot histogram
-                    // id: "nh-jsroot",
                     histogram: rootObj.arr?.[0] ?? rootObj,
                 });
-                console.log('send', {
-                    //nested histogram
-                    id: "nh",
-                    //jsroot histogram
-                    // id: "nh-jsroot",
-                    histogram: rootObj.arr?.[0] ?? rootObj,
-                })
-                jsrootRedraw(rootObj.arr?.[0] ?? rootObj);
-
                 setHttpLoaded(true);
             } catch (err) {
                 console.error("Failed to load:", err);

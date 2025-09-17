@@ -3,7 +3,11 @@ import { Button, Loading } from "@react-three/uikit-apfel";
 
 import { useBrokerStore } from "../../../stores/broker/store.js";
 import { STAT } from "../../../stores/broker/constants.js";
-import { trimUrl } from "../../../utils/helpers.js";
+
+const trimUrl = (s, head = 40, tail = 40) => {
+    if (!s) return "";
+    return s.length <= head + tail ? s : `${s.slice(0, head)}…${s.slice(-tail)}`;
+};
 
 export default function WebsocketBanner({ showTransient = true }) {
     const wsUrl = useBrokerStore((s) => s.wsUrl);

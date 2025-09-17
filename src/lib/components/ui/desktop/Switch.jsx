@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import "../../../styles/switch.css";
 
-export default function Switch({ onToggle, label = "JSROOT Mode" }) {
-    const [checked, setChecked] = useState(false);
+export default function Switch({ onToggle, label = "VR Mode", startState = false }) {
+    const [checked, setChecked] = useState(startState);
 
     const handleChange = () => {
         setChecked(!checked);
@@ -15,6 +15,10 @@ export default function Switch({ onToggle, label = "JSROOT Mode" }) {
             style={{
                 display: "flex",
                 alignItems: "center",
+                position: "fixed",
+                bottom: "20px",
+                left: "20px",
+                zIndex: 10,
             }}
         >
             <label className="switch">
