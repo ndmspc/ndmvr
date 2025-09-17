@@ -11,9 +11,13 @@ export default function NdmspcEnv({ config = null }) {
 
     const [vrMode, setVRMode] = useState(true);
 
+
     useEffect(() => {
-        if(config) configSubjectGet().next(config);
-        else configSubjectGet().next(defaultConfig);
+        const newConfig = configSubjectGet().getValue().config;
+        const merged = {...newConfig, ...config};
+        // if(config) configSubjectGet().next(config);
+        configSubjectGet().next(merged);
+
     }, []);
 
     return (
