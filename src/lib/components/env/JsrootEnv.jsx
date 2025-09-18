@@ -23,7 +23,10 @@ export default function JsrootEnv() {
     const [config, setConfig] = useState(null);
 
     useEffect(() => {
-        const sub = configSubjectGet().getObservable().subscribe((c) => setConfig(c.config));
+        const sub = configSubjectGet().getObservable().subscribe((c) =>{
+            setConfig(c.config)
+            console.log(c.config);
+        });
         return () => sub.unsubscribe();
     }, []);
 

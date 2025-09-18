@@ -10,6 +10,7 @@
     "dist",
     "README.md"
   ],
+  "sideEffects": ["**/*.css", "**/injectGlobalCss.js"],
   "type": "module",
   "main": "./dist/ndmvr-r3f.umd.js",
   "module": "./dist/ndmvr-r3f.es.js",
@@ -17,7 +18,8 @@
     ".": {
       "import": "./dist/ndmvr-r3f.es.js",
       "require": "./dist/ndmvr-r3f.umd.js"
-    }
+    },
+    "./style.css": "./dist/ndmvr-r3f.css"
   },
   "scripts": {
     "dev": "vite",
@@ -28,7 +30,7 @@
     "preview": "vite -c vite.config.app.js"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-aframe": "^1.0.0-rc.24",
+    "@ndmspc/ndmvr-aframe": "^1.0.0-rc.28",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",
     "@react-three/uikit": "^0.8.21",
@@ -51,6 +53,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "rollup-plugin-postcss": "^4.0.2",
     "vite": "^7.0.0"
   }
 }

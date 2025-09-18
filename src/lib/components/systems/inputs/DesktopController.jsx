@@ -83,8 +83,8 @@ export default function DesktopController({
         if (keys.current["KeyS"]) velocity.add(forward.clone().negate());
         if (keys.current["KeyA"]) velocity.add(right.clone().negate());
         if (keys.current["KeyD"]) velocity.add(right);
-        if (keys.current["KeyE"]) velocity.y -= 1;
-        if (keys.current["KeyQ"]) velocity.y += 1;
+        if (keys.current["KeyQ"]) velocity.y -= 1;
+        if (keys.current["KeyE"]) velocity.y += 1;
 
         if (velocity.length() > 0) {
             velocity.normalize().multiplyScalar(speed * delta);

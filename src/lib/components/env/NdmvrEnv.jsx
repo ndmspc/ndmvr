@@ -12,7 +12,7 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 export const store = createXRStore();
 
-export default function NdmvrEnv() {
+export default function NdmvrEnv({controlsHelp = false}) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(true);
@@ -29,7 +29,7 @@ export default function NdmvrEnv() {
         <div
             style={{
                 width: "100%",
-                height: "100vh",
+                height: "100%",
             }}
         >
             <Canvas  shadows>
@@ -44,7 +44,7 @@ export default function NdmvrEnv() {
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef}/>
 
-                    <NdmvrScene originRef={xrOriginRef}/>
+                    <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef}/>
 
                     {showMenu && <Menu originRef={xrOriginRef}/>}
                     {showBinInfo && <BinInfo originRef={xrOriginRef}/>}

@@ -13,6 +13,9 @@ import BinInfo from "./components/ui/shared/BinInfo.jsx";
 import ControlsHelp from "./components/ui/shared/ControlsHelp.jsx";
 import Menu from "./components/ui/shared/Menu.jsx";
 
+import { injectGlobalCss } from './injectGlobalCss';
+injectGlobalCss();
+
 export {
     JsrootEnv,
     NdmspcEnv,
