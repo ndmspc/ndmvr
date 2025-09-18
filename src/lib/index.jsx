@@ -13,8 +13,8 @@ import BinInfo from "./components/ui/shared/BinInfo.jsx";
 import ControlsHelp from "./components/ui/shared/ControlsHelp.jsx";
 import Menu from "./components/ui/shared/Menu.jsx";
 
-import "./ndmvr-r3f.css"
-
+import "./styles/index.css";
+import "./styles/switch.css";
 
 export {
     JsrootEnv,

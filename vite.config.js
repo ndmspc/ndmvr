@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => ({
     plugins: [
         react(),
         postcss({
-            inject: true,  
-            extract: false, 
+            inject: false,  
+            extract: true, 
             minimize: true,
         }),
     ],

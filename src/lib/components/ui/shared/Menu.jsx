@@ -173,6 +173,21 @@ export default function Menu({
                                             connError={error}
                                             onSubmit={() => handleLoadClick("ws")}
                                         />
+
+                                        {loadMode === "ws" &&                                            
+                                            <RadioGroup onValueChange={(v) => {setInputValues((p) => ({ ...p, ws: v }));}}>
+                                                <RadioGroupItem value="ws://localhost:8080/ws/root.websocket">
+                                                    <Label>
+                                                        <Text>Test</Text>
+                                                    </Label>
+                                                </RadioGroupItem>
+                                                <RadioGroupItem value="ws://ndmspc.cern.ch/ws/root.websocket">
+                                                    <Label>
+                                                        <Text>Production</Text>
+                                                    </Label>
+                                                </RadioGroupItem>
+                                            </RadioGroup>
+                                        }
                                     </Container>
                                 </Container>
 

@@ -18,7 +18,8 @@
     ".": {
       "import": "./dist/ndmvr-r3f.es.js",
       "require": "./dist/ndmvr-r3f.umd.js"
-    }
+    },
+    "./style.css": "./dist/ndmvr-r3f.css"
   },
   "scripts": {
     "dev": "vite",
