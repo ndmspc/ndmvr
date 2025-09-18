@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import "../../../styles/switch.css"
+
 export default function Switch({ onToggle, label = "VR Mode", startState = false }) {
     const [checked, setChecked] = useState(startState);
 
