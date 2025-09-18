@@ -10,7 +10,7 @@
     "dist",
     "README.md"
   ],
-  "sideEffects": ["**/*.css"],
+  "sideEffects": ["**/*.css", "**/injectGlobalCss.js"],
   "type": "module",
   "main": "./dist/ndmvr-r3f.umd.js",
   "module": "./dist/ndmvr-r3f.es.js",
