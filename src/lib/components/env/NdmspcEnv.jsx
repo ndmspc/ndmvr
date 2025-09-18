@@ -21,7 +21,7 @@ export default function NdmspcEnv({ config = null }) {
     }, []);
 
     return (
-        <>
+        <div style={{ width: "100%", height: "100%", position: "relative" }}>
             <div style={{ display: vrMode ? "none" : "flex", width: "100%", height: "100%" }}>
                 <JsrootEnv/>
             </div>
@@ -29,6 +29,6 @@ export default function NdmspcEnv({ config = null }) {
                 <NdmvrEnv/>
             </div>
             <Switch startState={true} checked onToggle={(checked) => setVRMode(checked)}/>
-        </>
+        </div>
     );
 }

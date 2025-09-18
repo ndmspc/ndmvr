@@ -121,12 +121,12 @@ export default function BinInfo({
         <group ref={groupRef}>
             <Defaults>
                 <Root>
-                    <FontFamilyProvider
+                    {/* <FontFamilyProvider
                         noto={{
                             medium: `${BASE}fonts/NotoSans-json/NotoSans-Regular.json`,
                             bold: `${BASE}fonts/NotoSans-json/NotoSans-Bold.json`,
                         }}
-                    >
+                    > */}
                         <Container minWidth={420} gap={12}>
                             <Card
                                 flexDirection="column"
@@ -173,15 +173,15 @@ export default function BinInfo({
                                         label="Value:"
                                         value={
                                             binInfo?.content || binInfo?.error
-                                                // ? `${binInfo?.content} ± ${binInfo?.error}`
-                                                ? `${binInfo?.content} ± ${binInfo?.error.toFixed(precision)}`
+                                                // ? `${binInfo?.content} ± ${binInfo?.error.toFixed(precision)}`
+                                                ? `${binInfo?.content} +- ${binInfo?.error.toFixed(precision)}`
                                                 : "-"
                                         }
                                     />
                                 </Section>
                             </Card>
                         </Container>
-                    </FontFamilyProvider>
+                    {/* </FontFamilyProvider> */}
                 </Root>
             </Defaults>
         </group>

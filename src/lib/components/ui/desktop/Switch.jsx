@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import "../../../styles/switch.css";
-
 export default function Switch({ onToggle, label = "VR Mode", startState = false }) {
     const [checked, setChecked] = useState(startState);
 
@@ -15,7 +13,7 @@ export default function Switch({ onToggle, label = "VR Mode", startState = false
             style={{
                 display: "flex",
                 alignItems: "center",
-                position: "fixed",
+                position: "absolute",
                 bottom: "20px",
                 left: "20px",
                 zIndex: 10,
