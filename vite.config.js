@@ -1,7 +1,7 @@
 import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import postcss from 'rollup-plugin-postcss';
+// import postcss from 'rollup-plugin-postcss';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -36,11 +36,11 @@ export default defineConfig(({ mode }) => ({
     },
     plugins: [
         react(),
-        postcss({
-            inject: false,  
-            extract: true, 
-            minimize: true,
-        }),
+        // postcss({
+        //     inject: false,  
+        //     extract: true, 
+        //     minimize: true,
+        // }),
     ],
 
     optimizeDeps: {
