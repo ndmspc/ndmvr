@@ -46,11 +46,6 @@ export default defineConfig(({ mode }) => ({
     optimizeDeps: {
         exclude: ['gl > gl']
     },
-    resolve: {
-        alias: {
-        "@ndmspc/ndmvr-r3f": path.resolve(__dirname, "./dist/ndmvr-r3f.es.js"),
-        },
-    },
     
 
 }));
