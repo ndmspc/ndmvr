@@ -142,23 +142,26 @@ export default function BinInfo({
                                         const coords = binInfo?.coords ?? [];
                                         return coords.length ? (
                                             coords.map((coord, i) => {
-                                                const { r, g, b } = coord[1].color;
-                                                const colorHex = `#${new Color(r, g, b).getHexString()}`;
-                                                let { name, title, bin, min, max } = coord[0];
+                                                try {
+                                                    const { r, g, b } = coord[1].color;
+                                                    const colorHex = `#${new Color(r, g, b).getHexString()}`;
+                                                    let { name, title, bin, min, max } = coord[0];
 
-                                                min = min.toFixed(precision);
-                                                max = max.toFixed(precision);
+                                                    min = min.toFixed(precision);
+                                                    max = max.toFixed(precision);
 
-                                                return (
-                                                    <Row
-                                                        key={`${name}-${i}`}
-                                                        coords={true}
-                                                        color={colorHex}
-                                                        formula={title}
-                                                        label={name}
-                                                        value={`bin=${bin}, range=[${min}, ${max}]`}
-                                                    />
-                                                );
+                                                    return (
+                                                        <Row
+                                                            key={`${name}-${i}`}
+                                                            coords={true}
+                                                            color={colorHex}
+                                                            formula={title}
+                                                            label={name}
+                                                            value={`bin=${bin}, range=[${min}, ${max}]`}
+                                                        />
+                                                    );
+                                                }
+                                                catch(e){console.log(e)}
                                             })
                                         ) : (
                                             <Row label="-" value="-"/>
