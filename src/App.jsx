@@ -10,27 +10,24 @@ import { injectGlobalCss } from "./lib/injectGlobalCss.js";
 
 function App() {
     injectGlobalCss();
-    const effectRan = useRef(false);
+
+    // const effectRan = useRef(false);
+    //
+    // useEffect(() => {
+    //     if (effectRan.current) return;
+    //     effectRan.current = true;
+    //     // console.log("SENDING");
+    //     // // histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
+    //     // histogramSubjectGet().next({id: 'histogram2', opts: {render: "nested"}, histogram: h3scat});
+    //     // // histogramSubjectGet().next({id: 'histogram3', opts: {render: "jsroot"}, histogram: h3scat});
+    //     // histogramSubjectGet().next({id: 'histogram4', opts: {render: "nested"}, histogram: h3scat});
+    //     // setTimeout(() => {
+    //     //     histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
+    //     // }, 4000)
+    //
+    // }, []);
 
     useEffect(() => {
-        if (effectRan.current) return;
-        effectRan.current = true;
-        // console.log("SENDING");
-        // // histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
-        // histogramSubjectGet().next({id: 'histogram2', opts: {render: "nested"}, histogram: h3scat});
-        // // histogramSubjectGet().next({id: 'histogram3', opts: {render: "jsroot"}, histogram: h3scat});
-        // histogramSubjectGet().next({id: 'histogram4', opts: {render: "nested"}, histogram: h3scat});
-        // setTimeout(() => {
-        //     histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
-        // }, 4000)
-
-    }, []);
-
-    useEffect(() => {
-        if (effectRan.current) return;
-        effectRan.current = true;
-
-        if (config) configSubjectGet().next(config);
 
         brokerManagerGet().createWs(
             "ws://localhost:8080/ws/root.websocket",
@@ -90,7 +87,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcEnv config={null}/>
+                <NdmspcEnv config={config}/>
             </div>
         </div>
     );
