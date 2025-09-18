@@ -37,11 +37,12 @@ export const useBrokerStore = create((set, get) => ({
             return;
         }
 
-        const sub = manager.getSubject().subscribe((msg) => {
-            const obj = jsrootParse(msg);
-            histogramSubjectGet().next({ id: HISTOGRAM_ID, histogram: obj.arr?.[1] || obj });
-        });
-        set({ sub });
+        // const sub = manager.getSubject().subscribe((msg) => {
+        //     const obj = jsrootParse(msg);
+        //
+        //     histogramSubjectGet().next({ id: gi, histogram: obj.arr?.[1] || obj });
+        // });
+        // set({ sub });
 
         interceptWsProperty(broker, url, set, get);
 

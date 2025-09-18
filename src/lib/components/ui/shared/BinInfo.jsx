@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo  } from "react";
 import { Container, Root, Text, FontFamilyProvider, Icon } from "@react-three/uikit";
 import { Card, Defaults } from "@react-three/uikit-apfel";
 import { useFrame } from "@react-three/fiber";
@@ -36,21 +36,20 @@ export default function BinInfo({
 
     const DotIcon = ({ size = 8, color = '#fff', delay = true }) => {
         const [ready, setReady] = useState(!delay);
+
         useEffect(() => {
             if (!delay) return;
-            const id1 = requestAnimationFrame(() => {
-                const id2 = requestAnimationFrame(() => setReady(true));
-                return () => cancelAnimationFrame(id2);
-            });
-            return () => cancelAnimationFrame(id1);
+            setReady(true);            // після першого paint
         }, [delay]);
 
-        if (!ready) return null;
+        const svg = useMemo(() => (
+            `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" />
+    </svg>`
+        ), [size]);
 
-        const svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" />
-  </svg>`;
-        return <Icon svgWidth={size} svgHeight={size} color={color} text={svg}/>;
+        if (!ready) return null;
+        return <Icon svgWidth={size} svgHeight={size} color={color} text={svg} />;
     };
 
     const Row = ({ label, value, color = "white", coords = false, formula }) =>
@@ -121,12 +120,12 @@ export default function BinInfo({
         <group ref={groupRef}>
             <Defaults>
                 <Root>
-                    <FontFamilyProvider
+                    {/* <FontFamilyProvider
                         noto={{
                             medium: `${BASE}fonts/NotoSans-json/NotoSans-Regular.json`,
                             bold: `${BASE}fonts/NotoSans-json/NotoSans-Bold.json`,
                         }}
-                    >
+                    > */}
                         <Container minWidth={420} gap={12}>
                             <Card
                                 flexDirection="column"
@@ -173,15 +172,15 @@ export default function BinInfo({
                                         label="Value:"
                                         value={
                                             binInfo?.content || binInfo?.error
-                                                // ? `${binInfo?.content} ± ${binInfo?.error}`
-                                                ? `${binInfo?.content} ± ${binInfo?.error.toFixed(precision)}`
+                                                // ? `${binInfo?.content} ± ${binInfo?.error.toFixed(precision)}`
+                                                ? `${binInfo?.content} +- ${binInfo?.error.toFixed(precision)}`
                                                 : "-"
                                         }
                                     />
                                 </Section>
                             </Card>
                         </Container>
-                    </FontFamilyProvider>
+                    {/* </FontFamilyProvider> */}
                 </Root>
             </Defaults>
         </group>

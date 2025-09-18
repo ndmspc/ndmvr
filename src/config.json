@@ -1,5 +1,10 @@
 {
   "config": {
+    "sets": {
+      "scale": {
+        "maximum": "relative"
+      }
+    },
     "scale": {
       "default": {
         "min": 0.2,
@@ -11,13 +16,6 @@
     "desktopSpeed": 5,
     "vrHSpeed": 2,
     "vrVSpeed": 2,
-    "camera": {
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      }
-    },
     "canvas": {
       "position": {
         "x": 0,
@@ -74,6 +72,11 @@
           "x": 0.1,
           "y": 0.1,
           "z": 0.1
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
         }
       ]
     },
