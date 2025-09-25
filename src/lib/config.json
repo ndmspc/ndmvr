@@ -1,6 +1,7 @@
 {
   "config": {
     "environment": {
+      "dbClickTimeout": 200,
       "desktopSpeed": 5,
       "vrHSpeed": 2,
       "vrVSpeed": 2,

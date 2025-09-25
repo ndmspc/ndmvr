@@ -1,13 +1,14 @@
 {
   "config": {
     "environment": {
+      "dbClickTimeout": 200,
       "desktopSpeed": 5,
       "vrHSpeed": 2,
       "vrVSpeed": 2,
       "canvas": {
         "position": {
           "x": 0,
-          "y": 5,
+          "y": 23,
           "z": -15
         },
         "rotation": {
@@ -16,8 +17,8 @@
           "z": 0
         },
         "scale": {
-          "x": 10,
-          "y": 10,
+          "x": 3,
+          "y": 3,
           "z": 0
         }
       },
