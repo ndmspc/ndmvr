@@ -47,11 +47,15 @@ export default function NdmvrScene({ originRef, controlsHelp = false }) {
 
     return (
         <>
-            {/*<CanvasComponent id="nh-cinema"/>*/}
 
+          <group>
             {config?.environment?.histogramPads?.map((object) => (
-                <HistogramWrapper key={object.id} id={object.id}/>
+              <HistogramWrapper key={object.id} id={object.id}/>
             ))}
+            {config?.environment?.histogramPads?.length > 0 &&
+              <CanvasComponent id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`} />
+            }
+          </group>
 
             {controlsHelp &&
                 <>
@@ -65,7 +69,7 @@ export default function NdmvrScene({ originRef, controlsHelp = false }) {
             }
 
             <Sky/>
-            <fog attach="fog" args={["#997D31", 5, 60]}/>
+            {/*<fog attach="fog" args={["#997D31", 5, 60]}/>*/}
             <ambientLight intensity={0.4}/>
             <directionalLight position={[0, 5, 5]} intensity={1}/>
 
