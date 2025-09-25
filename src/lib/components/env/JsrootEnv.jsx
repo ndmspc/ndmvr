@@ -25,13 +25,12 @@ export default function JsrootEnv() {
     useEffect(() => {
         const sub = configSubjectGet().getObservable().subscribe((c) =>{
             setConfig(c.config)
-            console.log(c.config);
         });
         return () => sub.unsubscribe();
     }, []);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const pads = config?.histogramPads ?? [];
+    const pads = config?.histogram?.histogramPads ?? [];
     const n = pads.length;
 
     const cols = Math.max(1, Math.ceil(Math.sqrt(n)));

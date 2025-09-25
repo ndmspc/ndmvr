@@ -13,7 +13,7 @@ export default function NdmspcEnv({ config = null, controlsHelp = false }) {
 
 
     useEffect(() => {
-        const newConfig = configSubjectGet().getValue().config;
+        const newConfig = configSubjectGet().getValue();
         const configToMerge = config ?? defaultConfig;
         const merged = {...newConfig, ...configToMerge};
         // if(config) configSubjectGet().next(config);

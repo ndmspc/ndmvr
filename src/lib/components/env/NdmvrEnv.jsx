@@ -55,9 +55,9 @@ export default function NdmvrEnv({controlsHelp = false}) {
                         showMenu={showMenu}
                         setShowMenu={setShowMenu}
                         setShowBinInfo={setShowBinInfo}
-                        desktopSpeed={config?.desktopSpeed ?? 5}
-                        vrHSpeed={config?.vrHSpeed ?? 2}
-                        vrVSpeed={config?.vrVSpeed ?? 2}
+                        desktopSpeed={config?.environment?.desktopSpeed ?? 5}
+                        vrHSpeed={config?.environment?.vrHSpeed ?? 2}
+                        vrVSpeed={config?.environment?.vrVSpeed ?? 2}
                     />
                     <XROrigin ref={xrOriginRef} position={[0, 1.6, 10]}/>
 
