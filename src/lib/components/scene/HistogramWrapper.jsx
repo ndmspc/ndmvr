@@ -86,14 +86,14 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
                     clearJsrootMesh();
 
                     if (nestedHistogram.current) {
-                        nestedHistogram.current.updateHistogram(histo);
+                        nestedHistogram.current.updateHistogram(histo, histo.opts);
                     } else {
                         nestedHistogram.current = new NestedHistogram(
                             px,
                             py,
                             pz,
                             histo,
-                            id
+                            id, histo.opts
                         );
                         setNestedMesh(nestedHistogram.current.instancedMesh);
                         setWireframeObj(nestedHistogram.current.wireframe.wireframe);

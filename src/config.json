@@ -1,135 +1,144 @@
 {
   "config": {
-    "sets": {
-      "scale": {
-        "maximum": "relative"
+    "environment": {
+      "desktopSpeed": 5,
+      "vrHSpeed": 2,
+      "vrVSpeed": 2,
+      "canvas": {
+        "position": {
+          "x": 0,
+          "y": 5,
+          "z": -15
+        },
+        "rotation": {
+          "x": 10,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 10,
+          "y": 10,
+          "z": 0
+        }
+      },
+      "histogramPads": {
+        "type": "grid2x1x2",
+        "scale": {
+          "x": 10,
+          "y": 5,
+          "z": 10
+        },
+        "padding": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "origin": {
+          "x": 0,
+          "y": 3,
+          "z": 5
+        }
       }
     },
-    "scale": {
-      "default": {
-        "min": 0.2,
-        "max": 0.95
-      },
-      "layer": [
-      ]
-    },
-    "desktopSpeed": 5,
-    "vrHSpeed": 2,
-    "vrVSpeed": 2,
-    "canvas": {
-      "position": {
-        "x": 0,
-        "y": 5,
-        "z": -15
-      },
-      "rotation": {
-        "x": 10,
-        "y": 0,
-        "z": 0
+    "histogram": {
+      "sets": {
+        "scale": {
+          "maximum": "relative"
+        }
       },
       "scale": {
-        "x": 10,
-        "y": 10,
-        "z": 0
-      }
-    },
-    "histogramPads": {
-      "type": "grid2x1x2",
-      "scale": {
-        "x": 10,
-        "y": 5,
-        "z": 10
+        "default": {
+          "min": 0.2,
+          "max": 0.95
+        },
+        "layer": [
+        ]
       },
       "padding": {
-        "x": 1,
-        "y": 1,
-        "z": 1
-      },
-      "origin": {
-        "x": 0,
-        "y": 3,
-        "z": 5
-      }
-    },
-    "padding": {
-      "default": {
-        "x": 0.1,
-        "y": 0.1,
-        "z": 0.1
-      },
-      "layer": [
-        {
+        "default": {
           "x": 0.1,
           "y": 0.1,
           "z": 0.1
         },
-        {
-          "x": 0.1,
-          "y": 0.1,
-          "z": 0.1
-        },
-        {
-          "x": 0.1,
-          "y": 0.1,
-          "z": 0.1
-        },
-        {
+        "layer": [
+          {
+            "x": 0.1,
+            "y": 0.1,
+            "z": 0.1
+          },
+          {
+            "x": 0.1,
+            "y": 0.1,
+            "z": 0.1
+          },
+          {
+            "x": 0.1,
+            "y": 0.1,
+            "z": 0.1
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ],
+        "sets": {
           "x": 0,
           "y": 0,
           "z": 0
         }
-      ]
-    },
-    "TH1ZScale": {
-      "default": 0.8,
-      "layer": [
-        0.2,
-        1,
-        1,
-        1
-      ]
-    },
-    "wireframe": {
-      "display": {
-        "start": 0,
-        "end": 4
       },
-      "layer": [],
-      "color": {
-        "default": "0x00FF00",
+      "TH1ZScale": {
+        "default": 0.8,
         "layer": [
-          "0x000000",
-          "0x0000FF",
-          "0x00FF00",
-          "0x00FFFF"
-        ],
-        "set": []
-      }
-    },
-    "color": {
-      "default": {
-        "min": "0x0000ff",
-        "max": "0xff0000"
+          0.2,
+          1,
+          1,
+          1
+        ]
       },
-      "layer": [],
-      "set": [
-        {
-          "min": "0x222222",
-          "max": "0xffaa00"
+      "wireframe": {
+        "display": {
+          "start": 0,
+          "end": 4
         },
-        {
-          "min": "0x00ffff",
-          "max": "0xff7f00"
-        },
-        {
-          "min": "0x00ff00",
-          "max": "0x800080"
-        },
-        {
+        "layer": [],
+        "color": {
+          "default": "0x00FF00",
+          "layer": [
+            "0x000000",
+            "0x0000FF",
+            "0x00FF00",
+            "0x00FFFF"
+          ],
+          "set": []
+        }
+      },
+      "color": {
+        "default": {
           "min": "0x0000ff",
           "max": "0xff0000"
-        }
-      ]
+        },
+        "layer": [],
+        "set": [
+          {
+            "min": "0x222222",
+            "max": "0xffaa00"
+          },
+          {
+            "min": "0x00ffff",
+            "max": "0xff7f00"
+          },
+          {
+            "min": "0x00ff00",
+            "max": "0x800080"
+          },
+          {
+            "min": "0x0000ff",
+            "max": "0xff0000"
+          }
+        ]
+      }
     }
   }
 }
