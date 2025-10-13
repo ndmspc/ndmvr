@@ -53,7 +53,7 @@ export default function NdmvrScene({ originRef, controlsHelp = false }) {
               <HistogramWrapper key={object.id} id={object.id}/>
             ))}
             {config?.environment?.histogramPads?.length > 0 &&
-              <CanvasComponent id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`} />
+              <CanvasComponent location={config?.environment?.canvas} id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`} />
             }
           </group>
 

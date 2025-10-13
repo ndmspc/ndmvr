@@ -87,7 +87,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcEnv config={config}/>
+                <NdmspcEnv config={null}/>
             </div>
         </div>
     );

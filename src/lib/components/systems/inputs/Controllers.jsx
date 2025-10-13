@@ -9,8 +9,7 @@ export default function Controllers({
     setShowMenu,
     setShowBinInfo,
     desktopSpeed = 5,
-    vrHSpeed = 2,
-    vrVSpeed = 2,
+    vrSpeed = 2,
 }) {
 
     const session = useXR((state) => state.session);
@@ -19,8 +18,7 @@ export default function Controllers({
         return (
             <VRController
                 originRef={originRef}
-                speed={vrHSpeed}
-                verticalSpeed={vrVSpeed}
+                speed={vrSpeed}
                 onToggleMenu={() => setShowMenu((p) => !p)}
                 onToggleBinInfo={() => setShowBinInfo((p) => !p)}
             />
