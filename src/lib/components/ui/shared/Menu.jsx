@@ -1,4 +1,4 @@
-import {useRef, useState} from "react";
+import {useRef, useState, useEffect} from "react";
 import {useFrame} from "@react-three/fiber";
 import {useXR} from "@react-three/xr";
 import {Container, Root, Text} from "@react-three/uikit";
@@ -15,6 +15,7 @@ import WebsocketBanner from "./WebsocketBanner.jsx";
 export default function Menu({
                                originRef,
                                offset = {x: 0, y: 1, z: -4},
+                               onClose
                              }) {
   const [loadMode, setLoadMode] = useState(null);
   const [inputValues, setInputValues] = useState({
@@ -27,8 +28,7 @@ export default function Menu({
     ws: null,
   });
 
-  const {connectionStatus, error, connect} =
-    useBrokerStore();
+  const {connectionStatus, error, connect} = useBrokerStore();
 
   const [httpLoading, setHttpLoading] = useState(false);
   const [httpLoaded, setHttpLoaded] = useState(false);
@@ -61,6 +61,16 @@ export default function Menu({
 
     if (type === "ws") {
       connect(value);
+      
+        const checkConnection = setInterval(() => {
+          if (connectionStatus === 'connected') {
+            clearInterval(checkConnection);
+            if (onClose) onClose();
+          }
+        }, 100);
+        
+        setTimeout(() => clearInterval(checkConnection), 5000);
+      
     }
 
     if (type === "http") {
@@ -97,6 +107,9 @@ export default function Menu({
           histogram: rootObj.arr?.[0] ?? rootObj,
         });
         setHttpLoaded(true);
+        if (onClose) {
+          setTimeout(() => onClose(), 500);
+        }
       } catch (err) {
         console.error("Failed to load:", err);
         setValidationStatus((prev) => ({...prev, [type]: "error"}));

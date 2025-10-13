@@ -6,7 +6,6 @@ import * as THREE from "three";
 export default function VRController({
     originRef,
     speed = 2,
-    verticalSpeed = 2,
     turnSpeed = 0.4,
     onToggleMenu,
     onToggleBinInfo,
@@ -60,8 +59,8 @@ export default function VRController({
         const ascend = triggerVal > TRIGGER_T;
         const descend = (leftSqueeze?.state === "pressed") || (squeezeVal > SQUEEZE_T);
 
-        if (ascend) originRef.current.position.y += verticalSpeed * delta;
-        if (descend) originRef.current.position.y -= verticalSpeed * delta;
+        if (ascend) originRef.current.position.y += speed * delta;
+        if (descend) originRef.current.position.y -= speed * delta;
 
         const bBtn = rightController?.gamepad?.["b-button"];
         if (bBtn?.state === "pressed" && !lastB.current) {

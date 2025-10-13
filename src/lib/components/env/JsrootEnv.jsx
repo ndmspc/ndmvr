@@ -30,7 +30,7 @@ export default function JsrootEnv() {
     }, []);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const pads = config?.histogram?.histogramPads ?? [];
+    const pads = config?.environment?.histogramPads ?? [];
     const n = pads.length;
 
     const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
