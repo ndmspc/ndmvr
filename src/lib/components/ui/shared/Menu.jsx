@@ -2,11 +2,13 @@ import {useRef, useState, useEffect} from "react";
 import {useFrame} from "@react-three/fiber";
 import {useXR} from "@react-three/xr";
 import {Container, Root, Text} from "@react-three/uikit";
-import {Button, Card, Defaults} from "@react-three/uikit-apfel";
+import {Button, Card, Defaults, Input} from "@react-three/uikit-apfel";
 import {Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
 import {histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
 import {parse} from "jsroot";
 
+import openapiSchema from "../../../../openapi.json";
+import SettingsPanel from "./SettingsPanel.jsx";
 import {useBrokerStore} from "../../../stores/broker/store.js";
 import {store} from "../../env/NdmvrEnv.jsx";
 import InputCard from "./InputCard.jsx";
@@ -15,7 +17,9 @@ import WebsocketBanner from "./WebsocketBanner.jsx";
 export default function Menu({
                                originRef,
                                offset = {x: 0, y: 1, z: -4},
-                               onClose
+                               onClose,
+                               currentConfig,
+                               onConfigChange,
                              }) {
   const [loadMode, setLoadMode] = useState(null);
   const [inputValues, setInputValues] = useState({
@@ -28,7 +32,9 @@ export default function Menu({
     ws: null,
   });
 
-  const {connectionStatus, error, connect} = useBrokerStore();
+
+  const {connectionStatus, error, connect} =
+    useBrokerStore();
 
   const [httpLoading, setHttpLoading] = useState(false);
   const [httpLoaded, setHttpLoaded] = useState(false);
@@ -119,6 +125,8 @@ export default function Menu({
     }
   };
 
+
+
   return (
     <group ref={groupRef}>
       <Defaults>
@@ -165,6 +173,11 @@ export default function Menu({
                         <RadioGroupItem value="ws">
                           <Label>
                             <Text>Live Stream (WebSocket)</Text>
+                          </Label>
+                        </RadioGroupItem>
+                          <RadioGroupItem value="Settings">
+                          <Label>
+                            <Text>Settings</Text>
                           </Label>
                         </RadioGroupItem>
                       </RadioGroup>
@@ -216,6 +229,14 @@ export default function Menu({
                         </RadioGroupItem>
                       </RadioGroup>
                     }
+
+                      {loadMode === "Settings" && (
+                          <SettingsPanel
+                              openapiSchema={openapiSchema}
+                              currentConfig={currentConfig}
+                              onConfigChange={onConfigChange}
+                          />
+                      )}
                   </Container>
                 </Container>
 

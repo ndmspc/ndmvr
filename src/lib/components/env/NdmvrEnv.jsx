@@ -13,7 +13,7 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 export const store = createXRStore();
 
-export default function NdmvrEnv({controlsHelp = false}) {
+export default function NdmvrEnv({ controlsHelp = false, currentConfig, onConfigChange }) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(true);
@@ -39,7 +39,7 @@ export default function NdmvrEnv({controlsHelp = false}) {
                 height: "100%",
             }}
         >
-            <Canvas 
+            <Canvas
                 shadows
                 onCreated={({ gl }) => {
                     gl.toneMapping = THREE.NoToneMapping;
@@ -47,6 +47,8 @@ export default function NdmvrEnv({controlsHelp = false}) {
                     gl.toneMappingExposure = 1;
                 }}
             >
+
+
                 <color attach="background" args={["#ececec"]}/>
                 <PerspectiveCamera
                     ref={cameraRef}
@@ -55,12 +57,21 @@ export default function NdmvrEnv({controlsHelp = false}) {
                     fov={90}
                 />
 
+
+
+
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef}/>
 
                     <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef}/>
 
-                    {showMenu && <Menu originRef={xrOriginRef} onClose={() => setShowMenu(false)}/>}
+
+                    {showMenu && <Menu originRef={xrOriginRef}
+                                       currentConfig={currentConfig}
+                                       onConfigChange={onConfigChange}
+                                       onClose={() => setShowMenu(false)}
+                    />}
+
                     {showBinInfo && <BinInfo originRef={xrOriginRef}/>}
 
                     <Controllers

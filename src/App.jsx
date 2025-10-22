@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import {useEffect, useState} from "react";
 
 import NdmspcEnv from "./lib/components/env/NdmspcEnv.jsx";
-import { histogramSubjectGet, configSubjectGet, brokerManagerGet } from "@ndmspc/ndmvr-aframe";
+import { histogramSubjectGet, brokerManagerGet } from "@ndmspc/ndmvr-aframe";
 // import h3scat from "./data/h3scat.json";
 import config from "./config.json";
 import { parse as jsrootParse } from "jsroot"
@@ -10,6 +10,12 @@ import { injectGlobalCss } from "./lib/injectGlobalCss.js";
 
 function App() {
     injectGlobalCss();
+    const [appConfig, setAppConfig] = useState(config);
+
+    const handleConfigChange = (newConfig) => {
+        console.log("App received new config:", newConfig);
+        setAppConfig(newConfig);
+    };
 
     // const effectRan = useRef(false);
     //
@@ -87,7 +93,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcEnv config={null}/>
+                <NdmspcEnv config={appConfig} onConfigChange={handleConfigChange}/>
             </div>
         </div>
     );
