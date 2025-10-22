@@ -1,0 +1,81 @@
+{
+  "openapi": "3.1.1",
+  "info": { "title": "Configuration API", "version": "1.0.1" },
+  "components": {
+    "schemas": {
+      "Config": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "type": "object",
+            "properties": {
+              "dbClickTimeout": { "type": "integer", "default": 200 },
+              "desktopSpeed": { "type": "number", "default": 5 },
+              "vrHSpeed": { "type": "number", "default": 2 },
+              "vrVSpeed": { "type": "number", "default": 2 },
+              "canvas": {
+                "type": "object",
+                "properties": {
+                  "position": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 0 },
+                      "y": { "type": "number", "default": 0 },
+                      "z": { "type": "number", "default": 0 }
+                    }
+                  },
+                  "rotation": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 0 },
+                      "y": { "type": "number", "default": 0 },
+                      "z": { "type": "number", "default": 0 }
+                    }
+                  },
+                  "scale": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 1 },
+                      "y": { "type": "number", "default": 1 },
+                      "z": { "type": "number", "default": 1 }
+                    }
+                  }
+                }
+              },
+              "histogramPads": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "default": "grid2x1x2" },
+                  "scale": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 1 },
+                      "y": { "type": "number", "default": 1 },
+                      "z": { "type": "number", "default": 1 }
+                    }
+                  },
+                  "padding": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 0 },
+                      "y": { "type": "number", "default": 0 },
+                      "z": { "type": "number", "default": 0 }
+                    }
+                  },
+                  "origin": {
+                    "type": "object",
+                    "properties": {
+                      "x": { "type": "number", "default": 0 },
+                      "y": { "type": "number", "default": 0 },
+                      "z": { "type": "number", "default": 0 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
