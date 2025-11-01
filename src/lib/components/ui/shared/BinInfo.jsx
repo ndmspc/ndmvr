@@ -1,20 +1,28 @@
-import { useEffect, useRef, useState, useMemo  } from "react";
-import { Container, Root, Text, FontFamilyProvider, Icon } from "@react-three/uikit";
-import { Card, Defaults } from "@react-three/uikit-apfel";
-import { useFrame } from "@react-three/fiber";
-import { binInfoSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { Color } from "three";
-import LatexFormulaImage from "./LatexFormulaImage.jsx";
+import {useEffect, useRef, useState} from "react";
+import {Container, FontFamilyProvider, Root, Text} from "@react-three/uikit";
+import {Card, Defaults} from "@react-three/uikit-apfel";
+import {useFrame} from "@react-three/fiber";
+import {Color} from "three";
+import {binInfoSubjectGet} from "@ndmspc/ndmvr-aframe";
 
 export default function BinInfo({
     originRef,
     precision = 2,
-    offset = { x: 1.3, y: 1, z: -4 },
+    offset = {x: 0, y: 1, z: -4},
 }) {
     const [binInfo, setBinInfo] = useState(null);
     const groupRef = useRef(null);
     const prev = useRef(null);
-    const BASE = import.meta.env.BASE_URL;
+
+    const notoRegularUrl = new URL(
+        "../../../assets/fonts/NotoSans/NotoSans-Regular.json",
+        import.meta.url
+    ).href;
+
+    const notoBoldUrl = new URL(
+        "../../../assets/fonts/NotoSans/NotoSans-Bold.json",
+        import.meta.url
+    ).href;
 
     useEffect(() => {
         const sub = binInfoSubjectGet()
@@ -28,162 +36,116 @@ export default function BinInfo({
 
     useFrame(() => {
         if (originRef?.current && groupRef.current) {
-            const { x, y, z } = originRef.current.position;
+            const {x, y, z} = originRef.current.position;
             groupRef.current.position.set(x + offset.x, y + offset.y, z + offset.z);
         }
     });
 
 
-    const DotIcon = ({ size = 8, color = '#fff', delay = true }) => {
-        const [ready, setReady] = useState(!delay);
+    const DotIcon = ({color = '#fff'}) => {
 
-        useEffect(() => {
-            if (!delay) return;
-            setReady(true);            // після першого paint
-        }, [delay]);
+        return <Container
+            width={10}
+            height={10}
+            borderRadius={9999}
+            renderOrder={10}
+            backgroundColor={color}
+        />;
 
-        const svg = useMemo(() => (
-            `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" />
-    </svg>`
-        ), [size]);
-
-        if (!ready) return null;
-        return <Icon svgWidth={size} svgHeight={size} color={color} text={svg} />;
     };
 
-    const Row = ({ label, value, color = "white", coords = false, formula }) =>
-        coords ?
-
-            (
-                <Container
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap={8}
-                    paddingX={8}
-                >
-                    <Container gap={3}>
-
-                        <DotIcon size={8} color={color}/>
-                        <Text fontSize={12} fontWeight="medium">
-                            {formula ? label + "," : label}
-                        </Text>
-                        {formula && <LatexFormulaImage color="#FFFFFF" text={formula} height={12} scale={3}/>}
-                    </Container>
-                    <Text fontSize={12} fontWeight="bold">
-                        {value}
-                    </Text>
-
-
-                </Container>
-            )
-            :
-            (
-                <Container
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap={8}
-                    paddingX={8}
-                >
-                    <Text fontSize={12} color={color} fontWeight="medium">
-                        {label}
-                    </Text>
-                    <Text fontSize={12} fontWeight="bold">
-                        {value}
+    const Row = (i, color, coord, axes) => {
+        return (
+            <Card minWidth={360} flexDirection="column" key={i} padding={10} borderRadius={8} gap={6}>
+                <Container gap={5}>
+                    <DotIcon color={color}/>
+                    <Text fontSize={13} fontWeight="bold">
+                        {coord.name ?? "Unnamed"} (bin {coord.bin})
                     </Text>
                 </Container>
-            );
 
-    const Section = ({ title, children }) => (
-        <Card
-            borderRadius={16}
-            padding={12}
-            flexDirection="column"
-            alignItems="stretch"
-            gap={8}
-            variant="soft"
-            tone="neutral"
-            style={{ backdropFilter: "blur(3px)" }}
-        >
-            <Text fontSize={13} fontWeight="bold" textAlign="center">
-                {title}
-            </Text>
-            <Container flexDirection="column" gap={4}>
-                {children}
-            </Container>
-        </Card>
-    );
+                <Container flexDirection="column" gap={4}>
+                    {axes.map(([key, axis]) => (
+                        <Container key={key} flexDirection="row" alignItems="center" gap={8}>
+                            <Container minWidth={170}>
+                                <Text fontSize={12}>
+                                    {axis.name}: [{axis.min.toFixed(precision)}, {axis.max.toFixed(precision)}]
+                                </Text>
+                            </Container>
+
+                            <Text fontSize={12} fontWeight="bold">
+                                {axis.title ? axis.title : ""}
+                            </Text>
+                        </Container>
+                    ))}
+                </Container>
+
+            </Card>
+        );
+    }
+
+
+    const InfoPanel = () => {
+
+        return (<>
+
+            <Card minWidth={200} flexDirection="column" padding={10} borderRadius={8}>
+                <Container flexDirection="row" alignItems="center" gap={4}>
+                    <Text fontSize={12} fontWeight="bold">Level:</Text>
+                    <Text fontSize={12}>{binInfo?.level ?? 0}</Text>
+                </Container>
+
+                <Container flexDirection="row" alignItems="center" gap={4}>
+                    <Text fontSize={12} fontWeight="bold">Content:</Text>
+                    <Text fontSize={12}>
+                        {binInfo?.content !== undefined
+                            ? `${binInfo?.content.toFixed(precision)} ± ${binInfo?.error?.toFixed(precision)}`
+                            : "-"}
+                    </Text>
+                </Container>
+            </Card>
+
+
+            {binInfo?.coords?.map((coord, i) => {
+                const {r, g, b} = coord.color || {r: 255, g: 255, b: 255};
+                const color = new Color(r, g, b).getStyle();
+
+                const axes = Object.entries(coord).filter(
+                    ([, v]) => v && typeof v === "object" && "min" in v && "max" in v
+                );
+
+                return Row(i, color, coord, axes);
+            })}
+
+        </>);
+    }
+
 
     return (
         <group ref={groupRef}>
             <Defaults>
                 <Root>
-                    {/* <FontFamilyProvider
+                    <FontFamilyProvider
                         noto={{
-                            medium: `${BASE}fonts/NotoSans-json/NotoSans-Regular.json`,
-                            bold: `${BASE}fonts/NotoSans-json/NotoSans-Bold.json`,
+                            medium: notoRegularUrl,
+                            bold: notoBoldUrl,
                         }}
-                    > */}
-                        <Container minWidth={420} gap={12}>
-                            <Card
-                                flexDirection="column"
-                                alignItems="center"
-                                borderRadius={24}
-                                padding={16}
-                                gap={12}
-                            >
-                                <Text fontSize={16} fontWeight="bold" textAlign="center">
-                                    Bin information
-                                </Text>
-                                <Section title="Coords">
-                                    {(() => {
-                                        const coords = binInfo?.coords ?? [];
-                                        return coords.length ? (
-                                            coords.map((coord, i) => {
-                                                try {
-                                                    const { r, g, b } = coord[1].color;
-                                                    const colorHex = `#${new Color(r, g, b).getHexString()}`;
-                                                    let { name, title, bin, min, max } = coord[0];
+                    >
+                        <Card
+                            minWidth={420}
+                            flexDirection="column"
+                            alignItems="center"
+                            borderRadius={24}
+                            padding={16}
+                            gap={12}
+                        >
+                            <Text fontSize={16} fontWeight="bold" textAlign="center">
+                                Bin information
+                            </Text>
 
-                                                    min = min.toFixed(precision);
-                                                    max = max.toFixed(precision);
-
-                                                    return (
-                                                        <Row
-                                                            key={`${name}-${i}`}
-                                                            coords={true}
-                                                            color={colorHex}
-                                                            formula={title}
-                                                            label={name}
-                                                            value={`bin=${bin}, range=[${min}, ${max}]`}
-                                                        />
-                                                    );
-                                                }
-                                                catch(e){console.log(e)}
-                                            })
-                                        ) : (
-                                            <Row label="-" value="-"/>
-                                        );
-                                    })()}
-                                </Section>
-
-                                <Section title="Content">
-                                    <Row label="Level:" value={binInfo?.coords?.length || "-"}/>
-                                    <Row
-                                        label="Value:"
-                                        value={
-                                            binInfo?.content || binInfo?.error
-                                                // ? `${binInfo?.content} ± ${binInfo?.error.toFixed(precision)}`
-                                                ? `${binInfo?.content} +- ${binInfo?.error.toFixed(precision)}`
-                                                : "-"
-                                        }
-                                    />
-                                </Section>
-                            </Card>
-                        </Container>
-                    {/* </FontFamilyProvider> */}
+                            <InfoPanel/>
+                        </Card>
+                    </FontFamilyProvider>
                 </Root>
             </Defaults>
         </group>

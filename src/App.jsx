@@ -1,8 +1,7 @@
 import {useEffect, useState} from "react";
 
 import NdmspcEnv from "./lib/components/env/NdmspcEnv.jsx";
-import { histogramSubjectGet, brokerManagerGet } from "@ndmspc/ndmvr-aframe";
-// import h3scat from "./data/h3scat.json";
+import {histogramSubjectGet, brokerManagerGet} from "@ndmspc/ndmvr-aframe";
 import config from "./config.json";
 import { parse as jsrootParse } from "jsroot"
 
@@ -19,23 +18,58 @@ function App() {
 
     // const effectRan = useRef(false);
     //
+    // const effectRan = useRef(false);
+    //
     // useEffect(() => {
-    //     if (effectRan.current) return;
+    //     if (effectRan.current === true) return;
     //     effectRan.current = true;
-    //     // console.log("SENDING");
-    //     // // histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
-    //     // histogramSubjectGet().next({id: 'histogram2', opts: {render: "nested"}, histogram: h3scat});
-    //     // // histogramSubjectGet().next({id: 'histogram3', opts: {render: "jsroot"}, histogram: h3scat});
-    //     // histogramSubjectGet().next({id: 'histogram4', opts: {render: "nested"}, histogram: h3scat});
-    //     // setTimeout(() => {
-    //     //     histogramSubjectGet().next({id: 'histogram1', opts: {render: "jsroot"}, histogram: h3scat});
-    //     // }, 4000)
+    //
+    //   setTimeout(() => {
+        //REMOVE ALL FUNCTIONS
+        // functionSubjectGet().removeFunctions({
+        //   target: {
+        //     entity: "nested-histogram",
+        //     id: "*"
+        //   }
+        // });
+
+        // REMOVE ALL FUNCTIONS ON EVENT
+        // functionSubjectGet().removeFunctions({
+        //   event: "mousemove",
+        //   target: {
+        //     entity: "nested-histogram",
+        //     id: "*"
+        //   }
+        // });
+
+        // ADD DEFAULT FUNCTION
+        // functionSubjectGet().addFunctions({
+        //   event: "mousemove",
+        //   target: {
+        //     entity: "nested-histogram",
+        //     id: "*"
+        //   },
+        // });
+
+
+        //ADD CUSTOM FUNCTION
+    //     functionSubjectGet().addFunctions({
+    //       event: "mouseclick",
+    //       target: {
+    //         entity: "nested-histogram",
+    //         id: "*"
+    //       },
+    //       function: function (event, context) {
+    //         console.log("my-custom-function: ", event);
+    //       }
+    //     });
+    //   }, 5000);
     //
     // }, []);
 
     useEffect(() => {
 
-        brokerManagerGet().createWs(
+      brokerManagerGet().createWs(
             "ws://localhost:8080/ws/root.websocket",
             false,
             60,
