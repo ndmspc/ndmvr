@@ -7,6 +7,7 @@ import {Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
 import {histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
 import {parse} from "jsroot";
 
+import TreeViewer from "./TreeViewer.jsx";
 import openapiSchema from "../../../../openapi.json";
 import SettingsPanel from "./SettingsPanel.jsx";
 import {useBrokerStore} from "../../../stores/broker/store.js";
@@ -125,8 +126,6 @@ export default function Menu({
     }
   };
 
-
-
   return (
     <group ref={groupRef}>
       <Defaults>
@@ -145,6 +144,7 @@ export default function Menu({
               gap={8}
             >
               <Text fontSize={20}>Menu</Text>
+
 
               <WebsocketBanner showTransient={loadMode !== "ws"}/>
 
