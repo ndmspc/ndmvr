@@ -96,7 +96,7 @@ export default function Menu({
         histogramSubjectGet().next({
           id: "histogram1",
           opts: {
-            render: "nested",
+            render: "ndmvr",
             config: {
               TH1ZScale: {
                 default: 0.8,

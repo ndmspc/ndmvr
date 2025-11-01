@@ -2,14 +2,16 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { filter } from "rxjs";
 import {
-    histogramSubjectGet,
-    NestedHistogram,
-    HistogramJsrootClass,
-    configSubjectGet,
+  histogramSubjectGet,
+  NestedHistogram,
+  HistogramJsrootClass,
+  configSubjectGet,
 } from "@ndmspc/ndmvr-aframe";
+import * as THREE from "three";
+import {build3d, create} from "jsroot";
 
 export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
-    const { scene } = useThree();
+    const { scene, camera } = useThree();
     const jsrootHistogram = useRef();
     const nestedHistogram = useRef();
     const [config, setConfig] = useState(null);
@@ -73,7 +75,8 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
                     } else {
                         jsrootHistogram.current = new HistogramJsrootClass(
                             id,
-                            histo.histogram
+                            histo.histogram,
+                            camera
                         );
                         const mesh = jsrootHistogram.current.getHistogramMesh();
                         setJsrootMesh(mesh);
