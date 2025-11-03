@@ -5,6 +5,9 @@ import {useFrame} from "@react-three/fiber";
 import {Color} from "three";
 import {binInfoSubjectGet} from "@ndmspc/ndmvr-aframe";
 
+import notoRegularUrl from "../../../assets/fonts/NotoSans-Regular.json";
+import notoBoldUrl from "../../../assets/fonts/NotoSans-Bold.json";
+
 export default function BinInfo({
     originRef,
     precision = 2,
@@ -13,16 +16,6 @@ export default function BinInfo({
     const [binInfo, setBinInfo] = useState(null);
     const groupRef = useRef(null);
     const prev = useRef(null);
-
-    const notoRegularUrl = new URL(
-        "../../../assets/fonts/NotoSans/NotoSans-Regular.json",
-        import.meta.url
-    ).href;
-
-    const notoBoldUrl = new URL(
-        "../../../assets/fonts/NotoSans/NotoSans-Bold.json",
-        import.meta.url
-    ).href;
 
     useEffect(() => {
         const sub = binInfoSubjectGet()

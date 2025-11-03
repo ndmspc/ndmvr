@@ -1,2 +1,4 @@
+root = true
+
 [*.jsx]
 indent_size = 4

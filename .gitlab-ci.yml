@@ -1,10 +1,10 @@
 variables:
-  PUBLIC_URL: "/ndmvr-r3f/" # slash is important
+  PUBLIC_URL: "/ndmvr-r3f/"
 
 stages:
   - build
   - deploy
-    
+
 test-prod:
   stage: build
   image: node:22

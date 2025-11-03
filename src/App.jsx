@@ -5,10 +5,7 @@ import {histogramSubjectGet, brokerManagerGet} from "@ndmspc/ndmvr-aframe";
 import config from "./config.json";
 import { parse as jsrootParse } from "jsroot"
 
-import { injectGlobalCss } from "./lib/injectGlobalCss.js";
-
 function App() {
-    injectGlobalCss();
     const [appConfig, setAppConfig] = useState(config);
 
     const handleConfigChange = (newConfig) => {
