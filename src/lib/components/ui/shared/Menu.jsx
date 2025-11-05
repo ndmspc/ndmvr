@@ -8,7 +8,7 @@ import {histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
 import {parse} from "jsroot";
 
 import TreeViewer from "./TreeViewer.jsx";
-import openapiSchema from "../../../../openapi.json";
+import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
 import SettingsPanel from "./SettingsPanel.jsx";
 import {useBrokerStore} from "../../../stores/broker/store.js";
 import {store} from "../../env/NdmvrEnv.jsx";
