@@ -1,12 +1,11 @@
 import {useEffect, useRef, useState} from "react";
-import {Container, FontFamilyProvider, Root, Text} from "@react-three/uikit";
-import {Card, Defaults} from "@react-three/uikit-apfel";
+import {Container, Text} from "@react-three/uikit";
 import {useFrame} from "@react-three/fiber";
 import {Color} from "three";
 import {binInfoSubjectGet} from "@ndmspc/ndmvr-aframe";
 
-import notoRegularUrl from "../../../assets/fonts/NotoSans-Regular.json";
-import notoBoldUrl from "../../../assets/fonts/NotoSans-Bold.json";
+import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json"
+import NotoBold from "../../../assets/fonts/NotoSans-Bold.json"
 
 export default function BinInfo({
     originRef,
@@ -38,19 +37,21 @@ export default function BinInfo({
     const DotIcon = ({color = '#fff'}) => {
 
         return <Container
-            width={10}
-            height={10}
+            width={12}
+            height={12}
             borderRadius={9999}
-            renderOrder={10}
+            zIndex={10}
             backgroundColor={color}
+            borderWidth={1}
+            borderColor={"#fff"}
         />;
 
     };
 
     const Row = (i, color, coord, axes) => {
         return (
-            <Card minWidth={360} flexDirection="column" key={i} padding={10} borderRadius={8} gap={6}>
-                <Container gap={5}>
+            <Container classList={["section", "sectionInner"]} minWidth={360} flexDirection="column" key={i} padding={10} borderRadius={8} gap={6}>
+                <Container gap={5} >
                     <DotIcon color={color}/>
                     <Text fontSize={13} fontWeight="bold">
                         {coord.name ?? "Unnamed"} (bin {coord.bin})
@@ -73,31 +74,30 @@ export default function BinInfo({
                     ))}
                 </Container>
 
-            </Card>
+            </Container>
         );
     }
-
 
     const InfoPanel = () => {
 
         return (<>
 
-            <Card minWidth={200} flexDirection="column" padding={10} borderRadius={8}>
+            <Container classList={["section", "sectionInner"]} minWidth={200} flexDirection="column" padding={10} borderRadius={8}>
                 <Container flexDirection="row" alignItems="center" gap={4}>
                     <Text fontSize={12} fontWeight="bold">Level:</Text>
-                    <Text fontSize={12}>{binInfo?.level ?? 0}</Text>
+                    {/*<Text fontSize={12}>{binInfo?.level ?? 0}</Text>*/}
+                    <Text fontSize={12}>{binInfo?.coords.length ?? 0}</Text>
                 </Container>
 
                 <Container flexDirection="row" alignItems="center" gap={4}>
                     <Text fontSize={12} fontWeight="bold">Content:</Text>
-                    <Text fontSize={12}>
+                    <Text fontFamilies="noto" fontSize={12}>
                         {binInfo?.content !== undefined
                             ? `${binInfo?.content.toFixed(precision)} ± ${binInfo?.error?.toFixed(precision)}`
                             : "-"}
                     </Text>
                 </Container>
-            </Card>
-
+            </Container>
 
             {binInfo?.coords?.map((coord, i) => {
                 const {r, g, b} = coord.color || {r: 255, g: 255, b: 255};
@@ -115,32 +115,21 @@ export default function BinInfo({
 
 
     return (
-        <group ref={groupRef}>
-            <Defaults>
-                <Root>
-                    <FontFamilyProvider
-                        noto={{
-                            medium: notoRegularUrl,
-                            bold: notoBoldUrl,
-                        }}
-                    >
-                        <Card
-                            minWidth={420}
-                            flexDirection="column"
-                            alignItems="center"
-                            borderRadius={24}
-                            padding={16}
-                            gap={12}
-                        >
-                            <Text fontSize={16} fontWeight="bold" textAlign="center">
-                                Bin information
-                            </Text>
+        <Container
+            ref={groupRef}
+            classList={["menuContainer"]}
+            fontFamilies={{
+                noto: {
+                    medium: NotoRegular,
+                    bold: NotoBold,
+                }
+            }}
+        >
+            <Text classList={["menuHeader"]}>
+                Bin information
+            </Text>
 
-                            <InfoPanel/>
-                        </Card>
-                    </FontFamilyProvider>
-                </Root>
-            </Defaults>
-        </group>
+            <InfoPanel/>
+        </Container>
     );
 }

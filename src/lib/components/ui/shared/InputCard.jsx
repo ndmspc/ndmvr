@@ -1,59 +1,83 @@
-import { Card, Button, Input, Loading } from "@react-three/uikit-apfel";
-import { Container, Text } from "@react-three/uikit";
-import { STAT } from "../../../stores/broker/constants.js";
-// import { trimUrl } from "../../../utils/helpers.js";
+import {Button, Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
+import {Container, Input, Text} from "@react-three/uikit";
+import {STAT} from "../../../stores/broker/constants.js";
+import {useRef, useState} from "react";
 
 export default function InputCard({
     type, // "http" | "ws"
     placeholder,
-    value,
-    onChange, // (next: string) => void
-    status, // "error" | "success" | null
-    modeSelected, // current selected mode value
-    // HTTP-only
+    firstValue = "",
+    onChange,
+    status,
+    modeSelected,
     loading = false,
     loaded = false,
-    // WS-only
     connStatus,
     connError,
-    onSubmit, // () => void
+    onSubmit,
 }) {
     const isVisible = modeSelected === type;
 
+    const predefined = [
+        "ws://localhost:8080/ws/root.websocket",
+        "ws://ndmspc.cern.ch/ws/root.websocket",
+    ];
+
+    const [value, setValue] = useState(firstValue);
+    const radioGroupValue = useRef(
+        predefined.includes(firstValue) ? firstValue : ""
+    );
+
+    const handleChangeForWs = (v) => {
+        setValue(v);
+        onChange(v);
+        radioGroupValue.current = predefined.includes(v) ? v : "";
+    };
+
     return (
-        <Card
-            flexDirection="column"
-            borderRadius={16}
-            padding={16}
-            gap={16}
+        <Container
+            classList={["section", "sectionInner"]}
             display={isVisible ? "flex" : "none"}
         >
-            <Input
-                value={value}
-                onValueChange={(v) => onChange(v)}
-                variant="rect"
-                multiline={false}
-                wordBreak="keep-all"
-                placeholder={placeholder}
-            />
-
-            {status === "error" && (
-                <Text paddingLeft={10} fontSize={12} color="red">
-                    Invalid Address
-                </Text>
-            )}
-
             {type === "ws" && (
                 <>
+                    <Input
+                        classList={["input"]}
+                        minWidth={350}
+                        value={value}
+                        onValueChange={handleChangeForWs}
+                        multiline={false}
+                        wordBreak="keep-all"
+                        placeholder={placeholder}
+                    />
+
+                    <RadioGroup
+                        value={radioGroupValue.current}
+                        defaultValue={firstValue}
+                        onValueChange={handleChangeForWs}
+                    >
+                        <RadioGroupItem value={predefined[0]}>
+                            <Label>
+                                <Text>Local Address</Text>
+                            </Label>
+                        </RadioGroupItem>
+                        <RadioGroupItem value={predefined[1]}>
+                            <Label>
+                                <Text>Production Address</Text>
+                            </Label>
+                        </RadioGroupItem>
+                    </RadioGroup>
+
                     {connStatus === STAT.CONNECTING && (
-                        <Loading alignSelf="center" size="lg"/>
+                        <Text paddingLeft={10} fontSize={12}>
+                            Loading ...
+                        </Text>
                     )}
                     {connStatus === STAT.RECONNECTING && (
                         <Container flexDirection="column">
                             <Text paddingLeft={10} fontSize={12} color="orange">
                                 Reconnecting ...
                             </Text>
-                            <Loading alignSelf="center" size="lg"/>
                         </Container>
                     )}
                     {connStatus === STAT.CONNECTED && (
@@ -69,18 +93,47 @@ export default function InputCard({
                 </>
             )}
 
-            {type === "http" && status === "success" && loading && (
-                <Loading alignSelf="center" size="lg"/>
+            {type === "http" && (
+                <>
+                    <Input
+                        classList={["input"]}
+                        minWidth={350}
+                        value={value}
+                        onValueChange={(v) => {
+                            setValue(v);
+                            onChange(v);
+                        }}
+                        multiline={false}
+                        wordBreak="keep-all"
+                        placeholder={placeholder}
+                    />
+
+                    {status === "success" && loading && (
+                        <Text paddingLeft={10} fontSize={12}>
+                            Loading ...
+                        </Text>
+                    )}
+                    {status === "success" && !loading && loaded && (
+                        <Text paddingLeft={10} fontSize={12} color="lightgreen">
+                            Loaded
+                        </Text>
+                    )}
+                </>
             )}
-            {type === "http" && status === "success" && !loading && loaded && (
-                <Text paddingLeft={10} fontSize={12} color="lightgreen">
-                    Loaded
+
+            {status === "error" && (
+                <Text paddingLeft={10} fontSize={12} color="red">
+                    Invalid Address
                 </Text>
             )}
 
-            <Button variant="rect" size="sm" platter flexGrow={1} onClick={onSubmit}>
+            <Button
+                classList={["buttonPrimary"]}
+                hover={{backgroundColor: "#059669"}}
+                onClick={onSubmit}
+            >
                 <Text>{type === "http" ? "Load Data" : "Connect"}</Text>
             </Button>
-        </Card>
+        </Container>
     );
 }

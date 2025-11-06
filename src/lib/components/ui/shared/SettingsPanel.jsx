@@ -1,9 +1,11 @@
-import { useState, useMemo } from "react";
-import { Card, Button, Input } from "@react-three/uikit-apfel";
-import { Container, Text } from "@react-three/uikit";
-import { flattenSchema, getDeep, createValidator, buildEnvironmentFromSettings} from "./OpenApiSchema.jsx";
+import {useMemo, useState} from "react";
+import {Button} from "@react-three/uikit-default";
+import {Container, Input, Text} from "@react-three/uikit";
+import {Divider} from '@react-three/uikit-horizon'
 
-export default function SettingsPanel({ openapiSchema, currentConfig, onConfigChange }) {
+import {buildEnvironmentFromSettings, createValidator, flattenSchema, getDeep} from "../../../utils/schema-helpers.js";
+
+export default function SettingsPanel({openapiSchema, currentConfig, onConfigChange}) {
     const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};
     const flatSchema = flattenSchema(envSchema);
     const initialEnv = currentConfig?.config?.environment ?? {};
@@ -51,36 +53,49 @@ export default function SettingsPanel({ openapiSchema, currentConfig, onConfigCh
     };
 
     return (
-        <Card borderRadius={16} padding={12} flexDirection="column" height={300} width={600} minWidth={300}>
+        <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
             <Text fontSize={14} fontWeight="bold" marginBottom={8}>Settings</Text>
 
 
-            <Container flexDirection="row" justifyContent="space-between" paddingX={12} paddingY={10}>
-                <Text fontSize={12} fontWeight="bold" width={250}>Parameter</Text>
-                <Text fontSize={12} fontWeight="bold" width={250}>Value</Text>
-            </Container>
+            <Container
+                flexDirection="column"
+                gap={8}
+                flexGrow={1}
+                overflow="scroll"
+            >
+                <Container flexDirection="row" paddingY={10} paddingLeft={25} gap={8}>
+                    <Text fontSize={12} fontWeight="bold" width={200}>Parameter</Text>
+                    <Text fontSize={12} fontWeight="bold">Value</Text>
+                </Container>
 
+                <Divider height={2}/>
 
-            <Container flexDirection="column" gap={8} flexGrow={1} overflow="scroll">
                 {Object.entries(flatSchema).map(([path, schema]) => (
-                    <Container key={path} flexDirection="row" margin={25} gap={8} justifyContent="space-between" alignItems="center">
-                        <Text fontSize={12}>{schema.title ||path}:</Text>
+                    <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+                        <Text minWidth={200} fontSize={12}>{schema.title || path}:</Text>
                         <Input
+                            classList={["input"]}
+                            fontSize={12}
                             value={String(settings[path] ?? "")}
                             onValueChange={(v) => {
-                                const updated = { ...settings, [path]: v };
+                                const updated = {...settings, [path]: v};
                                 setSettings(updated);
                                 applyNow(updated);
                             }}
-                            width={250}
+                            minWidth={100}
                         />
                     </Container>
+
                 ))}
+
             </Container>
 
-            <Button variant="rect" size="sm" platter marginTop={8} onClick={resetToDefaults}>
-                <Text>Default</Text>
+            <Divider height={2}/>
+
+            <Button hover={{backgroundColor: '#059669'}} classList={["buttonPrimary"]} onClick={resetToDefaults}>
+                <Text>Reset to default</Text>
             </Button>
-        </Card>
+
+        </Container>
     );
 }

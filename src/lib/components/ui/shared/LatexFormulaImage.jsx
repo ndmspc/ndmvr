@@ -198,9 +198,9 @@ export default function LatexFormulaImage({
     if (!imageData) return null;
 
     if (svg) {
-        return <VRIcon src={imageData} width={dispW} height={dispH} {...rest} />;
+        return <VRIcon content={imageData} width={dispW} height={dispH} {...rest} />;
     } else {
-        return <VRImage src={imageData} width={dispW} height={dispH} {...rest} />;
+        return <VRImage content={imageData} width={dispW} height={dispH} {...rest} />;
     }
 }
 
