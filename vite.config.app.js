@@ -5,7 +5,11 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: "1M",
   },
-  plugins: [react()],
+  plugins: [react({
+    babel: {
+      plugins: ['babel-plugin-react-compiler'],
+    },
+  })],
   server: {
     allowedHosts: true,
   },

@@ -1,19 +1,22 @@
-import * as THREE from "three";;
-import { useEffect, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
-import { createXRStore, XR, XROrigin } from "@react-three/xr"
+import * as THREE from "three";
+import {useEffect, useRef, useState} from "react";
+import {Canvas} from "@react-three/fiber";
+import {PerspectiveCamera} from "@react-three/drei";
+import {createXRStore, XR, XROrigin} from "@react-three/xr"
+import {configSubjectGet} from "@ndmspc/ndmvr-aframe";
 
 import CameraSync from "../systems/CameraSync.jsx";
 import Menu from "../ui/shared/Menu.jsx";
 import BinInfo from "../ui/shared/BinInfo.jsx";
 import Controllers from "../systems/inputs/Controllers.jsx";
 import NdmvrScene from "../scene/NdmvrScene.jsx";
-import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
+import ControlsHelp from "../ui/shared/ControlsHelp.jsx";
+
+import "../../scripts/uikit-styles.js"
 
 export const store = createXRStore();
 
-export default function NdmvrEnv({ controlsHelp = false, currentConfig, onConfigChange }) {
+export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigChange}) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(true);
@@ -28,7 +31,7 @@ export default function NdmvrEnv({ controlsHelp = false, currentConfig, onConfig
 
     const {
         x = 0,
-        y = 1.6,
+        y = 1.7,
         z = 10,
     } = config?.environment?.camera?.position ?? {};
 
@@ -41,13 +44,12 @@ export default function NdmvrEnv({ controlsHelp = false, currentConfig, onConfig
         >
             <Canvas
                 shadows
-                onCreated={({ gl }) => {
+                onCreated={({gl}) => {
                     gl.toneMapping = THREE.NoToneMapping;
                     gl.outputColorSpace = THREE.SRGBColorSpace;
                     gl.toneMappingExposure = 1;
                 }}
             >
-
 
                 <color attach="background" args={["#ececec"]}/>
                 <PerspectiveCamera
@@ -57,14 +59,12 @@ export default function NdmvrEnv({ controlsHelp = false, currentConfig, onConfig
                     fov={90}
                 />
 
-
-
-
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef}/>
 
                     <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef}/>
 
+                    {controlsHelp && <ControlsHelp/>}
 
                     {showMenu && <Menu originRef={xrOriginRef}
                                        currentConfig={currentConfig}

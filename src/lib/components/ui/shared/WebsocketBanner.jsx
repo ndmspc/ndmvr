@@ -1,21 +1,21 @@
-import { Container, Text } from "@react-three/uikit";
-import { Button, Loading } from "@react-three/uikit-apfel";
+import {Container, Text} from "@react-three/uikit";
+import {Button} from "@react-three/uikit-default";
 
-import { useBrokerStore } from "../../../stores/broker/store.js";
-import { STAT } from "../../../stores/broker/constants.js";
+import {useBrokerStore} from "../../../stores/broker/store.js";
+import {STAT} from "../../../stores/broker/constants.js";
 
 const trimUrl = (s, head = 40, tail = 40) => {
     if (!s) return "";
     return s.length <= head + tail ? s : `${s.slice(0, head)}…${s.slice(-tail)}`;
 };
 
-export default function WebsocketBanner({ showTransient = true }) {
+export default function WebsocketBanner({showTransient = true}) {
     const wsUrl = useBrokerStore((s) => s.wsUrl);
     const status = useBrokerStore((s) => s.connectionStatus);
     const error = useBrokerStore((s) => s.error);
     const disconnect = useBrokerStore((s) => s.disconnect);
 
-    const Banner = ({ color = "gray", children }) => (
+    const Banner = ({color = "gray", children}) => (
         <Container
             flexDirection="row"
             justifyContent="space-evenly"
@@ -63,7 +63,7 @@ export default function WebsocketBanner({ showTransient = true }) {
                     <Text paddingLeft={10} fontSize={12}>
                         Connecting to {trimUrl(wsUrl)} ...
                     </Text>
-                    <Loading alignSelf="center" size="lg"/>
+                    {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button
                         variant="rect"
                         size="sm"
@@ -84,7 +84,7 @@ export default function WebsocketBanner({ showTransient = true }) {
                     <Text paddingLeft={10} fontSize={12} color="orange">
                         Reconnecting to {trimUrl(wsUrl)} ...
                     </Text>
-                    <Loading alignSelf="center" size="lg"/>
+                    {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button
                         variant="rect"
                         size="sm"
