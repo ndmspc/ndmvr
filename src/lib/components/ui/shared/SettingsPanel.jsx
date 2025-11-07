@@ -3,7 +3,7 @@ import {Button} from "@react-three/uikit-default";
 import {Container, Input, Text} from "@react-three/uikit";
 import {Divider} from '@react-three/uikit-horizon'
 
-import {buildEnvironmentFromSettings, createValidator, flattenSchema, getDeep} from "../../../utils/schema-helpers.js";
+import {buildEnvironmentFromSettings, createValidator, flattenSchema, getDeep} from "../../../utils/schema-helpers";
 
 export default function SettingsPanel({openapiSchema, currentConfig, onConfigChange}) {
     const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};

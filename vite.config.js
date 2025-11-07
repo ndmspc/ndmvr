@@ -17,22 +17,20 @@ export default defineConfig(({ mode }) => ({
       fileName: (format) => `ndmvr-r3f.${format}.js`
     },
     rollupOptions: {
-      external: [
-        'react',
-        'react-dom',
-        'react-router-dom',
-        'aframe',
-        'three',
-        'jsroot',
-        '@ndmspc/ndmvr-aframe',
-        '@react-three/fiber',
-        '@react-three/drei',
-        '@react-three/xr',
-        '@react-three/uikit',
-        '@react-three/uikit-apfel',
-        '@react-three/uikit-default'
-      ],
-      output: {
+        external: [
+            'react', 'react-dom', 'three',
+            '@ndmspc/ndmvr-aframe',
+            '@react-three/fiber',
+            '@react-three/drei',
+            '@react-three/xr',
+            '@pmndrs/uikit',
+            '@react-three/uikit',
+            '@react-three/uikit-default',
+            '@react-three/uikit-horizon',
+            '@react-three/uikit-lucide',
+            "jsroot"
+        ],
+        output: {
         globals: {
           react: 'React'
         },

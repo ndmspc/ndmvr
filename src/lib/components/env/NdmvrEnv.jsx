@@ -1,3 +1,4 @@
+import '../../scripts/uikit-styles'
 import * as THREE from "three";
 import {useEffect, useRef, useState} from "react";
 import {Canvas} from "@react-three/fiber";
@@ -11,8 +12,6 @@ import BinInfo from "../ui/shared/BinInfo.jsx";
 import Controllers from "../systems/inputs/Controllers.jsx";
 import NdmvrScene from "../scene/NdmvrScene.jsx";
 import ControlsHelp from "../ui/shared/ControlsHelp.jsx";
-
-import "../../scripts/uikit-styles.js"
 
 export const store = createXRStore();
 

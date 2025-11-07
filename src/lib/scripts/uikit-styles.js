@@ -56,7 +56,7 @@ StyleSheet['section'] = {
 StyleSheet['sectionInner'] = {
     display: 'flex',
     flexDirection: 'column',
-    gap: 12, // space-y-3
+    gap: 12,
 }
 
 StyleSheet['input'] = {
