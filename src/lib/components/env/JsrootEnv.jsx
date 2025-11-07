@@ -41,7 +41,7 @@ export default function JsrootEnv() {
         const streams = pads.map((pad) =>
             histogramSubjectGet()
                 .getStream(pad.id)
-                .pipe(map((histo) => ({ id: pad.id, histo })))
+                .pipe(map((histo) => ({ id: pad.id, obj: histo })))
         );
 
         const sub = merge(...streams).subscribe(({ id, histo }) => {

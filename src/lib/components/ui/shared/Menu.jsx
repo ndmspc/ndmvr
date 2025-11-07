@@ -110,7 +110,7 @@ export default function Menu({
                             }
                         }
                     },
-                    histogram: rootObj.arr?.[0] ?? rootObj,
+                    obj: rootObj.arr?.[0] ?? rootObj,
                 });
                 setHttpLoaded(true);
                 if (onClose) {
