@@ -2,10 +2,9 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { filter } from "rxjs";
 import {
-  histogramSubjectGet,
-  NestedHistogram,
-  HistogramJsrootClass,
-  configSubjectGet,
+    histogramSubjectGet,
+    HistogramJsrootClass,
+    configSubjectGet, THnPainter,
 } from "@ndmspc/ndmvr-aframe";
 import * as THREE from "three";
 import {build3d, create} from "jsroot";
@@ -71,11 +70,11 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
                     clearNestedMeshes();
 
                     if (jsrootHistogram.current) {
-                        jsrootHistogram.current.updateHistogram(histo.histogram);
+                        jsrootHistogram.current.updateHistogram(histo.obj);
                     } else {
                         jsrootHistogram.current = new HistogramJsrootClass(
                             id,
-                            histo.histogram,
+                            histo.obj,
                             camera
                         );
                         const mesh = jsrootHistogram.current.getHistogramMesh();
@@ -91,14 +90,11 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
                     if (nestedHistogram.current) {
                         nestedHistogram.current.updateHistogram(histo, histo.opts);
                     } else {
-                        nestedHistogram.current = new NestedHistogram(
-                            px,
-                            py,
-                            pz,
+                        nestedHistogram.current = new THnPainter(
                             histo,
                             id, histo.opts
                         );
-                        setNestedMesh(nestedHistogram.current.instancedMesh);
+                        setNestedMesh(nestedHistogram.current.mesh);
                         setWireframeObj(nestedHistogram.current.wireframe.wireframe);
                     }
                 }

@@ -20,7 +20,7 @@ export default function CanvasComponent({
             canvas?.current?.remove?.();
         }
         catch(e){
-            console.log(e);
+            // console.log(e);
         }
         canvas.current = new CanvasClass(null, location?.position ?? position, location?.rotation ?? rotation, location?.scale ?? scale, id);
         console.log(canvas.current)
@@ -31,7 +31,7 @@ export default function CanvasComponent({
                 canvas?.current?.remove?.();
             }
             catch(e){
-                console.log(e);
+                // console.log(e);
             }
         }
     }, [scene]);
