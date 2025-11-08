@@ -54,25 +54,20 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
 
     return (
         <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
-            <Text fontSize={14} fontWeight="bold" marginBottom={8}>Settings</Text>
+            <Text fontSize={14} fontWeight="bold">Settings</Text>
 
 
             <Container
                 flexDirection="column"
-                gap={8}
                 flexGrow={1}
                 overflow="scroll"
+                height={100}
             >
-                <Container flexDirection="row" paddingY={10} paddingLeft={25} gap={8}>
-                    <Text fontSize={12} fontWeight="bold" width={200}>Parameter</Text>
-                    <Text fontSize={12} fontWeight="bold">Value</Text>
-                </Container>
 
-                <Divider height={2}/>
 
                 {Object.entries(flatSchema).map(([path, schema]) => (
-                    <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-                        <Text minWidth={200} fontSize={12}>{schema.title || path}:</Text>
+                    <Container key={path} flexDirection="row" margin={10} gap={8} alignItems="center">
+                        <Text minWidth={400} fontSize={12}>{schema.title || path}:</Text>
                         <Input
                             classList={["input"]}
                             fontSize={12}
@@ -90,7 +85,6 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
 
             </Container>
 
-            <Divider height={2}/>
 
             <Button hover={{backgroundColor: '#059669'}} classList={["buttonPrimary"]} onClick={resetToDefaults}>
                 <Text>Reset to default</Text>
