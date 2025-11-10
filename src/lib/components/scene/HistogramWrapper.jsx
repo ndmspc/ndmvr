@@ -9,7 +9,7 @@ import {
 import * as THREE from "three";
 import {build3d, create} from "jsroot";
 
-export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
+export default function HistogramWrapper({ id }) {
     const { scene, camera } = useThree();
     const jsrootHistogram = useRef();
     const nestedHistogram = useRef();
@@ -64,6 +64,7 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
             .subscribe((histo) => {
                 if (histo?.opts?.render === "jsroot") {
                     if (nestedHistogram.current) {
+                        console.log('remove v jsroot')
                         nestedHistogram.current.remove?.();
                         nestedHistogram.current = undefined;
                     }
@@ -88,34 +89,24 @@ export default function HistogramWrapper({ id, px = 0.1, py = 0.1, pz = 0.1 }) {
                     clearJsrootMesh();
 
                     if (nestedHistogram.current) {
-                        nestedHistogram.current.updateHistogram(histo, histo.opts);
-                    } else {
-                        nestedHistogram.current = new THnPainter(
-                            histo,
-                            id, histo.opts
-                        );
-                        setNestedMesh(nestedHistogram.current.mesh);
-                        setWireframeObj(nestedHistogram.current.wireframe.wireframe);
-                    }
+                        nestedHistogram.current.remove();
+                        nestedHistogram.current = undefined;
+                        }
+                    const painter = new THnPainter(histo, id, histo.opts);
+                    nestedHistogram.current = painter;
+
+                    setNestedMesh(() => painter.mesh);
+                    setWireframeObj(() => painter.wireframe.wireframe);
                 }
             });
 
         return () => {
             histoSub.unsubscribe();
 
-            if (jsrootHistogram.current) {
-                jsrootHistogram.current.remove?.();
-                jsrootHistogram.current = undefined;
-            }
-            if (nestedHistogram.current) {
-                nestedHistogram.current.remove?.();
-                nestedHistogram.current = undefined;
-            }
-
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [config, id, px, py, pz]);
+    }, [config, id]);
 
     return (
         <>
