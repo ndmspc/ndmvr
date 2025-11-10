@@ -34,7 +34,7 @@
     "preview": "vite -c vite.config.app.js"
   },
   "peerDependencies": {
-    "@ndmspc/ndmvr-aframe": "1.0.0-rc.36",
+    "@ndmspc/ndmvr-aframe": "1.0.0-rc.37",
     "@pmndrs/uikit": "^1.0.56",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.1.4",

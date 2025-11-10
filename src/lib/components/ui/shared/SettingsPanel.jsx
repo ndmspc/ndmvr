@@ -66,7 +66,7 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
 
 
                 {Object.entries(flatSchema).map(([path, schema]) => (
-                    <Container key={path} flexDirection="row" margin={10} gap={8} alignItems="center">
+                    <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
                         <Text minWidth={400} fontSize={12}>{schema.title || path}:</Text>
                         <Input
                             classList={["input"]}
