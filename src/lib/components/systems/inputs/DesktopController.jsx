@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useFocus } from "../../env/context/FocusContext";
 
 export default function DesktopController({
     originRef,
@@ -13,12 +14,13 @@ export default function DesktopController({
     const isMouseDown = useRef(false);
     const yaw = useRef(0);
     const pitch = useRef(0);
+    const { focused } = useFocus();
 
     useEffect(() => {
         const onKeyDown = (e) => {
             keys.current[e.code] = true;
-            if (e.code === "KeyF") onToggleMenu?.();
-            if (e.code === "KeyB") onToggleBinInfo?.();
+            if (e.code === "KeyF" && !focused) onToggleMenu?.();
+            if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;
@@ -31,7 +33,7 @@ export default function DesktopController({
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         };
-    }, [onToggleMenu, onToggleBinInfo]);
+    }, [onToggleMenu, onToggleBinInfo, focused]);
 
     useEffect(() => {
         const onMouseDown = (e) => {
@@ -68,6 +70,7 @@ export default function DesktopController({
 
     useFrame((_, delta) => {
         if (!originRef.current) return;
+        if (focused) return;
 
         const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(
             new THREE.Vector3(0, 1, 0),
