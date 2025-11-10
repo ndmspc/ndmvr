@@ -5,6 +5,7 @@ import {Canvas} from "@react-three/fiber";
 import {PerspectiveCamera} from "@react-three/drei";
 import {createXRStore, XR, XROrigin} from "@react-three/xr"
 import {configSubjectGet} from "@ndmspc/ndmvr-aframe";
+import { FocusProvider } from './context/FocusContext.jsx';
 
 import CameraSync from "../systems/CameraSync.jsx";
 import Menu from "../ui/shared/Menu.jsx";
@@ -65,25 +66,26 @@ export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigCh
 
                     {controlsHelp && <ControlsHelp/>}
 
-                    {showMenu && <Menu originRef={xrOriginRef}
-                                       currentConfig={currentConfig}
-                                       onConfigChange={onConfigChange}
-                                       onClose={() => setShowMenu(false)}
-                    />}
+                    <FocusProvider>
+                        {showMenu && <Menu originRef={xrOriginRef}
+                                        currentConfig={currentConfig}
+                                        onConfigChange={onConfigChange}
+                                        onClose={() => setShowMenu(false)}
+                        />}
 
-                    {showBinInfo && <BinInfo originRef={xrOriginRef}/>}
+                        {showBinInfo && <BinInfo originRef={xrOriginRef}/>}
 
-                    <Controllers
-                        originRef={xrOriginRef}
-                        cameraRef={cameraRef}
-                        showMenu={showMenu}
-                        setShowMenu={setShowMenu}
-                        setShowBinInfo={setShowBinInfo}
-                        desktopSpeed={config?.environment?.desktopSpeed ?? 5}
-                        vrSpeed={config?.environment?.vrSpeed ?? 2}
-                    />
+                        <Controllers
+                            originRef={xrOriginRef}
+                            cameraRef={cameraRef}
+                            showMenu={showMenu}
+                            setShowMenu={setShowMenu}
+                            setShowBinInfo={setShowBinInfo}
+                            desktopSpeed={config?.environment?.desktopSpeed ?? 5}
+                            vrSpeed={config?.environment?.vrSpeed ?? 2}
+                        />
+                    </FocusProvider>
                     <XROrigin ref={xrOriginRef} position={[x, y, z]}/>
-
                 </XR>
             </Canvas>
         </div>

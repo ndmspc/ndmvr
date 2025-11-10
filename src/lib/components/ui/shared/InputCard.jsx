@@ -2,6 +2,7 @@ import {Button, Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-defa
 import {Container, Input, Text} from "@react-three/uikit";
 import {STAT} from "../../../stores/broker/constants.js";
 import {useRef, useState} from "react";
+import { useFocus } from "../../env/context/FocusContext.jsx";
 
 export default function InputCard({
     type, // "http" | "ws"
@@ -28,12 +29,14 @@ export default function InputCard({
         predefined.includes(firstValue) ? firstValue : ""
     );
 
+    const {setFocused} = useFocus();
+    
+
     const handleChangeForWs = (v) => {
         setValue(v);
         onChange(v);
         radioGroupValue.current = predefined.includes(v) ? v : "";
     };
-
     return (
         <Container
             classList={["section", "sectionInner"]}
@@ -46,6 +49,7 @@ export default function InputCard({
                         minWidth={350}
                         value={value}
                         onValueChange={handleChangeForWs}
+                        onFocusChange={(c) => setFocused(c)}
                         multiline={false}
                         wordBreak="keep-all"
                         placeholder={placeholder}
@@ -103,6 +107,7 @@ export default function InputCard({
                             setValue(v);
                             onChange(v);
                         }}
+                        onFocusChange={(c) => setFocused(c)}
                         multiline={false}
                         wordBreak="keep-all"
                         placeholder={placeholder}
