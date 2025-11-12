@@ -93,7 +93,7 @@ export default function BinInfo({
                         <Container gap={5} >
                             <DotIcon color={color} />
                             <Text fontSize={13} fontWeight="bold">
-                                {coord.name ?? "Unnamed"} (bin {coord.bin})
+                                {coord.name ?? "Unnamed"} [bin={coord.bin}]
                             </Text>
                         </Container>
 
@@ -102,13 +102,19 @@ export default function BinInfo({
                                 <Container key={key} flexDirection="row" alignItems="center" gap={8}>
                                     <Container minWidth={170}>
                                         <Text fontSize={12}>
-                                            {axis.name}: [{axis.min.toFixed(precision)}, {axis.max.toFixed(precision)}]
+                                            {axis.title ? axis.title : axes.name} [name={axis.name}]:
                                         </Text>
                                     </Container>
 
-                                    <Text fontSize={12} fontWeight="bold">
-                                        {axis.title ? axis.title : ""}
-                                    </Text>
+                                    {axis.label ?
+                                        <Text fontSize={12}>
+                                            [{axis.label}]
+                                        </Text>
+                                        :
+                                        <Text fontSize={12}>
+                                            [{axis.min.toFixed(precision)}, {axis.max.toFixed(precision)}]
+                                        </Text>
+                                    }
                                 </Container>
                             ))}
                         </Container>
