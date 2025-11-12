@@ -52,6 +52,40 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
         applyNow(defaults);
     };
 
+    const importConfig = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json";
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const json = JSON.parse(reader.result);
+                    console.log("Imported user config:", json);
+
+                    const newEnv = json?.config?.environment ?? {};
+                    const importedSettings = Object.fromEntries(
+                        Object.entries(flatSchema).map(([path, schema]) => [
+                            path,
+                            getDeep(newEnv, path) ?? schema.default ?? "",
+                        ])
+                    );
+
+                    setSettings(importedSettings);
+                    applyNow(importedSettings);
+
+                } catch (err) {
+                    console.error("Invalid JSON config file:", err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    };
+
     return (
         <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
             <Text fontSize={14} fontWeight="bold">Settings</Text>
@@ -86,9 +120,26 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
             </Container>
 
 
-            <Button hover={{backgroundColor: '#059669'}} classList={["buttonPrimary"]} onClick={resetToDefaults}>
-                <Text>Reset to default</Text>
-            </Button>
+            <Container flexDirection="row" justifyContent="center" alignItems="center" gap={12} marginTop={8}>
+                <Button
+                    hover={{backgroundColor: '#059669'}}
+                    classList={["buttonPrimary"]}
+                    onClick={resetToDefaults}
+                    minWidth={120}
+                >
+                    <Text>Reset to default</Text>
+                </Button>
+
+                <Button
+                    hover={{backgroundColor: '#059669'}}
+                    classList={["buttonPrimary"]}
+                    onClick={importConfig}
+                    minWidth={120}
+                >
+                    <Text>Import Config</Text>
+                </Button>
+            </Container>
+
 
         </Container>
     );

@@ -1,17 +1,11 @@
-import {useEffect, useState} from "react";
+import { useEffect } from "react";
 
 import NdmspcEnv from "./lib/components/env/NdmspcEnv.jsx";
-import {histogramSubjectGet, brokerManagerGet} from "@ndmspc/ndmvr-aframe";
-import config from "./config.json";
+import { histogramSubjectGet, brokerManagerGet } from "@ndmspc/ndmvr-aframe";
 import { parse as jsrootParse } from "jsroot"
 
 function App() {
-    const [appConfig, setAppConfig] = useState(config);
 
-    const handleConfigChange = (newConfig) => {
-        console.log("App received new config:", newConfig);
-        setAppConfig(newConfig);
-    };
 
     // const effectRan = useRef(false);
     //
@@ -22,34 +16,34 @@ function App() {
     //     effectRan.current = true;
     //
     //   setTimeout(() => {
-        //REMOVE ALL FUNCTIONS
-        // functionSubjectGet().removeFunctions({
-        //   target: {
-        //     entity: "nested-histogram",
-        //     id: "*"
-        //   }
-        // });
+    //REMOVE ALL FUNCTIONS
+    // functionSubjectGet().removeFunctions({
+    //   target: {
+    //     entity: "nested-histogram",
+    //     id: "*"
+    //   }
+    // });
 
-        // REMOVE ALL FUNCTIONS ON EVENT
-        // functionSubjectGet().removeFunctions({
-        //   event: "mousemove",
-        //   target: {
-        //     entity: "nested-histogram",
-        //     id: "*"
-        //   }
-        // });
+    // REMOVE ALL FUNCTIONS ON EVENT
+    // functionSubjectGet().removeFunctions({
+    //   event: "mousemove",
+    //   target: {
+    //     entity: "nested-histogram",
+    //     id: "*"
+    //   }
+    // });
 
-        // ADD DEFAULT FUNCTION
-        // functionSubjectGet().addFunctions({
-        //   event: "mousemove",
-        //   target: {
-        //     entity: "nested-histogram",
-        //     id: "*"
-        //   },
-        // });
+    // ADD DEFAULT FUNCTION
+    // functionSubjectGet().addFunctions({
+    //   event: "mousemove",
+    //   target: {
+    //     entity: "nested-histogram",
+    //     id: "*"
+    //   },
+    // });
 
 
-        //ADD CUSTOM FUNCTION
+    //ADD CUSTOM FUNCTION
     //     functionSubjectGet().addFunctions({
     //       event: "mouseclick",
     //       target: {
@@ -66,7 +60,7 @@ function App() {
 
     useEffect(() => {
 
-      brokerManagerGet().createWs(
+        brokerManagerGet().createWs(
             "ws://localhost:8080/ws/root.websocket",
             false,
             60,
@@ -100,13 +94,20 @@ function App() {
                             });
                         }
                     }
+
+                } else if (obj._typename) {
+
+                    histogramSubjectGet().next({
+                        id: `histogram1`,
+                        opts: { render: "" },
+                        obj: obj,
+                    });
                 }
             });
         return () => {
             sub.unsubscribe();
         };
     }, []);
-
 
     return (
         <div
@@ -124,7 +125,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcEnv config={appConfig} onConfigChange={handleConfigChange}/>
+                <NdmspcEnv/>
             </div>
         </div>
     );
