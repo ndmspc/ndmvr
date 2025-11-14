@@ -9,6 +9,7 @@ export default function DesktopController({
     speed = 5,
     onToggleMenu,
     onToggleBinInfo,
+    onToggleDemo
 }) {
     const keys = useRef({});
     const isMouseDown = useRef(false);
@@ -21,6 +22,7 @@ export default function DesktopController({
             keys.current[e.code] = true;
             if (e.code === "KeyF" && !focused) onToggleMenu?.();
             if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
+            if (e.code === "KeyN" && !focused) onToggleDemo?.();
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;

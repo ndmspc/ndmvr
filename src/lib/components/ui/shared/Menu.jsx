@@ -1,18 +1,17 @@
 import {useRef, useState} from "react";
 import {useFrame} from "@react-three/fiber";
 import {useXR} from "@react-three/xr";
-import {Container, Text} from "@react-three/uikit";
+import {Container, Text,} from "@react-three/uikit";
 import {Button, Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
+
 import {histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
 import {parse} from "jsroot";
 
 import InputCard from "./InputCard.jsx";
-import TreeViewer from "./TreeViewer.jsx";
 import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
 import SettingsPanel from "./SettingsPanel.jsx";
 import {useBrokerStore} from "../../../stores/broker/store.js";
 import {store} from "../../env/NdmvrEnv.jsx";
-
 
 export default function Menu({
     originRef,
@@ -141,6 +140,11 @@ export default function Menu({
                     classList={["menuBlock"]}
                 >
                     <RadioGroup onValueChange={setLoadMode}>
+                        {/*<RadioGroupItem value="Demo">*/}
+                        {/*    <Label>*/}
+                        {/*        <Text>Demo</Text>*/}
+                        {/*    </Label>*/}
+                        {/*</RadioGroupItem>*/}
                         <RadioGroupItem value="http">
                             <Label>
                                 <Text>Fetch via HTTP</Text>
@@ -189,6 +193,9 @@ export default function Menu({
                     onSubmit={() => handleLoadClick("ws")}
                 />
 
+                {/*{loadMode === "Demo" && (*/}
+                {/*    <Demo/>*/}
+                {/*)}*/}
 
                 {loadMode === "Settings" && (
                     <SettingsPanel
@@ -202,6 +209,9 @@ export default function Menu({
                     <Button
                         classList={["VRButton"]}
                         onClick={() => store.enterVR()}
+                        hover={{
+                            backgroundColor: '#475569',
+                        }}
                     >
                         <Text>Enter VR</Text>
                     </Button>
@@ -209,6 +219,9 @@ export default function Menu({
                     <Button
                         classList={["VRButton"]}
                         onClick={() => session.end()}
+                        hover={{
+                            backgroundColor: '#475569',
+                        }}
                     >
                         <Text>Exit VR</Text>
                     </Button>

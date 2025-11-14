@@ -5,7 +5,7 @@ import {Canvas} from "@react-three/fiber";
 import {PerspectiveCamera} from "@react-three/drei";
 import {createXRStore, XR, XROrigin} from "@react-three/xr"
 import {configSubjectGet} from "@ndmspc/ndmvr-aframe";
-import { FocusProvider } from './context/FocusContext.jsx';
+import {FocusProvider} from './context/FocusContext.jsx';
 
 import CameraSync from "../systems/CameraSync.jsx";
 import Menu from "../ui/shared/Menu.jsx";
@@ -13,6 +13,7 @@ import BinInfo from "../ui/shared/BinInfo.jsx";
 import Controllers from "../systems/inputs/Controllers.jsx";
 import NdmvrScene from "../scene/NdmvrScene.jsx";
 import ControlsHelp from "../ui/shared/ControlsHelp.jsx";
+import Demo from "../ui/shared/Demo.jsx";
 
 export const store = createXRStore();
 
@@ -21,6 +22,7 @@ export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigCh
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(true);
     const [showBinInfo, setShowBinInfo] = useState(false);
+    const [showDemo, setShowDemo] = useState(false);
 
     const [config, setConfig] = useState(null);
 
@@ -44,6 +46,7 @@ export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigCh
         >
             <Canvas
                 shadows
+                gl={{localClippingEnabled: true}}
                 onCreated={({gl}) => {
                     gl.toneMapping = THREE.NoToneMapping;
                     gl.outputColorSpace = THREE.SRGBColorSpace;
@@ -68,12 +71,14 @@ export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigCh
 
                     <FocusProvider>
                         {showMenu && <Menu originRef={xrOriginRef}
-                                        currentConfig={currentConfig}
-                                        onConfigChange={onConfigChange}
-                                        onClose={() => setShowMenu(false)}
+                                           currentConfig={currentConfig}
+                                           onConfigChange={onConfigChange}
+                                           onClose={() => setShowMenu(false)}
                         />}
 
                         {showBinInfo && <BinInfo originRef={xrOriginRef}/>}
+
+                        {showDemo && <Demo originRef={xrOriginRef}/>}
 
                         <Controllers
                             originRef={xrOriginRef}
@@ -81,6 +86,7 @@ export default function NdmvrEnv({controlsHelp = true, currentConfig, onConfigCh
                             showMenu={showMenu}
                             setShowMenu={setShowMenu}
                             setShowBinInfo={setShowBinInfo}
+                            setShowDemo={setShowDemo}
                             desktopSpeed={config?.environment?.desktopSpeed ?? 5}
                             vrSpeed={config?.environment?.vrSpeed ?? 2}
                         />
