@@ -1,4 +1,4 @@
-import { useXR } from "@react-three/xr";
+import {useXR} from "@react-three/xr";
 
 import VRController from "./VRController.jsx";
 import DesktopController from "./DesktopController.jsx";
@@ -8,6 +8,7 @@ export default function Controllers({
     cameraRef,
     setShowMenu,
     setShowBinInfo,
+    setShowDemo,
     desktopSpeed = 5,
     vrSpeed = 2,
 }) {
@@ -21,18 +22,17 @@ export default function Controllers({
                 speed={vrSpeed}
                 onToggleMenu={() => setShowMenu((p) => !p)}
                 onToggleBinInfo={() => setShowBinInfo((p) => !p)}
+                onToggleDemo={() => setShowDemo((p) => !p)}
             />
         );
-    }
-    else {
+    } else {
         return (
             <DesktopController
                 originRef={originRef}
                 cameraRef={cameraRef}
                 onToggleMenu={() => setShowMenu((p) => !p)}
-                onToggleBinInfo={() => {
-                    setShowBinInfo((p) => !p)
-                }}
+                onToggleBinInfo={() => setShowBinInfo((p) => !p)}
+                onToggleDemo={() => setShowDemo((p) => !p)}
                 speed={desktopSpeed}
             />
         );

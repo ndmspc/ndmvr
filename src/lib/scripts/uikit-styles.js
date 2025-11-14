@@ -2,6 +2,10 @@ import {setPreferredColorScheme, StyleSheet} from '@pmndrs/uikit'
 
 setPreferredColorScheme("dark");
 
+StyleSheet['foobar'] = {
+
+}
+
 StyleSheet['buttonPrimary'] = {
     width: '100%',
     backgroundColor: '#10b981',
@@ -9,9 +13,6 @@ StyleSheet['buttonPrimary'] = {
     borderWidth: 0,
     borderRadius: 8,
     paddingY: 12,
-    hover: {
-        backgroundColor: '#059669',
-    },
 }
 
 StyleSheet['menuContainer'] = {
@@ -74,11 +75,91 @@ StyleSheet['input'] = {
     },
 }
 
+StyleSheet['chevron'] = {
+    color: '#475569',
+    borderWidth: 1,
+}
+
+StyleSheet['dropdown'] = {
+    display: 'flex',
+    backgroundColor: '#020617',
+    borderColor: '#475569',
+    color: '#f1f5f9',
+    placeholderColor: '#64748b',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    hover: {
+        borderColor: '#10b981',
+        boxShadow: '0 0 0 2px rgba(16,185,129,0.5)',
+    },
+    cursor: 'pointer',
+}
+
+StyleSheet['dropdownText'] = {
+    flexGrow: 1
+}
+
+StyleSheet['dropdownListWrapper'] = {
+    backgroundColor: '#020617',
+    borderColor: '#475569',
+    borderWidth: 1,
+    borderRadius: 8,
+    boxShadow: '0 0 0 2px rgba(16,185,129,0.5)',
+    zIndex: 10,
+    overflow: 'hidden',
+}
+
+StyleSheet['dropdownList'] = {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#020617',
+    color: '#f1f5f9',
+    borderRadius: 8,
+    overflow: 'scroll',
+    scrollbarColor: '#475569',
+}
+
+StyleSheet['dropdownItem'] = {
+    height: 45,
+    alignItems: 'center',
+    paddingX: 12,
+    cursor: 'pointer',
+}
+
+StyleSheet['dropdownItemSelected'] = {
+    fontWeight: 'bold'
+}
+
+StyleSheet['checkboxContainer'] = {
+    cursor: 'pointer',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+}
+
+StyleSheet['checkboxBox'] = {
+    backgroundColor: '#020617',
+    borderColor: '#475569',
+    borderWidth: 2,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // hover: {
+    //     borderColor: '#10b981',
+    // }
+}
+
+StyleSheet['checkboxBoxChecked'] = {
+    backgroundColor: '#022c22',
+}
+
+StyleSheet['checkboxLabel'] = {
+    color: '#f1f5f9',
+}
+
 StyleSheet['VRButton'] = {
     backgroundColor: '#334155',
     color: '#f1f5f9',
     borderRadius: 16,
-    hover: {
-        backgroundColor: '#475569'
-    }
 }
