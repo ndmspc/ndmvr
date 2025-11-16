@@ -1,23 +1,17 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import Checkbox from "./Checkbox.jsx"
 import Dropdown, {DropdownProvider} from "./Dropdown.jsx";
 import {histogramSubjectGet, stateSubjectGet} from "@ndmspc/ndmvr-aframe";
 import {Container, Text,} from "@react-three/uikit";
-import histo125 from "../../../data/nested/test_125.json";
-import histo12_5 from "../../../data/nested/test_12_5.json";
-import histo1_25 from "../../../data/nested/test_1_25.json";
-import histo1_2_5 from "../../../data/nested/test_1_2_5.json";
-import histo5_2_1 from "../../../data/nested/test_5_2_1.json";
 import {Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
 import FloatingContainer from "./FloatingContainer.jsx";
 import WebsocketBanner from "./WebsocketBanner.jsx";
+import {HistogramContext} from "../../env/NdmvrEnv.jsx";
 
-export default function Demo({
+export default function DrawOptions({
     originRef,
     offset = {x: 0, y: 1.2, z: -4},
 }) {
-
-    const [selectedHistogram, setSelectedHistogram] = useState(null);
 
     const [availableArrays, setAvailableArrays] = useState([]);
     const [selectedArray, setSelectedArray] = useState("content");
@@ -27,14 +21,7 @@ export default function Demo({
 
     const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
 
-    const idHistogram = "histogram1";
-    const histogramOptions = [
-        "histo125",
-        "histo12_5",
-        "histo1_25",
-        "histo1_2_5",
-        "histo5_2_1",
-    ];
+    const histogram = useContext(HistogramContext);
 
     useEffect(() => {
 
@@ -44,11 +31,6 @@ export default function Demo({
             if (e.arrays) setAvailableArrays(e.arrays);
             if (e.selectedArray) setSelectedArray(e.selectedArray);
         });
-
-        setAvailableSets([]);
-        setSelectedSets([]);
-        setAvailableArrays(['content']);
-        setSelectedArray('content');
 
         return () => {
             stateSubject.unsubscribe();
@@ -61,40 +43,12 @@ export default function Demo({
         stateSubjectGet().next({...currentVal, ...updates});
     };
 
-    const handleHistogramSelect = (value) => {
-        let histogram;
-        switch (value) {
-            case "histo125":
-                histogram = histo125;
-                break;
-            case "histo12_5":
-                histogram = histo12_5;
-                break;
-            case "histo1_25":
-                histogram = histo1_25;
-                break;
-            case "histo1_2_5":
-                histogram = histo1_2_5;
-                break;
-            case "histo5_2_1":
-                histogram = histo5_2_1;
-                break;
-        }
-
-        setSelectedHistogram(histogram);
-
-        histogramSubjectGet().next({
-            id: idHistogram,
-            opts: {render: selectedRenderer},
-            obj: histogram,
-        });
-    }
 
     const handleArraySelect = (value) => {
 
         setSelectedArray(value);
 
-        if (selectedHistogram) {
+        if (histogram) {
             updateStateSubject({
                 selectedSet: selectedSets,
                 selectedArray: value
@@ -110,7 +64,7 @@ export default function Demo({
 
         setSelectedSets(newSelectedSets);
 
-        if (selectedHistogram) {
+        if (histogram) {
             updateStateSubject({
                 selectedSet: newSelectedSets,
                 selectedArray: selectedArray
@@ -122,12 +76,20 @@ export default function Demo({
     const handleRendererSelect = (value) => {
         setSelectedRenderer(value);
 
-        if (selectedHistogram) {
+        console.log({
+            id: histogram.id,
+            opts: {render: value},
+            obj: histogram.obj,
+        });
+
+        if (histogram) {
             histogramSubjectGet().next({
-                id: idHistogram,
+                id: histogram.id,
                 opts: {render: value},
-                obj: selectedHistogram,
+                obj: histogram.obj,
             });
+
+
         }
 
     }
@@ -136,10 +98,10 @@ export default function Demo({
     return (
         <FloatingContainer
             originRef={originRef}
-            offset = {offset}
+            offset={offset}
             classList={["menuContainer"]}
         >
-            <Text classList={["menuHeader"]}>Demo</Text>
+            <Text classList={["menuHeader"]}>Histogram Draw Option</Text>
             <WebsocketBanner/>
             <DropdownProvider>
                 <Container
@@ -147,15 +109,6 @@ export default function Demo({
                     flexDirection="column"
                     gap={12}
                 >
-                    <Dropdown
-                        placeholder={"Select histogram"}
-                        options={histogramOptions}
-                        onSelect={(value) => {
-                            handleHistogramSelect(value);
-                        }}
-                        maxVisibleItems={5}
-                        width={300}
-                    />
 
                     <Dropdown
                         placeholder={"Select array"}

@@ -1,16 +1,10 @@
-import { useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
-import { filter } from "rxjs";
-import {
-    histogramSubjectGet,
-    HistogramJsrootClass,
-    configSubjectGet, THnPainter,
-} from "@ndmspc/ndmvr-aframe";
-import * as THREE from "three";
-import {build3d, create} from "jsroot";
+import {useThree} from "@react-three/fiber";
+import {useEffect, useRef, useState} from "react";
+import {filter} from "rxjs";
+import {configSubjectGet, HistogramJsrootClass, histogramSubjectGet, THnPainter,} from "@ndmspc/ndmvr-aframe";
 
-export default function HistogramWrapper({ id }) {
-    const { scene, camera } = useThree();
+export default function HistogramWrapper({id}) {
+    const {scene, camera} = useThree();
     const jsrootHistogram = useRef();
     const nestedHistogram = useRef();
     const [config, setConfig] = useState(null);
@@ -91,8 +85,8 @@ export default function HistogramWrapper({ id }) {
                     if (nestedHistogram.current) {
                         nestedHistogram.current.remove();
                         nestedHistogram.current = undefined;
-                        }
-                    const painter = new THnPainter(histo, id, histo.opts);
+                    }
+                    const painter = new THnPainter(histo, id, histo?.opts);
                     nestedHistogram.current = painter;
 
                     setNestedMesh(() => painter.mesh);

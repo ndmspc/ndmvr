@@ -1,11 +1,12 @@
 import {useMemo, useState} from "react";
 import {Button} from "@react-three/uikit-default";
 import {Container, Input, Text} from "@react-three/uikit";
-import {Divider} from '@react-three/uikit-horizon'
+import openapiSchema from "../../../../ndmvrConfigOpenApi.json"
 
 import {buildEnvironmentFromSettings, createValidator, flattenSchema, getDeep} from "../../../utils/schema-helpers";
+import FloatingContainer from "./FloatingContainer.jsx";
 
-export default function SettingsPanel({openapiSchema, currentConfig, onConfigChange}) {
+export default function SettingsPanel({originRef, offset = {x: 0, y: 1.2, z: -4}, currentConfig, onConfigChange}) {
     const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};
     const flatSchema = flattenSchema(envSchema);
     const initialEnv = currentConfig?.config?.environment ?? {};
@@ -87,60 +88,65 @@ export default function SettingsPanel({openapiSchema, currentConfig, onConfigCha
     };
 
     return (
-        <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
-            <Text fontSize={14} fontWeight="bold">Settings</Text>
+        <FloatingContainer
+            originRef={originRef}
+            offset={offset}
+            classList={["menuContainer"]}
+        >
+            <Text classList={["menuHeader"]}>Settings</Text>
+            <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
+                <Container
+                    flexDirection="column"
+                    flexGrow={1}
+                    overflow="scroll"
+                    height={100}
+                    scrollbarColor='#475569'
+                >
 
 
-            <Container
-                flexDirection="column"
-                flexGrow={1}
-                overflow="scroll"
-                height={100}
-            >
+                    {Object.entries(flatSchema).map(([path, schema]) => (
+                        <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+                            <Text minWidth={400} fontSize={12}>{schema.title || path}:</Text>
+                            <Input
+                                classList={["input"]}
+                                fontSize={12}
+                                value={String(settings[path] ?? "")}
+                                onValueChange={(v) => {
+                                    const updated = {...settings, [path]: v};
+                                    setSettings(updated);
+                                    applyNow(updated);
+                                }}
+                                minWidth={100}
+                            />
+                        </Container>
+
+                    ))}
+
+                </Container>
 
 
-                {Object.entries(flatSchema).map(([path, schema]) => (
-                    <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-                        <Text minWidth={400} fontSize={12}>{schema.title || path}:</Text>
-                        <Input
-                            classList={["input"]}
-                            fontSize={12}
-                            value={String(settings[path] ?? "")}
-                            onValueChange={(v) => {
-                                const updated = {...settings, [path]: v};
-                                setSettings(updated);
-                                applyNow(updated);
-                            }}
-                            minWidth={100}
-                        />
-                    </Container>
+                <Container flexDirection="row" justifyContent="center" alignItems="center" gap={12} marginTop={8}>
+                    <Button
+                        hover={{backgroundColor: '#059669'}}
+                        classList={["buttonPrimary"]}
+                        onClick={resetToDefaults}
+                        minWidth={120}
+                    >
+                        <Text>Reset to default</Text>
+                    </Button>
 
-                ))}
+                    <Button
+                        hover={{backgroundColor: '#059669'}}
+                        classList={["buttonPrimary"]}
+                        onClick={importConfig}
+                        minWidth={120}
+                    >
+                        <Text>Import Config</Text>
+                    </Button>
+                </Container>
+
 
             </Container>
-
-
-            <Container flexDirection="row" justifyContent="center" alignItems="center" gap={12} marginTop={8}>
-                <Button
-                    hover={{backgroundColor: '#059669'}}
-                    classList={["buttonPrimary"]}
-                    onClick={resetToDefaults}
-                    minWidth={120}
-                >
-                    <Text>Reset to default</Text>
-                </Button>
-
-                <Button
-                    hover={{backgroundColor: '#059669'}}
-                    classList={["buttonPrimary"]}
-                    onClick={importConfig}
-                    minWidth={120}
-                >
-                    <Text>Import Config</Text>
-                </Button>
-            </Container>
-
-
-        </Container>
+        </FloatingContainer>
     );
 }

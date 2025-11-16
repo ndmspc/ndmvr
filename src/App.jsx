@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import {useEffect} from "react";
 
 import NdmspcEnv from "./lib/components/env/NdmspcEnv.jsx";
-import { histogramSubjectGet, brokerManagerGet } from "@ndmspc/ndmvr-aframe";
-import { parse as jsrootParse } from "jsroot"
+import {brokerManagerGet, histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
+import {parse as jsrootParse} from "jsroot"
 
 function App() {
 
@@ -19,7 +19,7 @@ function App() {
     //REMOVE ALL FUNCTIONS
     // functionSubjectGet().removeFunctions({
     //   target: {
-    //     entity: "nested-histogram",
+    //     entity: "ndmvr-histogram",
     //     id: "*"
     //   }
     // });
@@ -28,7 +28,7 @@ function App() {
     // functionSubjectGet().removeFunctions({
     //   event: "mousemove",
     //   target: {
-    //     entity: "nested-histogram",
+    //     entity: "ndmvr-histogram",
     //     id: "*"
     //   }
     // });
@@ -37,7 +37,7 @@ function App() {
     // functionSubjectGet().addFunctions({
     //   event: "mousemove",
     //   target: {
-    //     entity: "nested-histogram",
+    //     entity: "ndmvr-histogram",
     //     id: "*"
     //   },
     // });
@@ -47,7 +47,7 @@ function App() {
     //     functionSubjectGet().addFunctions({
     //       event: "mouseclick",
     //       target: {
-    //         entity: "nested-histogram",
+    //         entity: "ndmvr-histogram",
     //         id: "*"
     //       },
     //       function: function (event, context) {
@@ -80,17 +80,17 @@ function App() {
                         ) {
                             histogramSubjectGet().next({
                                 id: `histogram${i + 1}`,
-                                opts: { render: "nested" },
-                                histogram: obj.arr[i],
+                                opts: {render: "ndmvr"},
+                                obj: obj.arr[i],
                             });
                         } else {
                             var r = "jsroot";
-                            r = "nested";
+                            r = "ndmvr";
 
                             histogramSubjectGet().next({
                                 id: `histogram${i + 1}`,
-                                opts: { render: r },
-                                histogram: obj.arr[i],
+                                opts: {render: r},
+                                obj: obj.arr[i],
                             });
                         }
                     }
@@ -99,7 +99,7 @@ function App() {
 
                     histogramSubjectGet().next({
                         id: `histogram1`,
-                        opts: { render: "" },
+                        opts: {render: "ndmvr"},
                         obj: obj,
                     });
                 }

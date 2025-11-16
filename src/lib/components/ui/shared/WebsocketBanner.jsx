@@ -1,5 +1,6 @@
 import {Container, Text} from "@react-three/uikit";
 import {Button} from "@react-three/uikit-default";
+import {Cross} from "@react-three/uikit-lucide"
 
 import {useBrokerStore} from "../../../stores/broker/store.js";
 import {STAT} from "../../../stores/broker/constants.js";
@@ -14,6 +15,7 @@ export default function WebsocketBanner({showTransient = true}) {
     const status = useBrokerStore((s) => s.connectionStatus);
     const error = useBrokerStore((s) => s.error);
     const disconnect = useBrokerStore((s) => s.disconnect);
+    const clearError = useBrokerStore((s) => s.clearError);
 
     const Banner = ({color = "gray", children}) => (
         <Container
@@ -25,6 +27,7 @@ export default function WebsocketBanner({showTransient = true}) {
             borderStyle="solid"
             borderRadius={16}
             padding={8}
+            marginBottom={12}
         >
             {children}
         </Container>
@@ -42,10 +45,8 @@ export default function WebsocketBanner({showTransient = true}) {
                     </Text>
                 </Container>
                 <Button
-                    variant="rect"
-                    size="sm"
-                    platter
-                    padding={8}
+                    classList={["webSocketButton"]}
+                    hover={{backgroundColor: "#059669"}}
                     onClick={disconnect}
                 >
                     <Text>Disconnect</Text>
@@ -65,10 +66,8 @@ export default function WebsocketBanner({showTransient = true}) {
                     </Text>
                     {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button
-                        variant="rect"
-                        size="sm"
-                        platter
-                        padding={8}
+                        classList={["webSocketButton"]}
+                        hover={{backgroundColor: "#059669"}}
                         onClick={disconnect}
                     >
                         <Text>Disconnect</Text>
@@ -86,10 +85,8 @@ export default function WebsocketBanner({showTransient = true}) {
                     </Text>
                     {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button
-                        variant="rect"
-                        size="sm"
-                        platter
-                        padding={8}
+                        classList={["webSocketButton"]}
+                        hover={{backgroundColor: "#059669"}}
                         onClick={disconnect}
                     >
                         <Text>Disconnect</Text>
@@ -100,10 +97,11 @@ export default function WebsocketBanner({showTransient = true}) {
     }
     if (status === STAT.ERROR) {
         return (
-            <Banner color="red">
+            <Banner color="red" justifyContent="space-between">
                 <Text paddingLeft={10} fontSize={12} color="red">
                     {error ?? "Connection failed"}
                 </Text>
+                <Container><Cross hover={{cursor:"pointer"}} onClick={()=> {clearError();}} color="red" transformRotateZ={45}/></Container>
             </Banner>
         );
     }
