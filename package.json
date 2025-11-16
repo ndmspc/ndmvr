@@ -27,8 +27,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build-app": "vite build -c vite.config.app.js",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "build-app": "NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.js",
     "watch": "vite build --watch",
     "lint": "eslint ./src --ext js,jsx --report-unused-disable-directives .gitignore",
     "preview": "vite -c vite.config.app.js"
@@ -62,7 +62,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
-    "vite": "^7.0.0",
-    "vite-plugin-cdn-import": "^1.0.1"
+    "vite": "^7.2.2",
+    "three": "~0.173.0",
+    "jsroot": "7.10.0"
   }
 }
