@@ -1,8 +1,7 @@
-import { create } from "zustand";
-import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { parse as jsrootParse } from "jsroot";
-import { STAT, ERR, HISTOGRAM_ID } from "./constants.js";
-import { interceptWsProperty } from "./helpers.js";
+import {create} from "zustand";
+import {brokerManagerGet} from "@ndmspc/ndmvr-aframe";
+import {ERR, STAT} from "./constants.js";
+import {interceptWsProperty} from "./helpers.js";
 
 export const useBrokerStore = create((set, get) => ({
     wsUrl: null,
@@ -11,6 +10,13 @@ export const useBrokerStore = create((set, get) => ({
     isManualDisconnect: false,
     sub: null,
     reconnectTimeoutId: null,
+
+    clearError: () => {
+        set({
+            connectionStatus: STAT.IDLE,
+            error: null,
+        });
+    },
 
     connect: async (url) => {
         if (get().connectionStatus !== STAT.IDLE) get().disconnect();
@@ -33,7 +39,7 @@ export const useBrokerStore = create((set, get) => ({
 
         const broker = manager.getBrokerByUrl(url, false);
         if (!broker) {
-            set({ connectionStatus: STAT.ERROR, error: ERR.NOT_FOUND });
+            set({connectionStatus: STAT.ERROR, error: ERR.NOT_FOUND});
             return;
         }
 
@@ -50,7 +56,7 @@ export const useBrokerStore = create((set, get) => ({
     },
 
     disconnect: () => {
-        const { wsUrl, sub } = get();
+        const {wsUrl, sub} = get();
         if (!wsUrl) return;
 
         const prevId = get().reconnectTimeoutId;
@@ -59,7 +65,7 @@ export const useBrokerStore = create((set, get) => ({
         const manager = brokerManagerGet();
         const broker = manager.getBrokerByUrl(wsUrl, false);
 
-        set({ isManualDisconnect: true, connectionStatus: STAT.IDLE, error: null });
+        set({isManualDisconnect: true, connectionStatus: STAT.IDLE, error: null});
 
         if (sub) sub.unsubscribe();
 

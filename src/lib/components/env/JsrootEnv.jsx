@@ -44,9 +44,12 @@ export default function JsrootEnv() {
                 .pipe(map((histo) => ({ id: pad.id, obj: histo })))
         );
 
-        const sub = merge(...streams).subscribe(({ id, histo }) => {
-            jsrootRedraw(histo?.histogram, `histo-${id}`);
+        const sub = merge(...streams).subscribe(({ id, obj }) => {
+            console.log("JSROOT: " + id);
+            console.log(obj);
+            jsrootRedraw(obj?.obj, `histo-${id}`);
         });
+
 
         return () => sub.unsubscribe();
     }, [n, pads]);

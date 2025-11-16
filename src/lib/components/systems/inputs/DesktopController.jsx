@@ -21,8 +21,8 @@ export default function DesktopController({
         const onKeyDown = (e) => {
             keys.current[e.code] = true;
             if (e.code === "KeyF" && !focused) onToggleMenu?.();
-            if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
-            if (e.code === "KeyN" && !focused) onToggleDemo?.();
+            // if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
+            // if (e.code === "KeyN" && !focused) onToggleDemo?.();
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;

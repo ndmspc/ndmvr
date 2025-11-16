@@ -7,7 +7,7 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 import defaultConfig from "../../config.json";
 
-export default function NdmspcEnv({ config = null, onConfigChange, controlsHelp = false }){
+export default function NdmspcEnv({ children, config = null, onConfigChange, controlsHelp = false }){
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
     const [appConfig, setAppConfig] = useState(defaultConfig);
@@ -43,7 +43,9 @@ export default function NdmspcEnv({ config = null, onConfigChange, controlsHelp 
                     controlsHelp={controlsHelp}
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
-                />
+                >
+                    {children}
+                </NdmvrEnv>
             </div>
 
             <Switch startState={true} checked onToggle={(checked) => setVRMode(checked)}/>

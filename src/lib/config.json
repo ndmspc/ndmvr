@@ -29,7 +29,7 @@
         }
       },
       "histogramPads": {
-        "type": "grid2x1x2",
+        "type": "grid1x1x1",
         "prefix": "histogram",
         "scale": {
           "x": 20,
@@ -44,7 +44,7 @@
         "origin": {
           "x": 10,
           "y": 1,
-          "z": 5
+          "z": -5
         }
       }
     },

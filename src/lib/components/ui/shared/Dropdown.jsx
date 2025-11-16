@@ -56,6 +56,7 @@ export default function Dropdown({
             onPointerLeave={(e) => e.stopPropagation()}
             onPointerOver={(e) => e.stopPropagation()}
             onPointerOut={(e) => e.stopPropagation()}
+            width={width}
         >
             <Container
                 onClick={handleToggle}
@@ -74,7 +75,6 @@ export default function Dropdown({
                     positionType="absolute"
                     positionTop={54}
                     positionLeft={0}
-                    width={width}
                     maxHeight={maxHeight}
                 >
                     <Container

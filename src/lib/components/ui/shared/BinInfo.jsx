@@ -6,6 +6,7 @@ import { binInfoSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json"
 import NotoBold from "../../../assets/fonts/NotoSans-Bold.json"
+import FloatingContainer from "./FloatingContainer.jsx";
 
 export default function BinInfo({
     originRef,
@@ -13,7 +14,6 @@ export default function BinInfo({
     offset = { x: 0, y: 1, z: -4 },
 }) {
     const [binInfo, setBinInfo] = useState(null);
-    const groupRef = useRef(null);
     const prev = useRef(null);
 
     useEffect(() => {
@@ -25,14 +25,6 @@ export default function BinInfo({
             });
         return () => sub.unsubscribe();
     }, []);
-
-    useFrame(() => {
-        if (originRef?.current && groupRef.current) {
-            const { x, y, z } = originRef.current.position;
-            groupRef.current.position.set(x + offset.x, y + offset.y, z + offset.z);
-        }
-    });
-
 
     const DotIcon = ({ color = '#fff' }) => {
 
@@ -49,8 +41,9 @@ export default function BinInfo({
     };
 
     return (
-        <Container
-            ref={groupRef}
+        <FloatingContainer
+            originRef={originRef}
+            offset={offset}
             classList={["menuContainer"]}
             fontFamilies={{
                 noto: {
@@ -121,6 +114,6 @@ export default function BinInfo({
 
                     </Container>)
             })}
-        </Container>
+        </FloatingContainer>
     );
 }

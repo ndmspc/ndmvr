@@ -53,8 +53,11 @@ export default function RaycasterBridge({
         if (!session || !frame || !refSpace) return;
 
         const inputSource = controller?.inputSource;
+        if (!inputSource) return;
+
         const targetRaySpace = inputSource?.targetRaySpace;
         if (!targetRaySpace) return;
+
         const pose = frame.getPose(targetRaySpace, refSpace);
         if (!pose) return;
 

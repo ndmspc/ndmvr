@@ -15,6 +15,16 @@ StyleSheet['buttonPrimary'] = {
     paddingY: 12,
 }
 
+StyleSheet['webSocketButton'] = {
+    backgroundColor: '#10b981',
+    color: '#ffffff',
+    borderWidth: 0,
+    borderRadius: 8,
+    padding: 4,
+    fontSize: 12,
+}
+
+
 StyleSheet['menuContainer'] = {
     minWidth: 300,
     backgroundColor: '#1e293b',
@@ -121,7 +131,7 @@ StyleSheet['dropdownList'] = {
 }
 
 StyleSheet['dropdownItem'] = {
-    height: 45,
+    height: 40,
     alignItems: 'center',
     paddingX: 12,
     cursor: 'pointer',

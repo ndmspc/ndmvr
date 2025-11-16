@@ -2,7 +2,7 @@ import {Button, Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-defa
 import {Container, Input, Text} from "@react-three/uikit";
 import {STAT} from "../../../stores/broker/constants.js";
 import {useRef, useState} from "react";
-import { useFocus } from "../../env/context/FocusContext.jsx";
+import {useFocus} from "../../env/context/FocusContext.jsx";
 
 export default function InputCard({
     type, // "http" | "ws"
@@ -17,30 +17,30 @@ export default function InputCard({
     connError,
     onSubmit,
 }) {
+    const {setFocused} = useFocus();
     const isVisible = modeSelected === type;
+    const [value, setValue] = useState(firstValue);
 
     const predefined = [
         "ws://localhost:8080/ws/root.websocket",
         "ws://ndmspc.cern.ch/ws/root.websocket",
     ];
 
-    const [value, setValue] = useState(firstValue);
     const radioGroupValue = useRef(
         predefined.includes(firstValue) ? firstValue : ""
     );
-
-    const {setFocused} = useFocus();
-    
 
     const handleChangeForWs = (v) => {
         setValue(v);
         onChange(v);
         radioGroupValue.current = predefined.includes(v) ? v : "";
     };
+
     return (
         <Container
-            classList={["section", "sectionInner"]}
             display={isVisible ? "flex" : "none"}
+            flexDirection="column"
+            gap={12}
         >
             {type === "ws" && (
                 <>
@@ -131,6 +131,7 @@ export default function InputCard({
                     Invalid Address
                 </Text>
             )}
+
 
             <Button
                 classList={["buttonPrimary"]}
