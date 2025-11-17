@@ -83,14 +83,17 @@ export default function HistogramWrapper({id}) {
                     clearJsrootMesh();
 
                     if (nestedHistogram.current) {
-                        nestedHistogram.current.remove();
-                        nestedHistogram.current = undefined;
-                    }
-                    const painter = new THnPainter(histo, id, histo?.opts);
-                    nestedHistogram.current = painter;
+                        console.log('REMOVEEEEE__________')
+                        nestedHistogram.current.updateHistogram(histo)
+                        // nestedHistogram.current.remove();
+                        // nestedHistogram.current = undefined;
+                    } else {
+                        const painter = new THnPainter(histo, id, histo?.opts);
+                        nestedHistogram.current = painter;
 
-                    setNestedMesh(() => painter.mesh);
-                    setWireframeObj(() => painter.wireframe.wireframe);
+                        setNestedMesh(() => painter.mesh);
+                        setWireframeObj(() => painter.wireframe.wireframe);
+                    }
                 }
             });
 
