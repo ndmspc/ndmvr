@@ -20,6 +20,7 @@ export default function BinInfo({
         const sub = binInfoSubjectGet()
             .getObservable()
             .subscribe((next) => {
+                if (!next.instanceId) return;
                 if (prev.current !== next) setBinInfo(next);
                 prev.current = next;
             });
@@ -60,7 +61,7 @@ export default function BinInfo({
                 <Container flexDirection="row" alignItems="center" gap={4}>
                     <Text fontSize={12} fontWeight="bold">Level:</Text>
                     {/*<Text fontSize={12}>{binInfo?.level ?? 0}</Text>*/}
-                    <Text fontSize={12}>{binInfo?.coords.length ?? 0}</Text>
+                    <Text fontSize={12}>{binInfo?.coords?.length ?? 0}</Text>
                 </Container>
 
                 <Container flexDirection="row" alignItems="center" gap={4}>
