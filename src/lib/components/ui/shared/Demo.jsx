@@ -1,20 +1,23 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "./Checkbox.jsx"
-import Dropdown, {DropdownProvider} from "./Dropdown.jsx";
-import {histogramSubjectGet, stateSubjectGet} from "@ndmspc/ndmvr-aframe";
-import {Container, Text,} from "@react-three/uikit";
+import Dropdown, { DropdownProvider } from "./Dropdown.jsx";
+import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { Container, Text, } from "@react-three/uikit";
+import h3scat from "../../../data/h3scat.json";
 import histo125 from "../../../data/nested/test_125.json";
 import histo12_5 from "../../../data/nested/test_12_5.json";
 import histo1_25 from "../../../data/nested/test_1_25.json";
 import histo1_2_5 from "../../../data/nested/test_1_2_5.json";
 import histo5_2_1 from "../../../data/nested/test_5_2_1.json";
-import {Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
+import cernstaff_145_369 from "../../../data/nested/cernstaff_145_369.json";
+
+import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import FloatingContainer from "./FloatingContainer.jsx";
 import WebsocketBanner from "./WebsocketBanner.jsx";
 
 export default function Demo({
     originRef,
-    offset = {x: 0, y: 1.2, z: -4},
+    offset = { x: 0, y: 1.2, z: -4 },
 }) {
 
     const [selectedHistogram, setSelectedHistogram] = useState(null);
@@ -29,6 +32,8 @@ export default function Demo({
 
     const idHistogram = "histogram1";
     const histogramOptions = [
+        "h3scat",
+        "cernstaff_145_369",
         "histo125",
         "histo12_5",
         "histo1_25",
@@ -58,12 +63,18 @@ export default function Demo({
 
     const updateStateSubject = (updates) => {
         const currentVal = stateSubjectGet().getValue();
-        stateSubjectGet().next({...currentVal, ...updates});
+        stateSubjectGet().next({ ...currentVal, ...updates });
     };
 
     const handleHistogramSelect = (value) => {
         let histogram;
         switch (value) {
+            case "h3scat":
+                histogram = h3scat;
+                break;
+            case "cernstaff_145_369":
+                histogram = cernstaff_145_369;
+                break;
             case "histo125":
                 histogram = histo125;
                 break;
@@ -85,7 +96,7 @@ export default function Demo({
 
         histogramSubjectGet().next({
             id: idHistogram,
-            opts: {render: selectedRenderer},
+            opts: { render: selectedRenderer },
             obj: histogram,
         });
     }
@@ -125,7 +136,7 @@ export default function Demo({
         if (selectedHistogram) {
             histogramSubjectGet().next({
                 id: idHistogram,
-                opts: {render: value},
+                opts: { render: value },
                 obj: selectedHistogram,
             });
         }
@@ -136,11 +147,11 @@ export default function Demo({
     return (
         <FloatingContainer
             originRef={originRef}
-            offset = {offset}
+            offset={offset}
             classList={["menuContainer"]}
         >
             <Text classList={["menuHeader"]}>Demo</Text>
-            <WebsocketBanner/>
+            <WebsocketBanner />
             <DropdownProvider>
                 <Container
                     classList={["section", "sectionInner"]}
