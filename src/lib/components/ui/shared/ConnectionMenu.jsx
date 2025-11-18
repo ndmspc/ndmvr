@@ -1,20 +1,20 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "./Checkbox.jsx"
-import Dropdown, {DropdownProvider} from "./Dropdown.jsx";
-import {histogramSubjectGet, stateSubjectGet} from "@ndmspc/ndmvr-aframe";
-import {Container, Text,} from "@react-three/uikit";
+import Dropdown, { DropdownProvider } from "./Dropdown.jsx";
+import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { Container, Text, } from "@react-three/uikit";
 
-import {Label, RadioGroup, RadioGroupItem} from "@react-three/uikit-default";
+import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import FloatingContainer from "./FloatingContainer.jsx";
-import {Divider} from "@react-three/uikit-horizon";
-import {useBrokerStore} from "../../../stores/broker/store.js";
-import {parse} from "jsroot";
+import { Divider } from "@react-three/uikit-horizon";
+import { useBrokerStore } from "../../../stores/broker/store.js";
+import { parse } from "jsroot";
 import InputCard from "./InputCard.jsx";
 import WebsocketBanner from "./WebsocketBanner.jsx";
 
 export default function ConnectionMenu({
     originRef,
-    offset = {x: 0, y: 1.2, z: -4},
+    offset = { x: 0, y: 1.2, z: -4 },
     type,
     onClose
 }) {
@@ -53,7 +53,7 @@ export default function ConnectionMenu({
 
     const updateStateSubject = (updates) => {
         const currentVal = stateSubjectGet().getValue();
-        stateSubjectGet().next({...currentVal, ...updates});
+        stateSubjectGet().next({ ...currentVal, ...updates });
     };
 
     const handleArraySelect = (value) => {
@@ -91,7 +91,7 @@ export default function ConnectionMenu({
         if (selectedHistogram) {
             histogramSubjectGet().next({
                 id: idHistogram,
-                opts: {render: value},
+                opts: { render: value },
                 obj: selectedHistogram,
             });
         }
@@ -100,7 +100,7 @@ export default function ConnectionMenu({
 
 
     const [inputValues, setInputValues] = useState({
-        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-aframe/demo/test_1_2_5.json",
+        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-aframe/demo/test_125.json",
         ws: "ws://localhost:8080/ws/root.websocket",
     });
 
@@ -109,7 +109,7 @@ export default function ConnectionMenu({
         ws: null,
     });
 
-    const {connectionStatus, error, connect} =
+    const { connectionStatus, error, connect } =
         useBrokerStore();
 
     const [httpLoading, setHttpLoading] = useState(false);
@@ -184,7 +184,7 @@ export default function ConnectionMenu({
 
                 histogramSubjectGet().next({
                     id: idHistogram,
-                    opts: {render: selectedRenderer},
+                    opts: { render: selectedRenderer },
                     obj: rootObj.arr?.[0] ?? rootObj,
                 });
 
@@ -195,7 +195,7 @@ export default function ConnectionMenu({
                 // }
             } catch (err) {
                 console.error("Failed to load:", err);
-                setValidationStatus((prev) => ({...prev, [type]: "error"}));
+                setValidationStatus((prev) => ({ ...prev, [type]: "error" }));
             } finally {
                 setHttpLoading(false);
             }
@@ -216,15 +216,15 @@ export default function ConnectionMenu({
                     flexDirection="column"
                     gap={12}
                 >
-                    {type === "http" && <WebsocketBanner/>}
+                    {type === "http" && <WebsocketBanner />}
 
                     <InputCard
                         type="http"
                         placeholder="http://"
                         firstValue={inputValues.http}
                         onChange={(v) => {
-                            setInputValues((p) => ({...p, http: v}));
-                            setValidationStatus((p) => ({...p, http: null}));
+                            setInputValues((p) => ({ ...p, http: v }));
+                            setValidationStatus((p) => ({ ...p, http: null }));
                         }}
                         status={validationStatus.http}
                         modeSelected={type}
@@ -238,8 +238,8 @@ export default function ConnectionMenu({
                         placeholder="ws://"
                         firstValue={inputValues.ws}
                         onChange={(v) => {
-                            setInputValues((p) => ({...p, ws: v}));
-                            setValidationStatus((p) => ({...p, ws: null}));
+                            setInputValues((p) => ({ ...p, ws: v }));
+                            setValidationStatus((p) => ({ ...p, ws: null }));
                         }}
                         status={validationStatus.ws}
                         modeSelected={type}
@@ -250,7 +250,7 @@ export default function ConnectionMenu({
 
                     {clicked === true && (
                         <>
-                            <Divider/>
+                            <Divider />
                             <Container gap={12} alignItems="center" flexDirection={"column"}>
 
 
