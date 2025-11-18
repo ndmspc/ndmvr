@@ -56,44 +56,48 @@ export default function HistogramWrapper({id}) {
             .getStream(id)
             .pipe(filter((e) => e.id === id))
             .subscribe((histo) => {
-                if (histo?.opts?.render === "jsroot") {
-                    if (nestedHistogram.current) {
-                        console.log('remove v jsroot')
-                        nestedHistogram.current.remove?.();
-                        nestedHistogram.current = undefined;
-                    }
-                    clearNestedMeshes();
+                try {
+                    if (histo?.opts?.render === "jsroot") {
+                        if (nestedHistogram.current) {
+                            console.log('remove v jsroot')
+                            nestedHistogram.current.remove?.();
+                            nestedHistogram.current = undefined;
+                        }
+                        clearNestedMeshes();
 
-                    if (jsrootHistogram.current) {
-                        jsrootHistogram.current.updateHistogram(histo.obj);
+                        if (jsrootHistogram.current) {
+                            jsrootHistogram.current.updateHistogram(histo.obj);
+                        } else {
+                            jsrootHistogram.current = new HistogramJsrootClass(
+                                id,
+                                histo.obj,
+                                camera
+                            );
+                            const mesh = jsrootHistogram.current.getHistogramMesh();
+                            setJsrootMesh(mesh);
+                        }
                     } else {
-                        jsrootHistogram.current = new HistogramJsrootClass(
-                            id,
-                            histo.obj,
-                            camera
-                        );
-                        const mesh = jsrootHistogram.current.getHistogramMesh();
-                        setJsrootMesh(mesh);
-                    }
-                } else {
-                    if (jsrootHistogram.current) {
-                        jsrootHistogram.current.remove?.();
-                        jsrootHistogram.current = undefined;
-                    }
-                    clearJsrootMesh();
+                        if (jsrootHistogram.current) {
+                            jsrootHistogram.current.remove?.();
+                            jsrootHistogram.current = undefined;
+                        }
+                        clearJsrootMesh();
 
-                    if (nestedHistogram.current) {
-                        console.log('REMOVEEEEE__________')
-                        nestedHistogram.current.updateHistogram(histo)
-                        // nestedHistogram.current.remove();
-                        // nestedHistogram.current = undefined;
-                    } else {
-                        const painter = new THnPainter(histo, id, histo?.opts);
-                        nestedHistogram.current = painter;
+                        if (nestedHistogram.current) {
+                            console.log('REMOVEEEEE__________')
+                            nestedHistogram.current.updateHistogram(histo)
+                            // nestedHistogram.current.remove();
+                            // nestedHistogram.current = undefined;
+                        } else {
+                            const painter = new THnPainter(histo, id, histo?.opts);
+                            nestedHistogram.current = painter;
 
-                        setNestedMesh(() => painter.mesh);
-                        setWireframeObj(() => painter.wireframe.wireframe);
+                            setNestedMesh(() => painter.mesh);
+                            setWireframeObj(() => painter.wireframe.wireframe);
+                        }
                     }
+                } catch (e) {
+                    console.log(e);
                 }
             });
 
