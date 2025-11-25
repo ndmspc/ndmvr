@@ -116,12 +116,14 @@ export default function VRController({
                 if (descend) originRef.current.position.y -= speed * delta;
             }
 
-            // const xBtn = leftGamepad["x-button"];
-            // if (xBtn?.state === "pressed" && !lastX.current) {
-            //     onToggleDemo?.();
-            //     lastX.current = true;
-            // }
-            // if (xBtn?.state !== "pressed") lastX.current = false;
+            const xBtn = leftGamepad["x-button"];
+            if (xBtn?.state === "pressed" && !lastX.current) {
+                window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+                lastX.current = true;
+            }
+            if (xBtn?.state !== "pressed") {
+                lastX.current = false;
+            }
         }
 
         if (rightGamepad) {
@@ -158,12 +160,24 @@ export default function VRController({
             }
             if (bBtn?.state !== "pressed") lastB.current = false;
 
-            // const aBtn = rightGamepad["a-button"];
-            // if (aBtn?.state === "pressed" && !lastA.current) {
-            //     onToggleBinInfo?.();
-            //     lastA.current = true;
-            // }
-            // if (aBtn?.state !== "pressed") lastA.current = false;
+             const aBtn = rightGamepad["a-button"];
+            if (aBtn.state === "pressed" && !lastA.current) {
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-menu-shift", {
+                        detail: { pressed: true },
+                    })
+                );
+                lastA.current = true;
+            }
+
+            if (aBtn.state !== "pressed" && lastA.current) {
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-menu-shift", {
+                        detail: { pressed: false },
+                    })
+                );
+                lastA.current = false;
+            }
         }
     }
 
