@@ -23,9 +23,31 @@ export default function DesktopController({
             if (e.code === "KeyF" && !focused) onToggleMenu?.();
             // if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
             // if (e.code === "KeyN" && !focused) onToggleDemo?.();
+            if (e.code === "KeyR") {
+                window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+            }
+
+            if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-menu-shift", {
+                        detail: { pressed: true },
+                    })
+                );
+            }
+
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;
+
+            if (focused) return;
+
+            if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-menu-shift", {
+                        detail: { pressed: false },
+                    })
+                );
+            }
         };
 
         window.addEventListener("keydown", onKeyDown);
