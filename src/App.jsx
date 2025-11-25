@@ -1,8 +1,9 @@
-import {useEffect} from "react";
+import { useEffect } from "react";
 
 import NdmspcEnv from "./lib/components/env/NdmspcEnv.jsx";
-import {brokerManagerGet, histogramSubjectGet} from "@ndmspc/ndmvr-aframe";
-import {parse as jsrootParse} from "jsroot"
+import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.jsx";
+import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { parse as jsrootParse } from "jsroot"
 
 function App() {
 
@@ -80,7 +81,7 @@ function App() {
                         ) {
                             histogramSubjectGet().next({
                                 id: `histogram${i + 1}`,
-                                opts: {render: "ndmvr"},
+                                opts: { render: "ndmvr" },
                                 obj: obj.arr[i],
                             });
                         } else {
@@ -89,7 +90,7 @@ function App() {
 
                             histogramSubjectGet().next({
                                 id: `histogram${i + 1}`,
-                                opts: {render: r},
+                                opts: { render: r },
                                 obj: obj.arr[i],
                             });
                         }
@@ -99,7 +100,7 @@ function App() {
 
                     histogramSubjectGet().next({
                         id: `histogram1`,
-                        opts: {render: "ndmvr"},
+                        opts: { render: "ndmvr" },
                         obj: obj,
                     });
                 }
@@ -123,11 +124,11 @@ function App() {
                 style={{
                     height: "100%",
                     width: "100%",
-                }}
-            >
-                <NdmspcEnv/>
+                }}>
+                {/* <NdmspcDefaultBrowserEnv renderer="jsroot" /> */}
+                <NdmspcEnv />
             </div>
-        </div>
+        </div >
     );
 }
 

@@ -6,3 +6,9 @@
 html, body, #root {
     height: 100%;
 }
+
+.main-div {
+    width: calc(100vw - 250px);
+    height: 100%;
+    float: right;
+}
