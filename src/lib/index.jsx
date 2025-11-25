@@ -1,6 +1,7 @@
 import JsrootEnv from "./components/env/JsrootEnv.jsx";
 import NdmspcEnv from "./components/env/NdmspcEnv.jsx";
 import NdmvrEnv from "./components/env/NdmvrEnv.jsx";
+import NdmspcDefaultBrowserEnv from "./components/env/NdmspcDefaultBrowserEnv.jsx";
 import CanvasComponent from "./components/scene/CanvasComponent.jsx"
 import HistogramWrapper from "./components/scene/HistogramWrapper.jsx"
 import NdmvrScene from "./components/scene/NdmvrScene.jsx";
@@ -17,6 +18,7 @@ export {
     JsrootEnv,
     NdmspcEnv,
     NdmvrEnv,
+    NdmspcDefaultBrowserEnv,
     CanvasComponent,
     HistogramWrapper,
     NdmvrScene,
