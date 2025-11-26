@@ -107,11 +107,17 @@ export default function NdmspcDefaultBrowserEnv({ children, config = null, onCon
             }}/>
 
             <div id="myMainDiv" className="main-div" style={{
-                display: !vrMode ? "flex" : "none"
+                display: !vrMode ? "flex" : "none",
+                width: "calc(100vw - 250px)",
+                height: "100%",
+                flexDirection: "column"
             }}/>
 
             <div className="main-div" style={{
                 display: vrMode ? "flex" : "none",
+                width: "calc(100vw - 250px)",
+                height: "100%",
+                flexDirection: "column"
             }}>
                 <NdmvrEnv
                     controlsHelp={controlsHelp}
