@@ -34,7 +34,7 @@
     "preview": "vite -c vite.config.app.js"
   },
   "peerDependencies": {
-    "@ndmspc/ndmvr-aframe": "1.0.0-rc.44",
+    "@ndmspc/ndmvr-aframe": "1.0.0-rc.45",
     "@pmndrs/uikit": "^1.0.58",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.4.0",
@@ -43,7 +43,7 @@
     "@react-three/uikit-horizon": "^1.0.58",
     "@react-three/uikit-lucide": "^1.0.58",
     "@react-three/xr": "^6.6.17",
-    "jsroot": "7.10.0",
+    "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "three": "~0.173.0"
@@ -63,7 +63,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
-    "jsroot": "7.10.0",
+    "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
     "three": "~0.173.0",
     "vite": "^7.2.2"
   }
