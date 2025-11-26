@@ -125,7 +125,7 @@ function App() {
                     height: "100%",
                     width: "100%",
                 }}>
-                {/* <NdmspcDefaultBrowserEnv renderer="jsroot" /> */}
+                 {/*<NdmspcDefaultBrowserEnv renderer="jsroot" painterDisplay="grid2x2" />*/}
                 <NdmspcEnv />
             </div>
         </div >
