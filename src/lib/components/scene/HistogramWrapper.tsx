@@ -63,7 +63,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
         const histoSub = histogramSubjectGet()
             .getStream(id)
-            .pipe(filter((e) => e.id === id))
+            .pipe(filter((e) => (e as { id: string | number }).id === id))
             .subscribe((histo) => {
                 try {
                     if (histo?.opts?.render === "jsroot") {
