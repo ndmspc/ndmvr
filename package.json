@@ -27,13 +27,23 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build",
-    "build-app": "NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.js",
+    "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
     "watch": "vite build --watch",
-    "lint": "eslint ./src --ext js,jsx --report-unused-disable-directives .gitignore",
-    "preview": "vite -c vite.config.app.js"
+    "lint": "eslint ./src --ext js,jsx,ts,tsx --report-unused-disable-directives .gitignore",
+    "preview": "vite -c vite.config.app.ts",
+    "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "dependencies": {
+    "@types/d3-selection": "^3.0.11",
+    "ajv": "^8.17.1",
+    "d3-selection": "^3.0.0",
+    "rxjs": "^7.8.2",
+    "styled-components": "^6.1.19",
     "@ndmspc/ndmvr-aframe": "1.0.0-rc.45",
     "@pmndrs/uikit": "^1.0.58",
     "@react-three/drei": "^10.4.2",
@@ -44,27 +54,24 @@
     "@react-three/uikit-lucide": "^1.0.58",
     "@react-three/xr": "^6.6.17",
     "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "three": "~0.173.0"
-  },
-  "dependencies": {
-    "ajv": "^8.17.1",
-    "rxjs": "^7.8.2",
-    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@types/node": "^22.10.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@types/three": "^0.173.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
     "@vitejs/plugin-react": "^4.5.2",
     "babel-plugin-react-compiler": "^1.0.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
-    "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
-    "three": "~0.173.0",
+    "typescript": "^5.7.2",
     "vite": "^7.2.2"
   }
 }
