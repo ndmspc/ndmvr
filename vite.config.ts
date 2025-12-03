@@ -1,18 +1,19 @@
-import path from "path";
+import { resolve, dirname } from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import dts from 'vite-plugin-dts'
 import { fileURLToPath } from "url";
 
 // Get the current file's URL
 const __filename = fileURLToPath(import.meta.url);
 // Get the current directory's path
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
   base: mode === "production" ? "/ndmvr-r3f/" : "/",
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/lib/index.tsx"),
+      entry: resolve(__dirname, "src/lib/index.tsx"),
       name: "Ndmvr r3f React Library Vite",
       fileName: (format) => `ndmvr-r3f.${format}.js`,
     },
@@ -35,6 +36,17 @@ export default defineConfig(({ mode }) => ({
       output: {
         globals: {
           react: "React",
+          three: "THREE",
+          jsroot: "JSROOT",
+          "@ndmspc/ndmvr-aframe": "ndmvrAframe",
+          "@pmndrs/uikit": "uikit",
+          "@react-three/fiber": "fiber",
+          "@react-three/drei": "drei",
+          "@react-three/xr": "xr",
+          "@react-three/uikit": "uikit$1",
+          "@react-three/uikit-default": "uikitDefault",
+          "@react-three/uikit-lucide": "uikitLucide",
+          "@react-three/uikit-horizon": "uikitHorizon"
         },
         inlineDynamicImports: true,
       },
@@ -46,6 +58,7 @@ export default defineConfig(({ mode }) => ({
         plugins: ["babel-plugin-react-compiler"],
       },
     }),
+    dts({ include: ['lib'], insertTypesEntry: true, }),
   ],
   optimizeDeps: {
     exclude: ["gl > gl"],
