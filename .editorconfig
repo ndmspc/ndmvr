@@ -1,4 +1,4 @@
 root = true
 
-[*.jsx]
+[*.tsx]
 indent_size = 4
