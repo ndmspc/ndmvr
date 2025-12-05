@@ -1,7 +1,7 @@
 import NdmvrEnv from "./NdmvrEnv.tsx";
 // import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
-import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
+import { HierarchyPainter, setDefaultDrawOpt, draw } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
@@ -45,8 +45,8 @@ export default function NdmspcDefaultBrowserEnv({
     const initializedRef = useRef(false);
     const [appConfig, setAppConfig] = useState(defaultConfig);
     const painterRef = useRef(null);
-    const [pads, setPads] = useState([]);
-    const padsCounter = useRef(1);
+    const pads = useRef([]);
+    const padsCounter = useRef(0);
     const [itemState, setItemState] = useState(item);
     const [optState, setOptState] = useState(opt);
 
@@ -76,26 +76,27 @@ export default function NdmspcDefaultBrowserEnv({
     }, [config]);
 
     useEffect(() => {
+        if (!vrMode && painterRef.current)
+            painterRef.current.checkResize();
+    }, [vrMode]);
+
+    useEffect(() => {
         if (initializedRef.current) return;
         initializedRef.current = true;
 
-        const originalDisplay = HierarchyPainter.prototype.display;
-        HierarchyPainter.prototype.display = function (dom, obj, opts) {
-            this.getObject(dom).then((ret) => {
-                console.log(pads);
-                console.log("sending at pad: ", `pad${padsCounter.current}`);
-                histogramSubjectGet().next({
-                    id: `pad${padsCounter.current}`,
-                    opts: { render: renderer },
-                    obj: ret.obj,
-                });
-                if (pads.length > 0)
-                    padsCounter.current = (padsCounter.current + 1) % pads.length;
-            });
-            return originalDisplay.apply(this, [dom, obj, opts]);
-        };
-
         const painter = new HierarchyPainter("example", "myTreeDiv");
+
+        painter.setDrawFunc((dom, obj, opt) => {
+            histogramSubjectGet().next({
+                id: `pad${padsCounter.current + 1}`,
+                opts: { render: renderer },
+                obj: obj,
+            });
+            if (pads.current.length > 0)
+                padsCounter.current = (padsCounter.current + 1) % pads.current.length;
+            return draw(dom, obj, opt);
+        })
+
         painterRef.current = painter;
         const initPainter = async () => {
             for (const key in defaultDrawOpt) {
@@ -121,13 +122,9 @@ export default function NdmspcDefaultBrowserEnv({
                 .openRootFile(file)
                 .then((v) => {
                     const ps = getPads(v.disp_kind);
-                    // const childs = v.h._childs.map(child => child._name)
+                    pads.current = ps;
                     console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
-                    if (ps) {
-                        configSubjectGet().appendPads(ps, v.disp_kind, defaultPad
-                        );
-                        setPads(ps);
-                    }
+                    configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
                 });
             // if (item) {
             await painter.display(item, opt);

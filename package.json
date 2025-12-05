@@ -39,7 +39,7 @@
     "react-dom": "^19.2.0"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-aframe": "1.0.0-rc.45",
+    "@ndmspc/ndmvr-aframe": "1.0.0-rc.46",
     "@pmndrs/uikit": "^1.0.58",
     "@react-three/drei": "^10.4.2",
     "@react-three/fiber": "^9.4.0",

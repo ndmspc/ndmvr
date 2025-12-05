@@ -1,12 +1,14 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { filter } from "rxjs";
+import { Text } from "@react-three/drei";
 import {
     configSubjectGet,
     HistogramJsrootClass,
     histogramSubjectGet,
     THnPainter,
 } from "@ndmspc/ndmvr-aframe";
+import {vector3ToArray} from "../../utils/helper-functions.ts";
 
 interface HistogramWrapperProps {
     id: string;
@@ -19,6 +21,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const [config, setConfig] = useState(null);
 
     const [jsrootMesh, setJsrootMesh] = useState(null);
+    const [jsrootError, setJsrootError] = useState(null);
     const [nestedMesh, setNestedMesh] = useState(null);
     const [wireframeObj, setWireframeObj] = useState(null);
 
@@ -73,18 +76,32 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                             nestedHistogram.current = undefined;
                         }
                         clearNestedMeshes();
+                        setJsrootError(null);
 
                         if (jsrootHistogram.current) {
                             jsrootHistogram.current.updateHistogram(histo.obj);
+                            jsrootHistogram.current.buildPromise
+                                .then(() => {
+                                    const mesh =
+                                        jsrootHistogram.current.getHistogramMesh();
+                                    setJsrootMesh(mesh);
+                                    setJsrootError(null)
+                                })
+                                .catch((e) => {
+                                    console.log(e);
+                                    setJsrootError(e);
+                            });
                         } else {
-                            jsrootHistogram.current = new HistogramJsrootClass(
-                                id,
-                                histo.obj,
-                                camera
-                            );
-                            const mesh =
-                                jsrootHistogram.current.getHistogramMesh();
-                            setJsrootMesh(mesh);
+                            jsrootHistogram.current = new HistogramJsrootClass(id, histo.obj, camera);
+                            jsrootHistogram.current.buildPromise.then(() => {
+                                const mesh =
+                                    jsrootHistogram.current.getHistogramMesh();
+                                setJsrootMesh(mesh);
+                                setJsrootError(null);
+                            }).catch((e) => {
+                                console.log(e);
+                                setJsrootError(e);
+                            });
                         }
                     } else {
                         if (jsrootHistogram.current) {
@@ -125,7 +142,18 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
     return (
         <>
-            {jsrootMesh && <primitive object={jsrootMesh} />}
+            <group>
+                {
+                    <Text position={vector3ToArray(jsrootError?.position)} fontSize={0.5} color="red"
+                          visible={jsrootError !== null}>
+                        Object cannot be rendered
+                    </Text>
+                }
+
+                {jsrootMesh && (
+                    <primitive object={jsrootMesh}/>
+                )}
+            </group>
             {nestedMesh && <primitive object={nestedMesh} />}
             {wireframeObj && <primitive object={wireframeObj} />}
         </>

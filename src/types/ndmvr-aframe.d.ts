@@ -20,7 +20,7 @@ declare module "@ndmspc/ndmvr-aframe" {
   }
 
   export class NdmvrRaycaster {
-    constructor(scene: THREE.Scene);
+    constructor(scene: THREE.Scene, domElement: HTMLElement);
     scene: THREE.Scene;
     raycaster: THREE.Raycaster & { _triggerSource?: string };
     handleRaycast(): void;
