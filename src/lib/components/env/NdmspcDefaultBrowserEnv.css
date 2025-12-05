@@ -1,0 +1,7 @@
+
+.main-div {
+    width: calc(100vw - 250px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}

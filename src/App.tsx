@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import NdmspcEnv from "./lib/components/env/NdmspcEnv.tsx";
-// import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
+// import NdmspcEnv from "./lib/components/env/NdmspcEnv.tsx";
+import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { parse as jsrootParse } from "jsroot";
 
@@ -117,8 +117,8 @@ function App() {
                     width: "100%",
                 }}
             >
-                {/* <NdmspcDefaultBrowserEnv renderer="jsroot" /> */}
-                <NdmspcEnv />
+                <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" />
+                {/* <NdmspcEnv /> */}
             </div>
         </div>
     );
