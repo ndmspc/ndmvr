@@ -16,6 +16,12 @@ interface NdmspcDefaultBrowserEnvProps {
     controlsHelp?: boolean;
     renderer?: "jsroot" | "ndmvr";
     vr?: boolean;
+    file?: string | null;
+    item?: string | null;
+    opt?: string | null;
+    title?: string | null;
+    layout?: string | null;
+    defaultDrawOpt?: Record<string, string> | null;
 }
 
 
@@ -26,6 +32,13 @@ export default function NdmspcDefaultBrowserEnv({
     controlsHelp = false,
     renderer = "jsroot",
     vr = false,
+    file = "https://root.cern.ch/js/files/hsimple.root",
+    item = null,
+    opt = null,
+    title = "Ndmspc Default Browser Environment",
+    layout = "simple",
+    defaultDrawOpt = { "TH1": "hist", "TH2": "col" },
+
 }: NdmspcDefaultBrowserEnvProps) {
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
@@ -33,6 +46,8 @@ export default function NdmspcDefaultBrowserEnv({
     const painterRef = useRef(null);
     const [pads, setPads] = useState([]);
     const padsCounter = useRef(1);
+    const [itemState, setItemState] = useState(item);
+    const [optState, setOptState] = useState(opt);
 
     console.log(
         "NdmspcDefaultBrowserEnv render, config:",
@@ -81,11 +96,11 @@ export default function NdmspcDefaultBrowserEnv({
 
         const painter = new HierarchyPainter("example", "myTreeDiv");
         painterRef.current = painter;
-        const fetchData = async () => {
-            setDefaultDrawOpt("TH1", "text");
-            setDefaultDrawOpt("TH2", "col");
-            // setDefaultDrawOpt('TBranch', 'lego');
-            painter.setDisplay("simple", "myMainDiv");
+        const initPainter = async () => {
+            for (const key in defaultDrawOpt) {
+                setDefaultDrawOpt(key, defaultDrawOpt[key]);
+            }
+            painter.setDisplay(layout, "myMainDiv");
 
             painter.no_select = true;
             // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
@@ -95,25 +110,46 @@ export default function NdmspcDefaultBrowserEnv({
             // h.prepareGuiDiv('simpleGUI', 'flex');
             // open file and display element
             // await h.createBrowser('fix');
+            const defaultPad =
+            {
+                scale: { x: 10, y: 5, z: 10 },
+                padding: { x: 0, y: 0, z: 0 },
+                origin: { x: -5, y: 0.5, z: 1 },
+            };
             await painter
-                .openRootFile("https://root.cern.ch/js/files/hsimple.root")
+                .openRootFile(file)
                 .then((v) => {
                     const ps = getPads(v.disp_kind);
-                    setPads(ps);
                     // const childs = v.h._childs.map(child => child._name)
-                    configSubjectGet().appendPads(ps, {
-                        scale: { x: 10, y: 5, z: 10 },
-                        padding: { x: 0, y: 0, z: 0 },
-                        origin: { x: -5, y: 0.5, z: 1 },
-                    });
-                    painter.display("hpxpy;1", "colz");
+                    console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
+                    if (ps) {
+                        configSubjectGet().appendPads(ps, v.disp_kind, defaultPad
+                        );
+                        setPads(ps);
+                    }
                 });
+            // if (item) {
+            await painter.display(item, opt);
+            setItemState(item);
+            setOptState(opt);
+            // }
             // await h.expandItem('E;1//Event/Gen/Header');
             console.log("HierarchyPainter h:", painter);
         };
-        fetchData();
+        initPainter();
+        console.log(title);
     }, []);
 
+    useEffect(() => {
+        if (!initializedRef.current) return;
+        if (itemState === null) return;
+
+        const painter = painterRef.current;
+        const painterDisplay = async () => {
+            await painter.display(itemState, optState);
+        }
+        painterDisplay();
+    }, [itemState, optState]);
     return (
         <div
             style={{
@@ -149,6 +185,7 @@ export default function NdmspcDefaultBrowserEnv({
                     controlsHelp={controlsHelp}
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
+                    menu={false}
                 >
                     {children}
                 </NdmvrEnv>

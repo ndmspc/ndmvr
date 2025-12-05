@@ -24,12 +24,13 @@ interface NdmvrEnvProps {
     controlsHelp?: boolean;
     currentConfig?: Record<string, unknown> | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
+    menu?: boolean;
 }
 
-export default function NdmvrEnv({ children, controlsHelp = true, currentConfig = null, onConfigChange = null }: NdmvrEnvProps) {
+export default function NdmvrEnv({ children, controlsHelp = true, currentConfig = null, onConfigChange = null, menu = true }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
-    const [showMenu, setShowMenu] = useState(true);
+    const [showMenu, setShowMenu] = useState(menu);
     const [showBinInfo, setShowBinInfo] = useState(false);
     const [showDemo, setShowDemo] = useState(false);
 
