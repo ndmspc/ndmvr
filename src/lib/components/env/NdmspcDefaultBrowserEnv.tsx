@@ -8,6 +8,7 @@ import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 import defaultConfig from "../../config.json";
 import { getPads } from "../../utils/helper-functions.ts";
+import "./NdmspcDefaultBrowserEnv.css";
 
 interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;

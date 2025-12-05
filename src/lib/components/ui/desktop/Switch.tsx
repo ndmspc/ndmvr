@@ -66,26 +66,26 @@ const LabelText = styled.div`
 `;
 
 interface SwitchProps {
-  onToggle?: (checked: boolean) => void;
-  label?: string;
-  startState?: boolean;
+    onToggle?: (checked: boolean) => void;
+    label?: string;
+    startState?: boolean;
 }
 
-export default function Switch({ onToggle, label = "VR Mode", startState = false }: SwitchProps) {
-  const [checked, setChecked] = useState(startState);
+export default function Switch({ onToggle, label = "Full 3D Mode", startState = false }: SwitchProps) {
+    const [checked, setChecked] = useState(startState);
 
-  const handleChange = () => {
-    setChecked(!checked);
-    if (onToggle) onToggle(!checked);
-  };
+    const handleChange = () => {
+        setChecked(!checked);
+        if (onToggle) onToggle(!checked);
+    };
 
-  return (
-    <SwitchWrapper>
-      <SwitchLabel>
-        <input type="checkbox" checked={checked} onChange={handleChange} />
-        <span className="slider" />
-      </SwitchLabel>
-      <LabelText>{label}</LabelText>
-    </SwitchWrapper>
-  );
+    return (
+        <SwitchWrapper>
+            <SwitchLabel>
+                <input type="checkbox" checked={checked} onChange={handleChange} />
+                <span className="slider" />
+            </SwitchLabel>
+            <LabelText>{label}</LabelText>
+        </SwitchWrapper>
+    );
 }
