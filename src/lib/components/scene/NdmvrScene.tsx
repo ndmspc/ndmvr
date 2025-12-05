@@ -18,7 +18,7 @@ interface NdmvrSceneProps {
 }
 
 export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSceneProps) {
-    const { scene } = useThree();
+    const { scene, gl } = useThree();
     const [raycaster, setRaycaster] = useState(null);
     const [config, setConfig] = useState(null);
 
@@ -44,7 +44,7 @@ export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSce
 
     useEffect(() => {
         if (scene) {
-            const raycaster = new NdmvrRaycaster(scene);
+            const raycaster = new NdmvrRaycaster(scene, gl.domElement);
             console.log(raycaster);
             setRaycaster(raycaster);
         }
