@@ -81,12 +81,9 @@ function App() {
                                 obj: obj.arr[i],
                             });
                         } else {
-                            var r = "jsroot";
-                            r = "ndmvr";
-
                             histogramSubjectGet().next({
                                 id: `histogram${i + 1}`,
-                                opts: { render: r },
+                                opts: { render: "ndmvr" },
                                 obj: obj.arr[i],
                             });
                         }

@@ -121,7 +121,7 @@ declare module "@ndmspc/ndmvr-aframe" {
     next(config: any): void;
     getValue(): any;
     getObservable(): Subject<any>;
-    appendPads(pads: string[], options: Record<string, unknown>): void;
+    appendPads(ids: string[], disp_kind: string, settings: Record<string, unknown>): void;
   }
 
   export interface CanvasSubject {
