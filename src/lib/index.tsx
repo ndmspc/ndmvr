@@ -14,6 +14,8 @@ import BinInfo from "./components/ui/shared/BinInfo.tsx";
 import ControlsHelp from "./components/ui/shared/ControlsHelp.tsx";
 import Menu from "./components/ui/shared/Menu.tsx";
 
+import { histogramSubjectGet, brokerManagerGet, binInfoSubjectGet, canvasSubjectGet, configSubjectGet, functionSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe"
+
 export {
     JsrootEnv,
     NdmspcEnv,
@@ -30,6 +32,13 @@ export {
     VRController,
     DesktopController,
     Controllers,
+    histogramSubjectGet,
+    brokerManagerGet,
+    binInfoSubjectGet,
+    canvasSubjectGet,
+    configSubjectGet,
+    functionSubjectGet,
+    stateSubjectGet
 };
 
 // Export types for component props
