@@ -30,8 +30,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         const disposeOne = (o) => {
             if (o.geometry) o.geometry.dispose?.();
             if (o.material) {
-                if (Array.isArray(o.material))
-                    o.material.forEach((m) => m?.dispose?.());
+                if (Array.isArray(o.material)) o.material.forEach((m) => m?.dispose?.());
                 else o.material.dispose?.();
             }
         };
@@ -82,8 +81,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                             jsrootHistogram.current.updateHistogram(histo.obj);
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
-                                    const mesh =
-                                        jsrootHistogram.current.getHistogramMesh();
+                                    const mesh = jsrootHistogram.current.getHistogramMesh();
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
@@ -99,8 +97,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                             );
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
-                                    const mesh =
-                                        jsrootHistogram.current.getHistogramMesh();
+                                    const mesh = jsrootHistogram.current.getHistogramMesh();
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
@@ -122,11 +119,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                             // nestedHistogram.current.remove();
                             // nestedHistogram.current = undefined;
                         } else {
-                            const painter = new THnPainter(
-                                histo,
-                                id,
-                                histo?.opts
-                            );
+                            const painter = new THnPainter(histo, id, histo?.opts);
                             nestedHistogram.current = painter;
 
                             setNestedMesh(() => painter.mesh);

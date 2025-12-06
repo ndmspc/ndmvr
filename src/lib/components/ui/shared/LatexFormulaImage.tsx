@@ -18,7 +18,7 @@ const cleanupCache = (maxSize = 100) => {
         for (let i = 0; i < entriesToDelete; i++) {
             const keyToDelete = iterator.next().value;
             const cached = imageCache.get(keyToDelete);
-            if (cached?.url && cached.url.startsWith('blob:')) {
+            if (cached?.url && cached.url.startsWith("blob:")) {
                 URL.revokeObjectURL(cached.url);
             }
             imageCache.delete(keyToDelete);
@@ -42,7 +42,7 @@ export default function LatexFormulaImage({
     const isMountedRef = useRef(true);
     const currentGenerationRef = useRef(0);
 
-    const mjReady = useMemo(() => loadMathjax().catch(() => { }), []);
+    const mjReady = useMemo(() => loadMathjax().catch(() => {}), []);
 
     const getSvgHost = useCallback(() => {
         if (!svgHostSingleton.current) {
@@ -163,11 +163,15 @@ export default function LatexFormulaImage({
                 });
             }
 
-            if (resultUrl && isMountedRef.current && generationId === currentGenerationRef.current) {
+            if (
+                resultUrl &&
+                isMountedRef.current &&
+                generationId === currentGenerationRef.current
+            ) {
                 if (cacheEnabled) {
                     imageCache.set(cacheKey, {
                         url: resultUrl,
-                        natural: naturalDimensions
+                        natural: naturalDimensions,
                     });
                     cleanupCache();
                 }
@@ -208,7 +212,7 @@ export default function LatexFormulaImage({
 
 export const clearLatexCache = () => {
     imageCache.forEach((cached) => {
-        if (cached?.url && cached.url.startsWith('blob:')) {
+        if (cached?.url && cached.url.startsWith("blob:")) {
             URL.revokeObjectURL(cached.url);
         }
     });

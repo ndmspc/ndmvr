@@ -1,6 +1,6 @@
-import {useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import {useFrame} from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 
 interface UseMoveAndRotationOptions {
     originRef: React.RefObject<THREE.Group> | null;
@@ -10,11 +10,11 @@ interface UseMoveAndRotationOptions {
 }
 
 export function useMoveAndRotation({
-                                       originRef,
-                                       offset = { x: 0, y: 1.2, z: -4 },
-                                       smoothFollow = true,
-                                       lerpFactor = 0.25,
-                                   }: UseMoveAndRotationOptions) {
+    originRef,
+    offset = { x: 0, y: 1.2, z: -4 },
+    smoothFollow = true,
+    lerpFactor = 0.25,
+}: UseMoveAndRotationOptions) {
     const groupRef = useRef(null);
 
     const currentPos = useRef(new THREE.Vector3(offset.x, offset.y, offset.z));
@@ -34,9 +34,12 @@ export function useMoveAndRotation({
     const lastClickTime = useRef(0);
 
     const LIMITS = {
-        xMin: -4, xMax: 4,
-        yMin: -1, yMax: 4,
-        zMin: -6, zMax: -3,
+        xMin: -4,
+        xMax: 4,
+        yMin: -1,
+        yMax: 4,
+        zMin: -6,
+        zMax: -3,
     };
 
     useEffect(() => {
@@ -45,7 +48,9 @@ export function useMoveAndRotation({
             try {
                 const obj = JSON.parse(saved);
                 currentPos.current.set(obj.x, obj.y, obj.z);
-            } catch { /* empty */ }
+            } catch {
+                /* empty */
+            }
         }
     }, []);
 
@@ -86,7 +91,9 @@ export function useMoveAndRotation({
                 rotation.current.x = obj.x;
                 rotation.current.y = obj.y;
                 groupRef.current.rotation.set(obj.x, obj.y, 0);
-            } catch { /* empty */ }
+            } catch {
+                /* empty */
+            }
         }
     }, []);
 
@@ -106,7 +113,6 @@ export function useMoveAndRotation({
             groupRef.current.position.copy(target);
         }
     });
-
 
     const onDragStart = (e) => {
         if (!groupRef.current || !e.ray) return;
@@ -157,7 +163,6 @@ export function useMoveAndRotation({
             })
         );
     };
-
 
     const onRotateStart = (e) => {
         if (!groupRef.current || !e.ray) return;
@@ -223,7 +228,6 @@ export function useMoveAndRotation({
             })
         );
     };
-
 
     const handlePointerDown = (e) => {
         lastClickTime.current = performance.now();

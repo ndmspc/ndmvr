@@ -24,12 +24,7 @@ export default function NdmspcEnv({
     const initializedRef = useRef(false);
     const [appConfig, setAppConfig] = useState(defaultConfig);
 
-    console.log(
-        "NdmspcEnv render, config:",
-        appConfig,
-        "onConfigChange:",
-        typeof onConfigChange
-    );
+    console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
 
     const applyConfig = useCallback(
         (newConfig) => {
@@ -77,10 +72,7 @@ export default function NdmspcEnv({
                 </NdmvrEnv>
             </div>
 
-            <Switch
-                startState={true}
-                onToggle={(checked: boolean) => setVRMode(checked)}
-            />
+            <Switch startState={true} onToggle={(checked: boolean) => setVRMode(checked)} />
         </div>
     );
 }

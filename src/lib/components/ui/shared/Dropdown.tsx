@@ -9,7 +9,7 @@ type DropdownContextType = {
 
 const DropdownContext = createContext<DropdownContextType>({
     openDropdownId: null,
-    setOpenDropdownId: () => { },
+    setOpenDropdownId: () => {},
 });
 
 interface DropdownProviderProps {
@@ -105,9 +105,7 @@ export default function Dropdown({
                                 key={opt}
                                 classList={[
                                     "dropdownItem",
-                                    selected === opt
-                                        ? "dropdownItemSelected"
-                                        : "foobar",
+                                    selected === opt ? "dropdownItemSelected" : "foobar",
                                 ]}
                                 hover={{ backgroundColor: "#059669" }}
                                 onClick={(e) => {

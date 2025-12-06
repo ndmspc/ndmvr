@@ -1,6 +1,6 @@
 import { Container, Text } from "@react-three/uikit";
 import { Button } from "@react-three/uikit-default";
-import { Cross } from "@react-three/uikit-lucide"
+import { Cross } from "@react-three/uikit-lucide";
 
 import { useBrokerStore } from "../../../stores/broker/store.ts";
 import { STAT } from "../../../stores/broker/constants.ts";
@@ -52,10 +52,7 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                         {trimUrl(wsUrl)}
                     </Text>
                 </Container>
-                <Button
-                    hover={{ backgroundColor: "#059669" }}
-                    onClick={disconnect}
-                >
+                <Button hover={{ backgroundColor: "#059669" }} onClick={disconnect}>
                     <Text>Disconnect</Text>
                 </Button>
             </Banner>
@@ -72,10 +69,7 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                         Connecting to {trimUrl(wsUrl)} ...
                     </Text>
                     {/*<Loading alignSelf="center" size="lg"/>*/}
-                    <Button
-                        hover={{ backgroundColor: "#059669" }}
-                        onClick={disconnect}
-                    >
+                    <Button hover={{ backgroundColor: "#059669" }} onClick={disconnect}>
                         <Text>Disconnect</Text>
                     </Button>
                 </Container>
@@ -90,10 +84,7 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                         Reconnecting to {trimUrl(wsUrl)} ...
                     </Text>
                     {/*<Loading alignSelf="center" size="lg"/>*/}
-                    <Button
-                        hover={{ backgroundColor: "#059669" }}
-                        onClick={disconnect}
-                    >
+                    <Button hover={{ backgroundColor: "#059669" }} onClick={disconnect}>
                         <Text>Disconnect</Text>
                     </Button>
                 </Container>
@@ -108,7 +99,14 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                         {error ?? "Connection failed"}
                     </Text>
                     <Container>
-                        <Cross hover={{ cursor: "pointer" }} onClick={() => { clearError(); }} color="red" transformRotateZ={45} />
+                        <Cross
+                            hover={{ cursor: "pointer" }}
+                            onClick={() => {
+                                clearError();
+                            }}
+                            color="red"
+                            transformRotateZ={45}
+                        />
                     </Container>
                 </Container>
             </Banner>

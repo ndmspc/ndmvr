@@ -1,96 +1,168 @@
 {
-  "openapi": "3.1.1",
-  "info": { "title": "Configuration API", "version": "1.0.1" },
-  "components": {
-    "schemas": {
-      "Config": {
-        "type": "object",
-        "properties": {
-          "environment": {
-            "type": "object",
-            "properties": {
-              "dbClickTimeout": {
-                "type": "integer",
-                "default": 200,
-                "title": "Double-Click Timeout (ms)"
-              },
-              "desktopSpeed": {
-                "type": "number",
-                "default": 10,
-                "title": "Desktop Camera Speed"
-              },
-              "vrSpeed": {
-                "type": "number",
-                "default": 10,
-                "title": "VR Camera Speed"
-              },
-              "canvas": {
+    "openapi": "3.1.1",
+    "info": { "title": "Configuration API", "version": "1.0.1" },
+    "components": {
+        "schemas": {
+            "Config": {
                 "type": "object",
                 "properties": {
-                  "position": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 0, "title": "Canvas Position X" },
-                      "y": { "type": "number", "default": 20, "title": "CanvasPosition Y" },
-                      "z": { "type": "number", "default": -20, "title": "Canvas Position Z" }
+                    "environment": {
+                        "type": "object",
+                        "properties": {
+                            "dbClickTimeout": {
+                                "type": "integer",
+                                "default": 200,
+                                "title": "Double-Click Timeout (ms)"
+                            },
+                            "desktopSpeed": {
+                                "type": "number",
+                                "default": 10,
+                                "title": "Desktop Camera Speed"
+                            },
+                            "vrSpeed": {
+                                "type": "number",
+                                "default": 10,
+                                "title": "VR Camera Speed"
+                            },
+                            "canvas": {
+                                "type": "object",
+                                "properties": {
+                                    "position": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Canvas Position X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 20,
+                                                "title": "CanvasPosition Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": -20,
+                                                "title": "Canvas Position Z"
+                                            }
+                                        }
+                                    },
+                                    "rotation": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 8,
+                                                "title": "Canvas Rotation X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Canvas Rotation Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Canvas Rotation Z"
+                                            }
+                                        }
+                                    },
+                                    "scale": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 6,
+                                                "title": "Canvas Scale X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 5,
+                                                "title": "Canvas Scale Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 1,
+                                                "title": "Canvas Scale Z"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "histogramPads": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "default": "grid2x1x2",
+                                        "title": "Pad Layout Type"
+                                    },
+                                    "scale": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 20,
+                                                "title": "Pad Scale X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 2,
+                                                "title": "Pad Scale Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 10,
+                                                "title": "Pad Scale Z"
+                                            }
+                                        }
+                                    },
+                                    "padding": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Pad Padding X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Pad Padding Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 0,
+                                                "title": "Pad Padding Z"
+                                            }
+                                        }
+                                    },
+                                    "origin": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 10,
+                                                "title": "Pad Origin X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 1,
+                                                "title": "Pad Origin Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 5,
+                                                "title": "Pad Origin Z"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                  },
-                  "rotation": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 8, "title": "Canvas Rotation X" },
-                      "y": { "type": "number", "default": 0, "title": "Canvas Rotation Y" },
-                      "z": { "type": "number", "default": 0, "title": "Canvas Rotation Z" }
-                    }
-                  },
-                  "scale": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 6, "title": "Canvas Scale X" },
-                      "y": { "type": "number", "default": 5, "title": "Canvas Scale Y" },
-                      "z": { "type": "number", "default": 1, "title": "Canvas Scale Z" }
-                    }
-                  }
                 }
-              },
-              "histogramPads": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "default": "grid2x1x2",
-                    "title": "Pad Layout Type"
-                  },
-                  "scale": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 20, "title": "Pad Scale X" },
-                      "y": { "type": "number", "default": 2, "title": "Pad Scale Y" },
-                      "z": { "type": "number", "default": 10, "title": "Pad Scale Z" }
-                    }
-                  },
-                  "padding": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 0, "title": "Pad Padding X" },
-                      "y": { "type": "number", "default": 0, "title": "Pad Padding Y" },
-                      "z": { "type": "number", "default": 0, "title": "Pad Padding Z" }
-                    }
-                  },
-                  "origin": {
-                    "type": "object",
-                    "properties": {
-                      "x": { "type": "number", "default": 10, "title": "Pad Origin X" },
-                      "y": { "type": "number", "default": 1, "title": "Pad Origin Y" },
-                      "z": { "type": "number", "default": 5, "title": "Pad Origin Z" }
-                    }
-                  }
-                }
-              }
             }
-          }
         }
-      }
     }
-  }
 }

@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { useXR } from "@react-three/xr";
 import { Container, Text } from "@react-three/uikit";
-import {
-    Button,
-    Label,
-    RadioGroup,
-    RadioGroupItem,
-} from "@react-three/uikit-default";
+import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import * as THREE from "three";
 
 import FloatingContainer from "./FloatingContainer.tsx";
@@ -41,18 +36,10 @@ export default function Menu({
         <>
             {loadMode === "demo" && <Demo originRef={originRef} />}
             {loadMode === "http" && (
-                <ConnectionMenu
-                    type="http"
-                    originRef={originRef}
-                    onClose={onClose}
-                />
+                <ConnectionMenu type="http" originRef={originRef} onClose={onClose} />
             )}
             {loadMode === "ws" && (
-                <ConnectionMenu
-                    type="ws"
-                    originRef={originRef}
-                    onClose={onClose}
-                />
+                <ConnectionMenu type="ws" originRef={originRef} onClose={onClose} />
             )}
             {loadMode === "bin" && <BinInfo originRef={originRef} />}
             {loadMode === "opt" && <DrawOptions originRef={originRef} />}

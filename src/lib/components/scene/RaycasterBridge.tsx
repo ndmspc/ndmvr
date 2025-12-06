@@ -18,10 +18,7 @@ export default function RaycasterBridge({
     handedness = "right",
 }: RaycasterBridgeProps) {
     const { gl } = useThree();
-    const controller = useXRInputSourceState(
-        "controller",
-        handedness as XRHandedness
-    );
+    const controller = useXRInputSourceState("controller", handedness as XRHandedness);
 
     const session = useXR((s) => s.session);
     const refSpace = useXR((s) => s.originReferenceSpace);
@@ -49,16 +46,11 @@ export default function RaycasterBridge({
                 pose.transform.orientation.z,
                 pose.transform.orientation.w
             );
-            tmpDir.current
-                .set(0, 0, -1)
-                .applyQuaternion(tmpQ.current)
-                .normalize();
+            tmpDir.current.set(0, 0, -1).applyQuaternion(tmpQ.current).normalize();
 
             if (originRef?.current) {
                 tmpPos.current.applyMatrix4(originRef.current.matrixWorld);
-                tmpDir.current.transformDirection(
-                    originRef.current.matrixWorld
-                );
+                tmpDir.current.transformDirection(originRef.current.matrixWorld);
             }
 
             return { pos: tmpPos.current, dir: tmpDir.current };
@@ -91,15 +83,10 @@ export default function RaycasterBridge({
             const click = pendingClick.current;
             pendingClick.current = null;
 
-            if (
-                lastClick.current &&
-                click.t - lastClick.current.t < doubleClickMs
-            ) {
+            if (lastClick.current && click.t - lastClick.current.t < doubleClickMs) {
                 rc.raycaster.ray.origin.copy(click.origin);
                 rc.raycaster.ray.direction.copy(click.dir);
-                rc.raycaster._triggerSource = click.modifier
-                    ? "shiftmousedbclick"
-                    : "mousedbclick";
+                rc.raycaster._triggerSource = click.modifier ? "shiftmousedbclick" : "mousedbclick";
                 rc.handleRaycast?.();
                 handled.current = true;
 
@@ -116,9 +103,7 @@ export default function RaycasterBridge({
 
             rc.raycaster.ray.origin.copy(click.origin);
             rc.raycaster.ray.direction.copy(click.dir);
-            rc.raycaster._triggerSource = click.modifier
-                ? "shiftmouseclick"
-                : "mouseclick";
+            rc.raycaster._triggerSource = click.modifier ? "shiftmouseclick" : "mouseclick";
             rc.handleRaycast?.();
             handled.current = true;
         }
@@ -133,29 +118,17 @@ export default function RaycasterBridge({
         if (!session) return;
 
         const onSqueezeStart = (e) => {
-            if (
-                e.inputSource?.handedness &&
-                e.inputSource.handedness !== handedness
-            )
-                return;
+            if (e.inputSource?.handedness && e.inputSource.handedness !== handedness) return;
             squeezeHeld.current = true;
         };
 
         const onSqueezeEnd = (e) => {
-            if (
-                e.inputSource?.handedness &&
-                e.inputSource.handedness !== handedness
-            )
-                return;
+            if (e.inputSource?.handedness && e.inputSource.handedness !== handedness) return;
             squeezeHeld.current = false;
         };
 
         const onSelectEnd = (e) => {
-            if (
-                e.inputSource?.handedness &&
-                e.inputSource.handedness !== handedness
-            )
-                return;
+            if (e.inputSource?.handedness && e.inputSource.handedness !== handedness) return;
             if (!refSpace || !e.frame || !e.inputSource) return;
 
             const trs = e.inputSource?.targetRaySpace;

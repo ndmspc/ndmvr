@@ -25,9 +25,11 @@ export default function JsrootEnv() {
     const [config, setConfig] = useState(null);
     const histoCinemaID = "nh-canva";
     useEffect(() => {
-        const sub = configSubjectGet().getObservable().subscribe((c) => {
-            setConfig(c.config)
-        });
+        const sub = configSubjectGet()
+            .getObservable()
+            .subscribe((c) => {
+                setConfig(c.config);
+            });
         const cinemaSub = canvasSubjectGet()
             .getObservable()
             .pipe()
@@ -41,7 +43,6 @@ export default function JsrootEnv() {
             cinemaSub.unsubscribe();
         };
     }, []);
-
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const pads = config?.environment?.histogramPads ?? [];
@@ -62,7 +63,6 @@ export default function JsrootEnv() {
             jsrootRedraw(obj?.obj, id);
             jsrootRedraw(obj?.obj, `full-${id}`);
         });
-
 
         return () => sub.unsubscribe();
     }, [n, pads]);
@@ -103,7 +103,7 @@ export default function JsrootEnv() {
                     ))}
                 </div>
             </Tab>
-            <Tab name='Cinema'>
+            <Tab name="Cinema">
                 <div
                     id={histoCinemaID}
                     style={{
@@ -115,25 +115,21 @@ export default function JsrootEnv() {
                     }}
                 />
             </Tab>
-            {
-                n > 1 && (
-                    pads.map((pad) => (
-                        <Tab name={pad?.id} key={pad.id}>
-                            <div
-                                id={`full-${pad.id}`}
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    overflow: "hidden",
-                                    aspectRatio: "1 / 1",
-                                    border: "1px solid black",
-                                }}
-                            />
-                        </Tab>
-                    ))
-
-                )
-            }
+            {n > 1 &&
+                pads.map((pad) => (
+                    <Tab name={pad?.id} key={pad.id}>
+                        <div
+                            id={`full-${pad.id}`}
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                overflow: "hidden",
+                                aspectRatio: "1 / 1",
+                                border: "1px solid black",
+                            }}
+                        />
+                    </Tab>
+                ))}
         </Tabs>
     );
 }

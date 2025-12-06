@@ -1,10 +1,6 @@
 import * as THREE from "three";
 import { Sky } from "@react-three/drei";
-import {
-    binInfoSubjectGet,
-    configSubjectGet,
-    NdmvrRaycaster,
-} from "@ndmspc/ndmvr-aframe";
+import { binInfoSubjectGet, configSubjectGet, NdmvrRaycaster } from "@ndmspc/ndmvr-aframe";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import CanvasComponent from "./CanvasComponent.tsx";
@@ -17,10 +13,7 @@ export interface NdmvrSceneProps {
     controlsHelp?: boolean;
 }
 
-export default function NdmvrScene({
-    originRef,
-    controlsHelp = false,
-}: NdmvrSceneProps) {
+export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSceneProps) {
     const { scene, gl } = useThree();
     const [raycaster, setRaycaster] = useState(null);
     const [config, setConfig] = useState(null);
@@ -69,16 +62,10 @@ export default function NdmvrScene({
 
             {controlsHelp && (
                 <>
-                    <group
-                        position={[-3.5, 1.5, 7]}
-                        rotation={[0, Math.PI / 4, 0]}
-                    >
+                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4, 0]}>
                         <ControlsHelp />
                     </group>
-                    <group
-                        position={[-3.5, 1.5, 7]}
-                        rotation={[0, Math.PI / 4 + Math.PI, 0]}
-                    >
+                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4 + Math.PI, 0]}>
                         <ControlsHelp />
                     </group>
                 </>

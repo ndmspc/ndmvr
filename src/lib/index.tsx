@@ -34,15 +34,9 @@ export {
 
 // Export types for component props
 export type { NdmspcEnvProps } from "./components/env/NdmspcEnv.tsx";
-export type {
-    NdmvrEnvProps,
-    HistogramContext,
-} from "./components/env/NdmvrEnv.tsx";
+export type { NdmvrEnvProps, HistogramContext } from "./components/env/NdmvrEnv.tsx";
 export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
-export type {
-    CanvasComponentProps,
-    CanvasLocation,
-} from "./components/scene/CanvasComponent.tsx";
+export type { CanvasComponentProps, CanvasLocation } from "./components/scene/CanvasComponent.tsx";
 export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";
 export type { NdmvrSceneProps } from "./components/scene/NdmvrScene.tsx";
 export type { RaycasterBridgeProps } from "./components/scene/RaycasterBridge.tsx";

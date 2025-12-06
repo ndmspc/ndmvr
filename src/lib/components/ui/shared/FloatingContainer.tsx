@@ -1,5 +1,5 @@
-import {Container} from "@react-three/uikit";
-import {useMoveAndRotation} from "../../systems/inputs/MoveAndRotation.tsx";
+import { Container } from "@react-three/uikit";
+import { useMoveAndRotation } from "../../systems/inputs/MoveAndRotation.tsx";
 import * as THREE from "three";
 
 interface FloatingContainerProps {
@@ -13,20 +13,20 @@ interface FloatingContainerProps {
 }
 
 export default function FloatingContainer({
-                                              children,
-                                              originRef,
-                                              offset = {x: 0, y: 1.2, z: -4},
-                                              smoothFollow = true,
-                                              lerpFactor = 0.25,
-                                              classList = [],
-                                              ...containerProps
-                                          }: FloatingContainerProps) {
-    const {
-        groupRef,
-        handlePointerDown,
-        handlePointerMove,
-        handlePointerUp,
-    } = useMoveAndRotation({ originRef, offset, smoothFollow, lerpFactor });
+    children,
+    originRef,
+    offset = { x: 0, y: 1.2, z: -4 },
+    smoothFollow = true,
+    lerpFactor = 0.25,
+    classList = [],
+    ...containerProps
+}: FloatingContainerProps) {
+    const { groupRef, handlePointerDown, handlePointerMove, handlePointerUp } = useMoveAndRotation({
+        originRef,
+        offset,
+        smoothFollow,
+        lerpFactor,
+    });
 
     return (
         <Container

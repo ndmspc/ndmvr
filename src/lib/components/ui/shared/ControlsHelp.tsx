@@ -48,8 +48,7 @@ export default function ControlsHelp() {
                 <Row a="Toggle Menu" d="F" v="B" />
                 <Row a="Toggle Bin Info" d="B" v="A" />
                 <Text fontSize={11} color="gray" textAlign="center">
-                    Tip: In VR, "B" refers to the B button on the right
-                    controller.
+                    Tip: In VR, "B" refers to the B button on the right controller.
                 </Text>
             </Container>
         </Container>
