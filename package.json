@@ -19,12 +19,12 @@
         "./src/lib/scripts/uikit-styles.js"
     ],
     "type": "module",
-    "types": "./dist/lib/index.d.ts",
+    "types": "./dist/ndmvr-r3f.d.ts",
     "main": "./dist/ndmvr-r3f.umd.js",
     "module": "./dist/ndmvr-r3f.es.js",
     "exports": {
         ".": {
-            "types": "./dist/lib/index.d.ts",
+            "types": "./dist/ndmvr-r3f.d.ts",
             "import": "./dist/ndmvr-r3f.es.js",
             "require": "./dist/ndmvr-r3f.umd.js"
         },
@@ -79,7 +79,7 @@
         "eslint-plugin-react-refresh": "^0.4.24",
         "globals": "^16.5.0",
         "prettier": "^3.7.4",
-        "typescript": "~5.9.3",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.46.4",
         "vite": "^7.2.2",
         "vite-plugin-dts": "^4.5.4"
