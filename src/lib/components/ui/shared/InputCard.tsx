@@ -40,9 +40,7 @@ export default function InputCard({
         "ws://ndmspc.cern.ch/ws/root.websocket",
     ];
 
-    const radioGroupValue = useRef(
-        predefined.includes(firstValue) ? firstValue : ""
-    );
+    const radioGroupValue = useRef(predefined.includes(firstValue) ? firstValue : "");
 
     const handleChangeForWs = (v) => {
         setValue(v);
@@ -51,11 +49,7 @@ export default function InputCard({
     };
 
     return (
-        <Container
-            display={isVisible ? "flex" : "none"}
-            flexDirection="column"
-            gap={12}
-        >
+        <Container display={isVisible ? "flex" : "none"} flexDirection="column" gap={12}>
             {type === "ws" && (
                 <>
                     <Input
@@ -147,7 +141,6 @@ export default function InputCard({
                     Invalid Address
                 </Text>
             )}
-
 
             <Button
                 // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types

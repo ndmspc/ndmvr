@@ -13,9 +13,7 @@ const FocusContext = createContext<FocusContextType>({
 export const FocusProvider = ({ children }) => {
     const [focused, setFocused] = useState(false);
     return (
-        <FocusContext.Provider value={{ focused, setFocused }}>
-            {children}
-        </FocusContext.Provider>
+        <FocusContext.Provider value={{ focused, setFocused }}>{children}</FocusContext.Provider>
     );
 };
 

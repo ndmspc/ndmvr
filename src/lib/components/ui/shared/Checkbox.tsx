@@ -1,7 +1,7 @@
-import {Container, Text} from "@react-three/uikit";
-import {Check} from "@react-three/uikit-lucide";
+import { Container, Text } from "@react-three/uikit";
+import { Check } from "@react-three/uikit-lucide";
 
-import {useState} from "react";
+import { useState } from "react";
 
 interface CheckboxProps {
     label?: string;
@@ -10,7 +10,12 @@ interface CheckboxProps {
     checked?: boolean;
 }
 
-export default function Checkbox({label = "", onCheck, size = 24, checked: controlledChecked}: CheckboxProps) {
+export default function Checkbox({
+    label = "",
+    onCheck,
+    size = 24,
+    checked: controlledChecked,
+}: CheckboxProps) {
     const [internalChecked, setInternalChecked] = useState(false);
 
     const checked = controlledChecked !== undefined ? controlledChecked : internalChecked;
@@ -24,7 +29,7 @@ export default function Checkbox({label = "", onCheck, size = 24, checked: contr
         onCheck?.(newValue);
     };
 
-    return(
+    return (
         <Container
             onClick={handleClick}
             classList={["checkboxContainer"]}
@@ -35,21 +40,12 @@ export default function Checkbox({label = "", onCheck, size = 24, checked: contr
             <Container
                 width={size}
                 height={size}
-                classList={[
-                    "checkboxBox",
-                    checked ? "checkboxBoxChecked" : "foobar"
-                ]}
+                classList={["checkboxBox", checked ? "checkboxBoxChecked" : "foobar"]}
                 alignItems="center"
                 justifyContent="center"
                 // hover={{borderColor: '#10b981'}}
             >
-                {checked && (
-                    <Check
-                        width={size * 0.7}
-                        height={size * 0.7}
-                        color={'#10b981'}
-                    />
-                )}
+                {checked && <Check width={size * 0.7} height={size * 0.7} color={"#10b981"} />}
             </Container>
             {label && <Text classList={["checkboxLabel"]}>{label}</Text>}
         </Container>

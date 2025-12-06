@@ -1,81 +1,84 @@
 {
-  "name": "@ndmspc/ndmvr-r3f",
-  "version": "0.0.1",
-  "description": "Ndmvr r3f",
-  "author": "Martin Vala",
-  "repository": "https://gitlab.com/ndmspc/ndmvr-r3f.git",
-  "license": "MIT",
-  "keywords": [],
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "sideEffects": [
-    "**/*.css",
-    "**/uikit-styles.js",
-    "./src/lib/scripts/uikit-styles.js"
-  ],
-  "type": "module",
-  "types": "./dist/lib/index.d.ts",
-  "main": "./dist/ndmvr-r3f.umd.js",
-  "module": "./dist/ndmvr-r3f.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/ndmvr-r3f.es.js",
-      "require": "./dist/ndmvr-r3f.umd.js"
-      
+    "name": "@ndmspc/ndmvr-r3f",
+    "version": "0.0.1",
+    "description": "Ndmvr r3f",
+    "author": "Martin Vala",
+    "repository": "https://gitlab.com/ndmspc/ndmvr-r3f.git",
+    "license": "MIT",
+    "keywords": [],
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "sideEffects": [
+        "**/*.css",
+        "**/uikit-styles.js",
+        "./src/lib/scripts/uikit-styles.js"
+    ],
+    "type": "module",
+    "types": "./dist/lib/index.d.ts",
+    "main": "./dist/ndmvr-r3f.umd.js",
+    "module": "./dist/ndmvr-r3f.es.js",
+    "exports": {
+        ".": {
+            "types": "./dist/lib/index.d.ts",
+            "import": "./dist/ndmvr-r3f.es.js",
+            "require": "./dist/ndmvr-r3f.umd.js"
+        },
+        "./style.css": "./dist/ndmvr-r3f.css"
     },
-    "./style.css": "./dist/ndmvr-r3f.css"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
-    "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
-    "watch": "vite build --watch",
-    "lint": "eslint ./src --ext js,jsx,ts,tsx --report-unused-disable-directives .gitignore",
-    "preview": "vite -c vite.config.app.ts",
-    "type-check": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0"
-  },
-  "dependencies": {
-    "@ndmspc/ndmvr-aframe": "1.0.0-rc.46",
-    "@pmndrs/uikit": "^1.0.58",
-    "@react-three/drei": "^10.4.2",
-    "@react-three/fiber": "^9.4.0",
-    "@react-three/uikit": "^1.0.58",
-    "@react-three/uikit-default": "^1.0.58",
-    "@react-three/uikit-horizon": "^1.0.58",
-    "@react-three/uikit-lucide": "^1.0.58",
-    "@react-three/xr": "^6.6.17",
-    "@types/d3-selection": "^3.0.11",
-    "ajv": "^8.17.1",
-    "d3-selection": "^3.0.0",
-    "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
-    "rxjs": "^7.8.2",
-    "styled-components": "^6.1.19",
-    "three": "~0.173.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "@types/three": "^0.173.0",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
-    "@typescript-eslint/parser": "^8.19.1",
-    "cross-env": "^10.1.0",
-    "vite": "^7.2.2",
-    "vite-plugin-dts": "^4.5.4"
-  }
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
+        "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
+        "watch": "vite build --watch",
+        "lint": "eslint ./src --ext js,jsx,ts,tsx --report-unused-disable-directives .gitignore",
+        "preview": "vite -c vite.config.app.ts",
+        "type-check": "tsc --noEmit",
+        "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\""
+    },
+    "peerDependencies": {
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0"
+    },
+    "dependencies": {
+        "@ndmspc/ndmvr-aframe": "1.0.0-rc.46",
+        "@pmndrs/uikit": "^1.0.58",
+        "@react-three/drei": "^10.4.2",
+        "@react-three/fiber": "^9.4.0",
+        "@react-three/uikit": "^1.0.58",
+        "@react-three/uikit-default": "^1.0.58",
+        "@react-three/uikit-horizon": "^1.0.58",
+        "@react-three/uikit-lucide": "^1.0.58",
+        "@react-three/xr": "^6.6.17",
+        "@types/d3-selection": "^3.0.11",
+        "ajv": "^8.17.1",
+        "d3-selection": "^3.0.0",
+        "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
+        "rxjs": "^7.8.2",
+        "styled-components": "^6.1.19",
+        "three": "~0.173.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.1",
+        "@types/node": "^24.10.1",
+        "@types/react": "^19.2.5",
+        "@types/react-dom": "^19.2.3",
+        "@types/three": "^0.173.0",
+        "@typescript-eslint/eslint-plugin": "^8.19.1",
+        "@typescript-eslint/parser": "^8.19.1",
+        "@vitejs/plugin-react": "^5.1.1",
+        "babel-plugin-react-compiler": "^1.0.0",
+        "cross-env": "^10.1.0",
+        "eslint": "^9.39.1",
+        "eslint-plugin-react-hooks": "^7.0.1",
+        "eslint-plugin-react-refresh": "^0.4.24",
+        "globals": "^16.5.0",
+        "prettier": "^3.7.4",
+        "typescript": "~5.9.3",
+        "typescript-eslint": "^8.46.4",
+        "vite": "^7.2.2",
+        "vite-plugin-dts": "^4.5.4"
+    }
 }

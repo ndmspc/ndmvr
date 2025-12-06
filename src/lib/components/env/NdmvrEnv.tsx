@@ -68,11 +68,7 @@ export default function NdmvrEnv({
         return () => sub.unsubscribe();
     }, []);
 
-    const {
-        x = 0,
-        y = 1.7,
-        z = 10,
-    } = config?.environment?.camera?.position ?? {};
+    const { x = 0, y = 1.7, z = 10 } = config?.environment?.camera?.position ?? {};
 
     return (
         <div
@@ -91,20 +87,12 @@ export default function NdmvrEnv({
                 }}
             >
                 <color attach="background" args={["#ececec"]} />
-                <PerspectiveCamera
-                    ref={cameraRef}
-                    makeDefault
-                    position={[x, y, z]}
-                    fov={90}
-                />
+                <PerspectiveCamera ref={cameraRef} makeDefault position={[x, y, z]} fov={90} />
 
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
 
-                    <NdmvrScene
-                        controlsHelp={controlsHelp}
-                        originRef={xrOriginRef}
-                    />
+                    <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef} />
 
                     {controlsHelp && <ControlsHelp />}
 
@@ -129,9 +117,7 @@ export default function NdmvrEnv({
                                 setShowMenu={setShowMenu}
                                 setShowBinInfo={setShowBinInfo}
                                 setShowDemo={setShowDemo}
-                                desktopSpeed={
-                                    config?.environment?.desktopSpeed ?? 5
-                                }
+                                desktopSpeed={config?.environment?.desktopSpeed ?? 5}
                                 vrSpeed={config?.environment?.vrSpeed ?? 2}
                             />
                         </FocusProvider>

@@ -5,98 +5,98 @@ import { interceptWsProperty } from "./helpers.ts";
 import { Subscription } from "rxjs";
 
 interface BrokerStore {
-  wsUrl: string | null;
-  connectionStatus: ConnectionStatus;
-  error: ErrorMessage | null;
-  isManualDisconnect: boolean;
-  sub: Subscription | null;
-  reconnectTimeoutId: ReturnType<typeof setTimeout> | null;
+    wsUrl: string | null;
+    connectionStatus: ConnectionStatus;
+    error: ErrorMessage | null;
+    isManualDisconnect: boolean;
+    sub: Subscription | null;
+    reconnectTimeoutId: ReturnType<typeof setTimeout> | null;
 
-  clearError: () => void;
-  connect: (url: string) => Promise<void>;
-  disconnect: () => void;
+    clearError: () => void;
+    connect: (url: string) => Promise<void>;
+    disconnect: () => void;
 }
 
 export const useBrokerStore = create<BrokerStore>((set, get) => ({
-  wsUrl: null,
-  connectionStatus: STAT.IDLE,
-  error: null,
-  isManualDisconnect: false,
-  sub: null,
-  reconnectTimeoutId: null,
+    wsUrl: null,
+    connectionStatus: STAT.IDLE,
+    error: null,
+    isManualDisconnect: false,
+    sub: null,
+    reconnectTimeoutId: null,
 
-  clearError: () => {
-    set({
-      connectionStatus: STAT.IDLE,
-      error: null,
-    });
-  },
+    clearError: () => {
+        set({
+            connectionStatus: STAT.IDLE,
+            error: null,
+        });
+    },
 
-  connect: async (url: string) => {
-    if (get().connectionStatus !== STAT.IDLE) get().disconnect();
+    connect: async (url: string) => {
+        if (get().connectionStatus !== STAT.IDLE) get().disconnect();
 
-    const prevId = get().reconnectTimeoutId;
-    if (prevId) clearTimeout(prevId);
+        const prevId = get().reconnectTimeoutId;
+        if (prevId) clearTimeout(prevId);
 
-    const manager = brokerManagerGet();
+        const manager = brokerManagerGet();
 
-    const prevSub = get().sub;
-    if (prevSub) prevSub.unsubscribe();
+        const prevSub = get().sub;
+        if (prevSub) prevSub.unsubscribe();
 
-    set({
-      wsUrl: url,
-      connectionStatus: STAT.CONNECTING,
-      error: null,
-      isManualDisconnect: false,
-      reconnectTimeoutId: null,
-    });
+        set({
+            wsUrl: url,
+            connectionStatus: STAT.CONNECTING,
+            error: null,
+            isManualDisconnect: false,
+            reconnectTimeoutId: null,
+        });
 
-    const broker = manager.getBrokerByUrl(url, false);
-    if (!broker) {
-      set({ connectionStatus: STAT.ERROR, error: ERR.NOT_FOUND });
-      return;
-    }
+        const broker = manager.getBrokerByUrl(url, false);
+        if (!broker) {
+            set({ connectionStatus: STAT.ERROR, error: ERR.NOT_FOUND });
+            return;
+        }
 
-    // const sub = manager.getSubject().subscribe((msg) => {
-    //     const obj = jsrootParse(msg);
-    //
-    //     histogramSubjectGet().next({ id: gi, histogram: obj.arr?.[1] || obj });
-    // });
-    // set({ sub });
+        // const sub = manager.getSubject().subscribe((msg) => {
+        //     const obj = jsrootParse(msg);
+        //
+        //     histogramSubjectGet().next({ id: gi, histogram: obj.arr?.[1] || obj });
+        // });
+        // set({ sub });
 
-    interceptWsProperty(broker, url, set, get);
+        interceptWsProperty(broker, url, set, get);
 
-    broker.connect();
-  },
+        broker.connect();
+    },
 
-  disconnect: () => {
-    const { wsUrl, sub } = get();
-    if (!wsUrl) return;
+    disconnect: () => {
+        const { wsUrl, sub } = get();
+        if (!wsUrl) return;
 
-    const prevId = get().reconnectTimeoutId;
-    if (prevId) clearTimeout(prevId);
+        const prevId = get().reconnectTimeoutId;
+        if (prevId) clearTimeout(prevId);
 
-    const manager = brokerManagerGet();
-    const broker = manager.getBrokerByUrl(wsUrl, false);
+        const manager = brokerManagerGet();
+        const broker = manager.getBrokerByUrl(wsUrl, false);
 
-    set({ isManualDisconnect: true, connectionStatus: STAT.IDLE, error: null });
+        set({ isManualDisconnect: true, connectionStatus: STAT.IDLE, error: null });
 
-    if (sub) sub.unsubscribe();
+        if (sub) sub.unsubscribe();
 
-    if (broker?.ws) {
-      broker.ws.onclose = null;
-      broker.ws.onerror = null;
-    }
+        if (broker?.ws) {
+            broker.ws.onclose = null;
+            broker.ws.onerror = null;
+        }
 
-    manager.disconnectWsByUrl(wsUrl);
+        manager.disconnectWsByUrl(wsUrl);
 
-    set({
-      wsUrl: null,
-      error: null,
-      sub: null,
-      reconnectTimeoutId: null,
-    });
+        set({
+            wsUrl: null,
+            error: null,
+            sub: null,
+            reconnectTimeoutId: null,
+        });
 
-    console.log("[Broker] Disconnected:", wsUrl);
-  },
+        console.log("[Broker] Disconnected:", wsUrl);
+    },
 }));

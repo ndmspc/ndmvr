@@ -83,10 +83,7 @@ export default function DesktopController({
             const sensitivity = 0.002;
             yaw.current -= e.movementX * sensitivity;
             pitch.current -= e.movementY * sensitivity;
-            pitch.current = Math.max(
-                -Math.PI / 2,
-                Math.min(Math.PI / 2, pitch.current)
-            );
+            pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
         };
 
         document.addEventListener("mousedown", onMouseDown);

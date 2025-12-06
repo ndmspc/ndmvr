@@ -95,8 +95,7 @@ export default function BinInfo({
                 const color = new Color(r, g, b).getStyle();
 
                 const axes = Object.entries(coord).filter(
-                    ([, v]) =>
-                        v && typeof v === "object" && "min" in v && "max" in v
+                    ([, v]) => v && typeof v === "object" && "min" in v && "max" in v
                 );
 
                 return (
@@ -126,15 +125,12 @@ export default function BinInfo({
                                 >
                                     <Container minWidth={170}>
                                         <Text fontSize={12}>
-                                            {axis.title ? axis.title : key}{" "}
-                                            [name={axis.name}]:
+                                            {axis.title ? axis.title : key} [name={axis.name}]:
                                         </Text>
                                     </Container>
 
                                     {axis.label ? (
-                                        <Text fontSize={12}>
-                                            [{axis.label}]
-                                        </Text>
+                                        <Text fontSize={12}>[{axis.label}]</Text>
                                     ) : (
                                         <Text fontSize={12}>
                                             [{axis.min.toFixed(precision)},{" "}

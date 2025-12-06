@@ -58,17 +58,11 @@ export default function VRController({
             const sources = Array.from(session.inputSources);
 
             const validControllers = sources.filter(
-                (source) =>
-                    source.targetRayMode === "tracked-pointer" &&
-                    source.gamepad !== null
+                (source) => source.targetRayMode === "tracked-pointer" && source.gamepad !== null
             );
 
-            const hasLeft = validControllers.some(
-                (c) => c.handedness === "left"
-            );
-            const hasRight = validControllers.some(
-                (c) => c.handedness === "right"
-            );
+            const hasLeft = validControllers.some((c) => c.handedness === "left");
+            const hasRight = validControllers.some((c) => c.handedness === "right");
 
             setControllersReady({ left: hasLeft, right: hasRight });
 
@@ -89,12 +83,8 @@ export default function VRController({
 
         if (!leftController || !rightController) return;
 
-        const leftGamepad = controllersReady.left
-            ? leftController?.gamepad
-            : null;
-        const rightGamepad = controllersReady.right
-            ? rightController?.gamepad
-            : null;
+        const leftGamepad = controllersReady.left ? leftController?.gamepad : null;
+        const rightGamepad = controllersReady.right ? rightController?.gamepad : null;
 
         if (leftGamepad) {
             const leftThumbstick = leftGamepad["xr-standard-thumbstick"];
@@ -104,11 +94,11 @@ export default function VRController({
             if (leftThumbstick) {
                 const lx =
                     Math.abs(leftThumbstick.xAxis ?? 0) > DEADZONE
-                        ? leftThumbstick.xAxis ?? 0
+                        ? (leftThumbstick.xAxis ?? 0)
                         : 0;
                 const lz =
                     Math.abs(leftThumbstick.yAxis ?? 0) > DEADZONE
-                        ? leftThumbstick.yAxis ?? 0
+                        ? (leftThumbstick.yAxis ?? 0)
                         : 0;
 
                 camera.getWorldDirection(cameraDirection.current);
@@ -116,10 +106,7 @@ export default function VRController({
                 cameraDirection.current.normalize();
 
                 strafeDirection.current
-                    .crossVectors(
-                        cameraDirection.current,
-                        new THREE.Vector3(0, 1, 0)
-                    )
+                    .crossVectors(cameraDirection.current, new THREE.Vector3(0, 1, 0))
                     .normalize();
 
                 moveVec.current.set(0, 0, 0);
@@ -128,10 +115,7 @@ export default function VRController({
 
                 if (moveVec.current.lengthSq() > 0) {
                     moveVec.current.normalize();
-                    originRef.current.position.addScaledVector(
-                        moveVec.current,
-                        speed * delta
-                    );
+                    originRef.current.position.addScaledVector(moveVec.current, speed * delta);
                 }
             }
 
@@ -140,8 +124,7 @@ export default function VRController({
                 const squeezeVal = leftSqueeze.button ?? 0;
 
                 const ascend = triggerVal > TRIGGER_T;
-                const descend =
-                    leftSqueeze.state === "pressed" || squeezeVal > SQUEEZE_T;
+                const descend = leftSqueeze.state === "pressed" || squeezeVal > SQUEEZE_T;
 
                 if (ascend) originRef.current.position.y += speed * delta;
                 if (descend) originRef.current.position.y -= speed * delta;
@@ -174,8 +157,7 @@ export default function VRController({
                         snapTimer.current += delta;
 
                         if (snapTimer.current >= snapDelay) {
-                            originRef.current.rotation.y +=
-                                direction * snapAngle;
+                            originRef.current.rotation.y += direction * snapAngle;
                             snapTimer.current = 0;
                         }
                     }

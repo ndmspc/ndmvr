@@ -1,6 +1,6 @@
 import { Button, Card } from "@react-three/uikit-default";
 import { Container, Text } from "@react-three/uikit";
-import { ChevronDown, ChevronRight } from '@react-three/uikit-lucide'
+import { ChevronDown, ChevronRight } from "@react-three/uikit-lucide";
 import { useState } from "react";
 
 interface FileTreeProps {
@@ -14,29 +14,16 @@ function FileTree({ data, name }: FileTreeProps) {
     const isObject = typeof data === "object" && data !== null;
 
     return (
-
-        <Container
-            display="flex"
-            flexDirection="column"
-            height={"auto"}
-        >
-
+        <Container display="flex" flexDirection="column" height={"auto"}>
             {isObject ? (
-                <Container
-                    height={"auto"}
-                    width={200}
-                    display="flex"
-                    flexDirection="column"
-                >
-
+                <Container height={"auto"} width={200} display="flex" flexDirection="column">
                     <Button
                         borderRadius={5}
                         height={25}
                         // @ts-ignore - platter prop exists at runtime but is missing from @react-three/uikit-default types
-                        platter onClick={() => setShow(!show)}
-
+                        platter
+                        onClick={() => setShow(!show)}
                     >
-
                         {show ? (
                             // @ts-ignore - size prop exists at runtime but is missing from @react-three/uikit-lucide types
                             <ChevronDown size={12} color="white" />
@@ -45,12 +32,10 @@ function FileTree({ data, name }: FileTreeProps) {
                             <ChevronRight size={12} color="white" />
                         )}
                         <Text marginLeft={8}>{name}</Text>
-
                     </Button>
 
                     {show && (
                         <Container
-
                             width={200}
                             height={"auto"}
                             paddingLeft={40}
@@ -60,23 +45,11 @@ function FileTree({ data, name }: FileTreeProps) {
                             {Object.entries(data).map(([key, value], idx) => (
                                 <FileTree key={idx} name={key} data={value} />
                             ))}
-
                         </Container>
-                    )
-                    }
-
+                    )}
                 </Container>
             ) : (
-                <Container
-
-                    width={500}
-                    height={"auto"}
-                    display="flex"
-                    flexDirection="column"
-
-
-                >
-
+                <Container width={500} height={"auto"} display="flex" flexDirection="column">
                     <Text
                         whiteSpace="normal"
                         // @ts-ignore - wordWrap prop exists at runtime but is missing from @react-three/uikit types
@@ -86,11 +59,8 @@ function FileTree({ data, name }: FileTreeProps) {
                     >
                         {name}: {String(data)}
                     </Text>
-
                 </Container>
             )}
-
-
         </Container>
     );
 }
@@ -116,18 +86,9 @@ export default function TreeViewer({ data }: TreeViewerProps) {
             height={400}
             overflow={"scroll"}
         >
-
-            <Container
-                gap={8}
-                display="flex"
-                flexDirection="column"
-            >
-
-                <FileTree data={obj} name={'Data:'} />
-
+            <Container gap={8} display="flex" flexDirection="column">
+                <FileTree data={obj} name={"Data:"} />
             </Container>
-
         </Container>
-
     );
 }

@@ -90,8 +90,7 @@ export default function NdmspcDefaultBrowserEnv({
                 obj: obj,
             });
             if (pads.current.length > 0)
-                padsCounter.current =
-                    (padsCounter.current + 1) % pads.current.length;
+                padsCounter.current = (padsCounter.current + 1) % pads.current.length;
             return draw(dom, obj, opt);
         });
 
@@ -118,11 +117,7 @@ export default function NdmspcDefaultBrowserEnv({
             await painter.openRootFile(file).then((v) => {
                 const ps = getPads(v.disp_kind);
                 pads.current = ps;
-                console.log(
-                    "HierarchyPainter opened file, disp_kind:",
-                    v.disp_kind,
-                    ps
-                );
+                console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
                 configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
             });
             // if (item) {
@@ -188,10 +183,7 @@ export default function NdmspcDefaultBrowserEnv({
                 </NdmvrEnv>
             </div>
 
-            <Switch
-                startState={vrMode}
-                onToggle={(checked) => setVRMode(checked)}
-            />
+            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
         </div>
     );
 }

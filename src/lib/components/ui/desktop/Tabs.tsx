@@ -87,9 +87,7 @@ export function Tabs({ children }: TabsProps) {
                         $active={index === activeIndex}
                         onClick={() => setActiveIndex(index)}
                     >
-                        {
-                            tab.props.name
-                        }
+                        {tab.props.name}
                     </TabButton>
                 ))}
             </TabsHeader>

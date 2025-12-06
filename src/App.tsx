@@ -57,11 +57,7 @@ function App() {
     // }, []);
 
     useEffect(() => {
-        brokerManagerGet().createWs(
-            "ws://localhost:8080/ws/root.websocket",
-            false,
-            60
-        );
+        brokerManagerGet().createWs("ws://localhost:8080/ws/root.websocket", false, 60);
         const sub = brokerManagerGet()
             .getSubject()
             .subscribe((v) => {

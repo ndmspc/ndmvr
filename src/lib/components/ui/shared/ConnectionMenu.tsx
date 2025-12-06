@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import Checkbox from "./Checkbox.tsx"
+import Checkbox from "./Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { Container, Text, } from "@react-three/uikit";
+import { Container, Text } from "@react-three/uikit";
 import * as THREE from "three";
 
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
@@ -24,9 +24,8 @@ export default function ConnectionMenu({
     originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
     type = null,
-    onClose = null
+    onClose = null,
 }: ConnectionMenuProps) {
-
     const [selectedHistogram, setSelectedHistogram] = useState(null);
 
     const [availableArrays, setAvailableArrays] = useState([]);
@@ -40,23 +39,23 @@ export default function ConnectionMenu({
     const idHistogram = "histogram1";
 
     useEffect(() => {
-
-        const stateSubject = stateSubjectGet().getObservable().subscribe((e) => {
-            if (e.sets) setAvailableSets(e.sets);
-            if (e.selectedSet) setSelectedSets(e.selectedSet);
-            if (e.arrays) setAvailableArrays(e.arrays);
-            if (e.selectedArray) setSelectedArray(e.selectedArray);
-        });
+        const stateSubject = stateSubjectGet()
+            .getObservable()
+            .subscribe((e) => {
+                if (e.sets) setAvailableSets(e.sets);
+                if (e.selectedSet) setSelectedSets(e.selectedSet);
+                if (e.arrays) setAvailableArrays(e.arrays);
+                if (e.selectedArray) setSelectedArray(e.selectedArray);
+            });
 
         setAvailableSets([]);
         setSelectedSets([]);
-        setAvailableArrays(['content']);
-        setSelectedArray('content');
+        setAvailableArrays(["content"]);
+        setSelectedArray("content");
 
         return () => {
             stateSubject.unsubscribe();
         };
-
     }, []);
 
     const updateStateSubject = (updates) => {
@@ -65,31 +64,28 @@ export default function ConnectionMenu({
     };
 
     const handleArraySelect = (value) => {
-
         setSelectedArray(value);
 
         if (selectedHistogram) {
             updateStateSubject({
                 selectedSet: selectedSets,
-                selectedArray: value
+                selectedArray: value,
             });
         }
-
-    }
+    };
 
     const handleSetsSelect = (setValue, isChecked) => {
         const newSelectedSets = isChecked
             ? [...selectedSets, setValue]
-            : selectedSets.filter(v => v !== setValue);
+            : selectedSets.filter((v) => v !== setValue);
 
         setSelectedSets(newSelectedSets);
 
         if (selectedHistogram) {
             updateStateSubject({
                 selectedSet: newSelectedSets,
-                selectedArray: selectedArray
+                selectedArray: selectedArray,
             });
-
         }
     };
 
@@ -103,9 +99,7 @@ export default function ConnectionMenu({
                 obj: selectedHistogram,
             });
         }
-
-    }
-
+    };
 
     const [inputValues, setInputValues] = useState({
         http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-aframe/demo/test_125.json",
@@ -117,8 +111,7 @@ export default function ConnectionMenu({
         ws: null,
     });
 
-    const { connectionStatus, error, connect } =
-        useBrokerStore();
+    const { connectionStatus, error, connect } = useBrokerStore();
 
     const [httpLoading, setHttpLoading] = useState(false);
     const [httpLoaded, setHttpLoaded] = useState(false);
@@ -151,7 +144,6 @@ export default function ConnectionMenu({
             // }, 100);
             //
             // setTimeout(() => clearInterval(checkConnection), 5000);
-
         }
 
         if (type === "http") {
@@ -196,7 +188,6 @@ export default function ConnectionMenu({
                     obj: rootObj.arr?.[0] ?? rootObj,
                 });
 
-
                 setHttpLoaded(true);
                 // if (onClose) {
                 //     setTimeout(() => onClose(), 500);
@@ -210,20 +201,13 @@ export default function ConnectionMenu({
         }
     };
 
-
     return (
-        <FloatingContainer
-            originRef={originRef}
-            offset={offset}
-            classList={["menuContainer"]}
-        >
-            <Text classList={["menuHeader"]}>{type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}</Text>
+        <FloatingContainer originRef={originRef} offset={offset} classList={["menuContainer"]}>
+            <Text classList={["menuHeader"]}>
+                {type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}
+            </Text>
             <DropdownProvider>
-                <Container
-                    classList={["section", "sectionInner"]}
-                    flexDirection="column"
-                    gap={12}
-                >
+                <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
                     {type === "http" && <WebsocketBanner />}
 
                     <InputCard
@@ -260,8 +244,6 @@ export default function ConnectionMenu({
                         <>
                             <Divider />
                             <Container gap={12} alignItems="center" flexDirection={"column"}>
-
-
                                 {/*<Container gap={12} flexDirection="column">*/}
                                 <Dropdown
                                     placeholder={"Select array"}
@@ -273,56 +255,56 @@ export default function ConnectionMenu({
                                     width={300}
                                 />
 
-
                                 <Container gap={50}>
                                     {type === "http" && (
-
                                         <Container flexDirection="column" gap={8}>
                                             <Text>Select Renderer:</Text>
                                             <RadioGroup
                                                 defaultValue="ndmvr"
                                                 onValueChange={(value) => {
-                                                    handleRendererSelect(value)
+                                                    handleRendererSelect(value);
                                                 }}
                                             >
                                                 <RadioGroupItem value="ndmvr">
                                                     <Label>
-                                                        <Text fontSize={16} fontWeight={"normal"}>ndmvr</Text>
+                                                        <Text fontSize={16} fontWeight={"normal"}>
+                                                            ndmvr
+                                                        </Text>
                                                     </Label>
                                                 </RadioGroupItem>
                                                 <RadioGroupItem value="jsroot">
                                                     <Label>
-                                                        <Text fontSize={16} fontWeight={"normal"}>jsroot</Text>
+                                                        <Text fontSize={16} fontWeight={"normal"}>
+                                                            jsroot
+                                                        </Text>
                                                     </Label>
                                                 </RadioGroupItem>
                                             </RadioGroup>
                                         </Container>
-
                                     )}
-                                    {selectedRenderer === 'ndmvr' && (
+                                    {selectedRenderer === "ndmvr" && (
                                         <Container flexDirection="column" gap={8}>
-                                            {availableSets.length > 0 && (<Text>Select Sets:</Text>)}
+                                            {availableSets.length > 0 && <Text>Select Sets:</Text>}
                                             {availableSets.map((setValue) => (
                                                 <Checkbox
                                                     key={setValue}
                                                     label={setValue}
                                                     checked={selectedSets.includes(setValue)}
-                                                    onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                                                    onCheck={(isChecked) =>
+                                                        handleSetsSelect(setValue, isChecked)
+                                                    }
                                                     size={24}
                                                 />
                                             ))}
                                         </Container>
                                     )}
-
                                 </Container>
                             </Container>
                         </>
                     )}
-
                 </Container>
                 {/*</Container>*/}
-
             </DropdownProvider>
         </FloatingContainer>
     );
-};
+}
