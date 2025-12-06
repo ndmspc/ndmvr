@@ -3,7 +3,10 @@
     "version": "0.0.1",
     "description": "Ndmvr r3f",
     "author": "Martin Vala",
-    "repository": "https://gitlab.com/ndmspc/ndmvr-r3f.git",
+    "repository": {
+        "type": "git",
+        "url": "git+https://gitlab.com/ndmspc/ndmvr-r3f.git"
+    },
     "license": "MIT",
     "keywords": [],
     "files": [
