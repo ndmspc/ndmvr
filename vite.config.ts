@@ -1,7 +1,7 @@
 import { resolve, dirname } from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import dts from 'vite-plugin-dts'
+import dts from "vite-plugin-dts";
 import { fileURLToPath } from "url";
 
 // Get the current file's URL
@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
           "@react-three/uikit": "uikit$1",
           "@react-three/uikit-default": "uikitDefault",
           "@react-three/uikit-lucide": "uikitLucide",
-          "@react-three/uikit-horizon": "uikitHorizon"
+          "@react-three/uikit-horizon": "uikitHorizon",
         },
         inlineDynamicImports: true,
       },
@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => ({
         plugins: ["babel-plugin-react-compiler"],
       },
     }),
-    dts({ include: ['lib'], insertTypesEntry: true, }),
+    dts({ include: ["src/lib"], insertTypesEntry: true }),
   ],
   optimizeDeps: {
     exclude: ["gl > gl"],

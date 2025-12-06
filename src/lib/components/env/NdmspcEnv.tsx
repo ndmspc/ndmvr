@@ -7,7 +7,7 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 
 import defaultConfig from "../../config.json";
 
-interface NdmspcEnvProps {
+export interface NdmspcEnvProps {
     children?: React.ReactNode;
     config?: Record<string, unknown> | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;

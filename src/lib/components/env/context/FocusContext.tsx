@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
 
-type FocusContextType = {
+export type FocusContextType = {
     focused: boolean;
     setFocused: (focused: boolean) => void;
 };

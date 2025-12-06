@@ -1,10 +1,10 @@
-import {useXR} from "@react-three/xr";
+import { useXR } from "@react-three/xr";
 import * as THREE from "three";
 
 import VRController from "./VRController.tsx";
 import DesktopController from "./DesktopController.tsx";
 
-interface ControllersProps {
+export interface ControllersProps {
     originRef: React.RefObject<THREE.Group>;
     cameraRef: React.RefObject<THREE.Camera>;
     setShowMenu: React.Dispatch<React.SetStateAction<boolean>>;
@@ -23,7 +23,6 @@ export default function Controllers({
     desktopSpeed = 5,
     vrSpeed = 2,
 }: ControllersProps) {
-
     const session = useXR((state) => state.session);
 
     if (session) {

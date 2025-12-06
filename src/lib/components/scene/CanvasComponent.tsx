@@ -2,13 +2,13 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { CanvasClass, Position, Rotation, Scale } from "@ndmspc/ndmvr-aframe";
 
-interface CanvasLocation {
+export interface CanvasLocation {
     position?: Position;
     scale?: Scale;
     rotation?: Rotation;
 }
 
-interface CanvasComponentProps {
+export interface CanvasComponentProps {
     id?: string;
     location?: CanvasLocation;
     position?: Position;
@@ -27,8 +27,6 @@ export default function CanvasComponent({
     rotation = { x: 10, y: 0, z: 0 },
     scale = { x: 10, y: 10, z: 0 },
 }: CanvasComponentProps) {
-
-
     const { scene } = useThree();
     const canvas = useRef(null);
     const [plane, setPlane] = useState(null);
@@ -36,22 +34,26 @@ export default function CanvasComponent({
     useEffect(() => {
         try {
             canvas?.current?.remove?.();
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
         }
-        canvas.current = new CanvasClass(null, location?.position ?? position, location?.rotation ?? rotation, location?.scale ?? scale, id);
-        console.log(canvas.current)
-        console.log('scene add, ', canvas.current.getPlane());
+        canvas.current = new CanvasClass(
+            null,
+            location?.position ?? position,
+            location?.rotation ?? rotation,
+            location?.scale ?? scale,
+            id
+        );
+        console.log(canvas.current);
+        console.log("scene add, ", canvas.current.getPlane());
         setPlane(canvas.current.getPlane());
         return () => {
             try {
                 canvas?.current?.remove?.();
-            }
-            catch (e) {
+            } catch (e) {
                 console.log(e);
             }
-        }
+        };
     }, [scene]);
 
     return plane ? <primitive object={plane} /> : null;
