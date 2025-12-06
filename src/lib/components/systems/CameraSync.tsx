@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useXR } from "@react-three/xr";
 import * as THREE from "three";
 
-interface CameraSyncProps {
+export interface CameraSyncProps {
     cameraRef: React.RefObject<THREE.Camera>;
     originRef: React.RefObject<THREE.Group>;
 }

@@ -16,12 +16,14 @@
     "./src/lib/scripts/uikit-styles.js"
   ],
   "type": "module",
+  "types": "./dist/lib/index.d.ts",
   "main": "./dist/ndmvr-r3f.umd.js",
   "module": "./dist/ndmvr-r3f.es.js",
   "exports": {
     ".": {
       "import": "./dist/ndmvr-r3f.es.js",
       "require": "./dist/ndmvr-r3f.umd.js"
+      
     },
     "./style.css": "./dist/ndmvr-r3f.css"
   },

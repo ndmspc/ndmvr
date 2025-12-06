@@ -12,12 +12,15 @@ import HistogramWrapper from "./HistogramWrapper.tsx";
 import RaycasterBridge from "./RaycasterBridge.tsx";
 import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
 
-interface NdmvrSceneProps {
+export interface NdmvrSceneProps {
     originRef: React.RefObject<THREE.Group>;
     controlsHelp?: boolean;
 }
 
-export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSceneProps) {
+export default function NdmvrScene({
+    originRef,
+    controlsHelp = false,
+}: NdmvrSceneProps) {
     const { scene, gl } = useThree();
     const [raycaster, setRaycaster] = useState(null);
     const [config, setConfig] = useState(null);
@@ -52,26 +55,34 @@ export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSce
 
     return (
         <>
-
             <group>
                 {config?.environment?.histogramPads?.map((object) => (
                     <HistogramWrapper key={object.id} id={object.id} />
                 ))}
-                {config?.environment?.histogramPads?.length > 0 &&
-                    <CanvasComponent location={config?.environment?.canvas} id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`} />
-                }
+                {config?.environment?.histogramPads?.length > 0 && (
+                    <CanvasComponent
+                        location={config?.environment?.canvas}
+                        id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`}
+                    />
+                )}
             </group>
 
-            {controlsHelp &&
+            {controlsHelp && (
                 <>
-                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4, 0]}>
+                    <group
+                        position={[-3.5, 1.5, 7]}
+                        rotation={[0, Math.PI / 4, 0]}
+                    >
                         <ControlsHelp />
                     </group>
-                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4 + Math.PI, 0]}>
+                    <group
+                        position={[-3.5, 1.5, 7]}
+                        rotation={[0, Math.PI / 4 + Math.PI, 0]}
+                    >
                         <ControlsHelp />
                     </group>
                 </>
-            }
+            )}
 
             <Sky />
             {/*<fog attach="fog" args={["#997D31", 5, 60]}/>*/}

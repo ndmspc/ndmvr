@@ -1,10 +1,10 @@
-import {useEffect, useRef, useState} from "react";
-import {useFrame, useThree} from "@react-three/fiber";
-import {useXR, useXRInputSourceState} from "@react-three/xr";
+import { useEffect, useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useXR, useXRInputSourceState } from "@react-three/xr";
 import * as THREE from "three";
-import {useFocus} from "../../env/context/FocusContext.tsx";
+import { useFocus } from "../../env/context/FocusContext.tsx";
 
-interface VRControllerProps {
+export interface VRControllerProps {
     originRef: React.RefObject<THREE.Group>;
     speed?: number;
     snapAngle?: number;
@@ -21,16 +21,16 @@ export default function VRController({
     snapDelay = 0.3,
     onToggleMenu,
     onToggleBinInfo,
-    onToggleDemo
+    onToggleDemo,
 }: VRControllerProps) {
-    const session = useXR(s => s.session);
+    const session = useXR((s) => s.session);
     const [controllersReady, setControllersReady] = useState({
         left: false,
         right: false,
     });
     const rightController = useXRInputSourceState("controller", "right");
     const leftController = useXRInputSourceState("controller", "left");
-    const {camera} = useThree();
+    const { camera } = useThree();
 
     const cameraDirection = useRef(new THREE.Vector3());
     const strafeDirection = useRef(new THREE.Vector3());
@@ -41,7 +41,7 @@ export default function VRController({
     const lastX = useRef(false);
     const snapTimer = useRef(0);
     const hasSnapped = useRef(false);
-    const {focused} = useFocus();
+    const { focused } = useFocus();
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -50,7 +50,7 @@ export default function VRController({
 
     useEffect(() => {
         if (!session) {
-            setControllersReady({left: false, right: false});
+            setControllersReady({ left: false, right: false });
             return;
         }
 
@@ -58,24 +58,28 @@ export default function VRController({
             const sources = Array.from(session.inputSources);
 
             const validControllers = sources.filter(
-                source =>
-                    source.targetRayMode === 'tracked-pointer' &&
+                (source) =>
+                    source.targetRayMode === "tracked-pointer" &&
                     source.gamepad !== null
             );
 
-            const hasLeft = validControllers.some(c => c.handedness === 'left');
-            const hasRight = validControllers.some(c => c.handedness === 'right');
+            const hasLeft = validControllers.some(
+                (c) => c.handedness === "left"
+            );
+            const hasRight = validControllers.some(
+                (c) => c.handedness === "right"
+            );
 
-            setControllersReady({left: hasLeft, right: hasRight});
+            setControllersReady({ left: hasLeft, right: hasRight });
 
             console.log(`Controllers: Left=${hasLeft}, Right=${hasRight}`);
         };
 
         checkControllers();
-        session.addEventListener('inputsourceschange', checkControllers);
+        session.addEventListener("inputsourceschange", checkControllers);
 
         return () => {
-            session.removeEventListener('inputsourceschange', checkControllers);
+            session.removeEventListener("inputsourceschange", checkControllers);
         };
     }, [session]);
 
@@ -85,8 +89,12 @@ export default function VRController({
 
         if (!leftController || !rightController) return;
 
-        const leftGamepad = controllersReady.left ? leftController?.gamepad : null;
-        const rightGamepad = controllersReady.right ? rightController?.gamepad : null;
+        const leftGamepad = controllersReady.left
+            ? leftController?.gamepad
+            : null;
+        const rightGamepad = controllersReady.right
+            ? rightController?.gamepad
+            : null;
 
         if (leftGamepad) {
             const leftThumbstick = leftGamepad["xr-standard-thumbstick"];
@@ -94,15 +102,24 @@ export default function VRController({
             const leftSqueeze = leftGamepad["xr-standard-squeeze"];
 
             if (leftThumbstick) {
-                const lx = Math.abs(leftThumbstick.xAxis ?? 0) > DEADZONE ? (leftThumbstick.xAxis ?? 0) : 0;
-                const lz = Math.abs(leftThumbstick.yAxis ?? 0) > DEADZONE ? (leftThumbstick.yAxis ?? 0) : 0;
+                const lx =
+                    Math.abs(leftThumbstick.xAxis ?? 0) > DEADZONE
+                        ? leftThumbstick.xAxis ?? 0
+                        : 0;
+                const lz =
+                    Math.abs(leftThumbstick.yAxis ?? 0) > DEADZONE
+                        ? leftThumbstick.yAxis ?? 0
+                        : 0;
 
                 camera.getWorldDirection(cameraDirection.current);
                 cameraDirection.current.y = 0;
                 cameraDirection.current.normalize();
 
                 strafeDirection.current
-                    .crossVectors(cameraDirection.current, new THREE.Vector3(0, 1, 0))
+                    .crossVectors(
+                        cameraDirection.current,
+                        new THREE.Vector3(0, 1, 0)
+                    )
                     .normalize();
 
                 moveVec.current.set(0, 0, 0);
@@ -111,7 +128,10 @@ export default function VRController({
 
                 if (moveVec.current.lengthSq() > 0) {
                     moveVec.current.normalize();
-                    originRef.current.position.addScaledVector(moveVec.current, speed * delta);
+                    originRef.current.position.addScaledVector(
+                        moveVec.current,
+                        speed * delta
+                    );
                 }
             }
 
@@ -120,7 +140,8 @@ export default function VRController({
                 const squeezeVal = leftSqueeze.button ?? 0;
 
                 const ascend = triggerVal > TRIGGER_T;
-                const descend = (leftSqueeze.state === "pressed") || (squeezeVal > SQUEEZE_T);
+                const descend =
+                    leftSqueeze.state === "pressed" || squeezeVal > SQUEEZE_T;
 
                 if (ascend) originRef.current.position.y += speed * delta;
                 if (descend) originRef.current.position.y -= speed * delta;
@@ -153,7 +174,8 @@ export default function VRController({
                         snapTimer.current += delta;
 
                         if (snapTimer.current >= snapDelay) {
-                            originRef.current.rotation.y += direction * snapAngle;
+                            originRef.current.rotation.y +=
+                                direction * snapAngle;
                             snapTimer.current = 0;
                         }
                     }
@@ -170,7 +192,7 @@ export default function VRController({
             }
             if (bBtn?.state !== "pressed") lastB.current = false;
 
-             const aBtn = rightGamepad["a-button"];
+            const aBtn = rightGamepad["a-button"];
             if (aBtn.state === "pressed" && !lastA.current) {
                 window.dispatchEvent(
                     new CustomEvent("ndmvr-menu-shift", {
@@ -189,7 +211,7 @@ export default function VRController({
                 lastA.current = false;
             }
         }
-    }
+    };
 
     useFrame((_, delta) => {
         handleControllers(delta);

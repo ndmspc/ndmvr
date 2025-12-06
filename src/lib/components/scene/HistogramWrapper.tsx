@@ -8,9 +8,9 @@ import {
     histogramSubjectGet,
     THnPainter,
 } from "@ndmspc/ndmvr-aframe";
-import {vector3ToArray} from "../../utils/helper-functions.ts";
+import { vector3ToArray } from "../../utils/helper-functions.ts";
 
-interface HistogramWrapperProps {
+export interface HistogramWrapperProps {
     id: string;
 }
 
@@ -85,23 +85,29 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                                     const mesh =
                                         jsrootHistogram.current.getHistogramMesh();
                                     setJsrootMesh(mesh);
-                                    setJsrootError(null)
+                                    setJsrootError(null);
                                 })
                                 .catch((e) => {
                                     console.log(e);
                                     setJsrootError(e);
-                            });
+                                });
                         } else {
-                            jsrootHistogram.current = new HistogramJsrootClass(id, histo.obj, camera);
-                            jsrootHistogram.current.buildPromise.then(() => {
-                                const mesh =
-                                    jsrootHistogram.current.getHistogramMesh();
-                                setJsrootMesh(mesh);
-                                setJsrootError(null);
-                            }).catch((e) => {
-                                console.log(e);
-                                setJsrootError(e);
-                            });
+                            jsrootHistogram.current = new HistogramJsrootClass(
+                                id,
+                                histo.obj,
+                                camera
+                            );
+                            jsrootHistogram.current.buildPromise
+                                .then(() => {
+                                    const mesh =
+                                        jsrootHistogram.current.getHistogramMesh();
+                                    setJsrootMesh(mesh);
+                                    setJsrootError(null);
+                                })
+                                .catch((e) => {
+                                    console.log(e);
+                                    setJsrootError(e);
+                                });
                         }
                     } else {
                         if (jsrootHistogram.current) {
@@ -144,15 +150,17 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         <>
             <group>
                 {
-                    <Text position={vector3ToArray(jsrootError?.position)} fontSize={0.5} color="red"
-                          visible={jsrootError !== null}>
+                    <Text
+                        position={vector3ToArray(jsrootError?.position)}
+                        fontSize={0.5}
+                        color="red"
+                        visible={jsrootError !== null}
+                    >
                         Object cannot be rendered
                     </Text>
                 }
 
-                {jsrootMesh && (
-                    <primitive object={jsrootMesh}/>
-                )}
+                {jsrootMesh && <primitive object={jsrootMesh} />}
             </group>
             {nestedMesh && <primitive object={nestedMesh} />}
             {wireframeObj && <primitive object={wireframeObj} />}

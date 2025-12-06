@@ -8,7 +8,7 @@ import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json";
 import NotoBold from "../../../assets/fonts/NotoSans-Bold.json";
 import FloatingContainer from "./FloatingContainer.tsx";
 
-interface BinInfoProps {
+export interface BinInfoProps {
     originRef: React.RefObject<THREE.Group>;
     precision?: number;
     offset?: { x: number; y: number; z: number };

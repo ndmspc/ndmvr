@@ -10,7 +10,7 @@ import defaultConfig from "../../config.json";
 import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";
 
-interface NdmspcDefaultBrowserEnvProps {
+export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
     config?: Record<string, unknown> | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
@@ -25,7 +25,6 @@ interface NdmspcDefaultBrowserEnvProps {
     defaultDrawOpt?: Record<string, string> | null;
 }
 
-
 export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
@@ -38,8 +37,7 @@ export default function NdmspcDefaultBrowserEnv({
     opt = null,
     title = "Ndmspc Default Browser Environment",
     layout = "simple",
-    defaultDrawOpt = { "TH1": "hist", "TH2": "col" },
-
+    defaultDrawOpt = { TH1: "hist", TH2: "col" },
 }: NdmspcDefaultBrowserEnvProps) {
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
@@ -76,8 +74,7 @@ export default function NdmspcDefaultBrowserEnv({
     }, [config]);
 
     useEffect(() => {
-        if (!vrMode && painterRef.current)
-            painterRef.current.checkResize();
+        if (!vrMode && painterRef.current) painterRef.current.checkResize();
     }, [vrMode]);
 
     useEffect(() => {
@@ -93,9 +90,10 @@ export default function NdmspcDefaultBrowserEnv({
                 obj: obj,
             });
             if (pads.current.length > 0)
-                padsCounter.current = (padsCounter.current + 1) % pads.current.length;
+                padsCounter.current =
+                    (padsCounter.current + 1) % pads.current.length;
             return draw(dom, obj, opt);
-        })
+        });
 
         painterRef.current = painter;
         const initPainter = async () => {
@@ -112,20 +110,21 @@ export default function NdmspcDefaultBrowserEnv({
             // h.prepareGuiDiv('simpleGUI', 'flex');
             // open file and display element
             // await h.createBrowser('fix');
-            const defaultPad =
-            {
+            const defaultPad = {
                 scale: { x: 10, y: 5, z: 10 },
                 padding: { x: 0, y: 0, z: 0 },
                 origin: { x: -5, y: 0.5, z: 1 },
             };
-            await painter
-                .openRootFile(file)
-                .then((v) => {
-                    const ps = getPads(v.disp_kind);
-                    pads.current = ps;
-                    console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
-                    configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
-                });
+            await painter.openRootFile(file).then((v) => {
+                const ps = getPads(v.disp_kind);
+                pads.current = ps;
+                console.log(
+                    "HierarchyPainter opened file, disp_kind:",
+                    v.disp_kind,
+                    ps
+                );
+                configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
+            });
             // if (item) {
             await painter.display(item, opt);
             setItemState(item);
@@ -145,7 +144,7 @@ export default function NdmspcDefaultBrowserEnv({
         const painter = painterRef.current;
         const painterDisplay = async () => {
             await painter.display(itemState, optState);
-        }
+        };
         painterDisplay();
     }, [itemState, optState]);
     return (

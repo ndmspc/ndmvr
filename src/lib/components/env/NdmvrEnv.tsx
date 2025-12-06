@@ -1,11 +1,11 @@
-import '../../scripts/uikit-styles'
+import "../../scripts/uikit-styles";
 import * as THREE from "three";
 import { createContext, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import { createXRStore, XR, XROrigin } from "@react-three/xr"
+import { createXRStore, XR, XROrigin } from "@react-three/xr";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { FocusProvider } from './context/FocusContext.tsx';
+import { FocusProvider } from "./context/FocusContext.tsx";
 
 import CameraSync from "../systems/CameraSync.tsx";
 import Menu from "../ui/shared/Menu.tsx";
@@ -19,7 +19,7 @@ import { map, merge } from "rxjs";
 export const store = createXRStore();
 export const HistogramContext = createContext(null);
 
-interface NdmvrEnvProps {
+export interface NdmvrEnvProps {
     children?: React.ReactNode;
     controlsHelp?: boolean;
     currentConfig?: Record<string, unknown> | null;
@@ -27,7 +27,13 @@ interface NdmvrEnvProps {
     menu?: boolean;
 }
 
-export default function NdmvrEnv({ children, controlsHelp = true, currentConfig = null, onConfigChange = null, menu = true }: NdmvrEnvProps) {
+export default function NdmvrEnv({
+    children,
+    controlsHelp = true,
+    currentConfig = null,
+    onConfigChange = null,
+    menu = true,
+}: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(menu);
@@ -39,7 +45,6 @@ export default function NdmvrEnv({ children, controlsHelp = true, currentConfig 
 
     useEffect(() => {
         const pads = config?.environment?.histogramPads ?? [];
-
 
         const streams = pads.map((pad) =>
             histogramSubjectGet()
@@ -53,13 +58,14 @@ export default function NdmvrEnv({ children, controlsHelp = true, currentConfig 
         });
         return () => {
             histoSub.unsubscribe();
-        }
+        };
     }, [config]);
 
     useEffect(() => {
-        const sub = configSubjectGet().getObservable().subscribe((c) => setConfig(c.config));
+        const sub = configSubjectGet()
+            .getObservable()
+            .subscribe((c) => setConfig(c.config));
         return () => sub.unsubscribe();
-
     }, []);
 
     const {
@@ -84,7 +90,6 @@ export default function NdmvrEnv({ children, controlsHelp = true, currentConfig 
                     gl.toneMappingExposure = 1;
                 }}
             >
-
                 <color attach="background" args={["#ececec"]} />
                 <PerspectiveCamera
                     ref={cameraRef}
@@ -96,17 +101,23 @@ export default function NdmvrEnv({ children, controlsHelp = true, currentConfig 
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
 
-                    <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef} />
+                    <NdmvrScene
+                        controlsHelp={controlsHelp}
+                        originRef={xrOriginRef}
+                    />
 
                     {controlsHelp && <ControlsHelp />}
 
                     <HistogramContext.Provider value={histogram}>
                         <FocusProvider>
-                            {showMenu && <Menu originRef={xrOriginRef}
-                                currentConfig={currentConfig}
-                                onConfigChange={onConfigChange}
-                                onClose={() => setShowMenu(false)}
-                            />}
+                            {showMenu && (
+                                <Menu
+                                    originRef={xrOriginRef}
+                                    currentConfig={currentConfig}
+                                    onConfigChange={onConfigChange}
+                                    onClose={() => setShowMenu(false)}
+                                />
+                            )}
 
                             {showBinInfo && <BinInfo originRef={xrOriginRef} />}
 
@@ -118,7 +129,9 @@ export default function NdmvrEnv({ children, controlsHelp = true, currentConfig 
                                 setShowMenu={setShowMenu}
                                 setShowBinInfo={setShowBinInfo}
                                 setShowDemo={setShowDemo}
-                                desktopSpeed={config?.environment?.desktopSpeed ?? 5}
+                                desktopSpeed={
+                                    config?.environment?.desktopSpeed ?? 5
+                                }
                                 vrSpeed={config?.environment?.vrSpeed ?? 2}
                             />
                         </FocusProvider>

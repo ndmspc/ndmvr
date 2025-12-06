@@ -15,19 +15,44 @@ import ControlsHelp from "./components/ui/shared/ControlsHelp.tsx";
 import Menu from "./components/ui/shared/Menu.tsx";
 
 export {
-  JsrootEnv,
-  NdmspcEnv,
-  NdmvrEnv,
-  NdmspcDefaultBrowserEnv,
-  CanvasComponent,
-  HistogramWrapper,
-  NdmvrScene,
-  RaycasterBridge,
-  CameraSync,
-  Menu,
-  BinInfo,
-  ControlsHelp,
-  VRController,
-  DesktopController,
-  Controllers,
+    JsrootEnv,
+    NdmspcEnv,
+    NdmvrEnv,
+    NdmspcDefaultBrowserEnv,
+    CanvasComponent,
+    HistogramWrapper,
+    NdmvrScene,
+    RaycasterBridge,
+    CameraSync,
+    Menu,
+    BinInfo,
+    ControlsHelp,
+    VRController,
+    DesktopController,
+    Controllers,
 };
+
+// Export types for component props
+export type { NdmspcEnvProps } from "./components/env/NdmspcEnv.tsx";
+export type {
+    NdmvrEnvProps,
+    HistogramContext,
+} from "./components/env/NdmvrEnv.tsx";
+export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
+export type {
+    CanvasComponentProps,
+    CanvasLocation,
+} from "./components/scene/CanvasComponent.tsx";
+export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";
+export type { NdmvrSceneProps } from "./components/scene/NdmvrScene.tsx";
+export type { RaycasterBridgeProps } from "./components/scene/RaycasterBridge.tsx";
+export type { CameraSyncProps } from "./components/systems/CameraSync.tsx";
+export type { ControllersProps } from "./components/systems/inputs/Controllers.tsx";
+export type { DesktopControllerProps } from "./components/systems/inputs/DesktopController.tsx";
+export type { VRControllerProps } from "./components/systems/inputs/VRController.tsx";
+export type { MenuProps } from "./components/ui/shared/Menu.tsx";
+export type { BinInfoProps } from "./components/ui/shared/BinInfo.tsx";
+export type { FocusContextType } from "./components/env/context/FocusContext.tsx";
+
+// Re-export the XR store for consumers
+export { store } from "./components/env/NdmvrEnv.tsx";

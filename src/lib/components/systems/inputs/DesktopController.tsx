@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useFocus } from "../../env/context/FocusContext";
 
-interface DesktopControllerProps {
+export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
     cameraRef: React.RefObject<THREE.Camera>;
     speed?: number;
@@ -18,7 +18,7 @@ export default function DesktopController({
     speed = 5,
     onToggleMenu,
     onToggleBinInfo,
-    onToggleDemo
+    onToggleDemo,
 }: DesktopControllerProps) {
     const keys = useRef({});
     const isMouseDown = useRef(false);
@@ -43,7 +43,6 @@ export default function DesktopController({
                     })
                 );
             }
-
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;
