@@ -12,6 +12,7 @@ export interface NdmspcEnvProps {
     config?: Record<string, unknown> | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
     controlsHelp?: boolean;
+    menu?: boolean;
 }
 
 export default function NdmspcEnv({
@@ -19,6 +20,7 @@ export default function NdmspcEnv({
     config = null,
     onConfigChange = null,
     controlsHelp = false,
+    menu = true,
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
@@ -67,6 +69,7 @@ export default function NdmspcEnv({
                     controlsHelp={controlsHelp}
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
+                    menu={menu}
                 >
                     {children}
                 </NdmvrEnv>
