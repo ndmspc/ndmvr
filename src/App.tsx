@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { parse as jsrootParse } from "jsroot";
-
+import IframeCernboxService from "./lib/components/service/IframeCernboxService.tsx";
 function App() {
     // const effectRan = useRef(false);
     //
@@ -113,6 +113,7 @@ function App() {
                     width: "100%",
                 }}
             >
+                <IframeCernboxService onConfigLoad={(data) => console.log(data)} />
                 <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" />
                 {/* <NdmspcEnv /> */}
             </div>
