@@ -9,11 +9,13 @@ import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 import defaultConfig from "../../config.json";
 import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";
+import { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
+import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
-    config?: Record<string, unknown> | null;
-    onConfigChange?: ((config: Record<string, unknown>) => void) | null;
+    config?: NdmvrConfig | null;
+    onConfigChange?: ((config: NdmspcConfig) => void) | null;
     controlsHelp?: boolean;
     renderer?: "jsroot" | "ndmvr";
     vr?: boolean;
@@ -175,6 +177,7 @@ export default function NdmspcDefaultBrowserEnv({
             >
                 <NdmvrEnv
                     controlsHelp={controlsHelp}
+                    // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
                     menu={false}

@@ -1,11 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // import NdmspcEnv from "./lib/components/env/NdmspcEnv.tsx";
-import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
+// import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { parse as jsrootParse } from "jsroot";
-import IframeCernboxService from "./lib/components/service/IframeCernboxService.tsx";
+import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
 function App() {
+    const [configState, setConfigState] = useState<NdmspcConfig>({ type: "" });
     // const effectRan = useRef(false);
     //
     // const effectRan = useRef(false);
@@ -55,6 +56,21 @@ function App() {
     //   }, 5000);
     //
     // }, []);
+    function onConfigLoad(config: NdmspcConfig) {
+
+        console.log("Config loaded:", config);
+
+        if (configState.type === "") {
+            setConfigState(config as NdmspcConfig);
+        } else {
+            // check if config is different from current configState
+            // TODO: improve deep comparison
+            if (JSON.stringify(config) === JSON.stringify(configState)) {
+                setConfigState(config as NdmspcConfig);
+            }
+        }
+
+    }
 
     useEffect(() => {
         brokerManagerGet().createWs("ws://localhost:8080/ws/root.websocket", false, 60);
@@ -113,8 +129,10 @@ function App() {
                     width: "100%",
                 }}
             >
-                <IframeCernboxService onConfigLoad={(data) => console.log(data)} />
-                <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" />
+                <NdmspcNavigator>
+                    <IframeCernboxService onConfigLoad={onConfigLoad} />
+                </NdmspcNavigator>
+                {/* <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" /> */}
                 {/* <NdmspcEnv /> */}
             </div>
         </div>

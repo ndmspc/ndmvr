@@ -14,6 +14,7 @@ import Controllers from "../systems/inputs/Controllers.tsx";
 import NdmvrScene from "../scene/NdmvrScene.tsx";
 import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
 import Demo from "../ui/shared/Demo.tsx";
+import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { map, merge } from "rxjs";
 
 export const store = createXRStore();
@@ -22,8 +23,8 @@ export const HistogramContext = createContext(null);
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
     controlsHelp?: boolean;
-    currentConfig?: Record<string, unknown> | null;
-    onConfigChange?: ((config: Record<string, unknown>) => void) | null;
+    currentConfig?: NdmvrConfig;
+    onConfigChange?: ((config: NdmvrConfig) => void) | null;
     menu?: boolean;
 }
 
@@ -110,6 +111,7 @@ export default function NdmvrEnv({
                             {showBinInfo && <BinInfo originRef={xrOriginRef} />}
 
                             {showDemo && <Demo originRef={xrOriginRef} />}
+                            {children}
 
                             <Controllers
                                 originRef={xrOriginRef}

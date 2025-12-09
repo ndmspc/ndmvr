@@ -15,10 +15,14 @@ import ControlsHelp from "./components/ui/shared/ControlsHelp.tsx";
 import Menu from "./components/ui/shared/Menu.tsx";
 import IframeService from "./components/service/IframeService.tsx";
 import IframeCernboxService from "./components/service/IframeCernboxService.tsx";
+import NdmspcNavigator from "./components/app/NdmspcNavigator.tsx";
+import useNdmspcConfig from "./hooks/useNdmspcConfig.tsx";
+import useNdmspcWebsocket from "./hooks/useNdmspcWebsocket.tsx";
 
 import { histogramSubjectGet, brokerManagerGet, binInfoSubjectGet, canvasSubjectGet, configSubjectGet, functionSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe"
 
 export {
+    NdmspcNavigator,
     JsrootEnv,
     NdmspcEnv,
     NdmvrEnv,
@@ -36,13 +40,16 @@ export {
     Controllers,
     IframeService,
     IframeCernboxService,
+    // useNdmspcConfig,
     histogramSubjectGet,
     brokerManagerGet,
     binInfoSubjectGet,
     canvasSubjectGet,
     configSubjectGet,
     functionSubjectGet,
-    stateSubjectGet
+    stateSubjectGet,
+    useNdmspcConfig,
+    useNdmspcWebsocket,
 };
 
 // Export types for component props
@@ -60,6 +67,9 @@ export type { VRControllerProps } from "./components/systems/inputs/VRController
 export type { MenuProps } from "./components/ui/shared/Menu.tsx";
 export type { BinInfoProps } from "./components/ui/shared/BinInfo.tsx";
 export type { FocusContextType } from "./components/env/context/FocusContext.tsx";
+export type { NdmspcConfig } from "./interfaces/NdmspcConfig.ts";
+export type { NdmvrConfig } from "./interfaces/NdmvrConfig.ts";
+
 
 // Re-export the XR store for consumers
 export { store } from "./components/env/NdmvrEnv.tsx";

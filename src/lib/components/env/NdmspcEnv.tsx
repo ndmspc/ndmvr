@@ -4,12 +4,13 @@ import Switch from "../ui/desktop/Switch.tsx";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 import defaultConfig from "../../config.json";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
-    config?: Record<string, unknown> | null;
+    config?: NdmvrConfig | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
     controlsHelp?: boolean;
     menu?: boolean;
@@ -67,6 +68,7 @@ export default function NdmspcEnv({
             >
                 <NdmvrEnv
                     controlsHelp={controlsHelp}
+                    // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
                     menu={menu}
