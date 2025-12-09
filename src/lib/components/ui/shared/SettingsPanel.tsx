@@ -11,20 +11,21 @@ import {
     getDeep,
 } from "../../../utils/schema-helpers";
 import FloatingContainer from "./FloatingContainer.tsx";
+import { NdmvrConfig } from "../../../interfaces/NdmvrConfig.ts";
 
-interface ConfigType {
-    config?: {
-        environment?: Record<string, unknown>;
-        [key: string]: unknown;
-    };
-    [key: string]: unknown;
-}
+// interface ConfigType {
+//     config?: {
+//         environment?: Record<string, unknown>;
+//         [key: string]: unknown;
+//     };
+//     [key: string]: unknown;
+// }
 
 interface SettingsPanelProps {
     originRef: React.RefObject<THREE.Group>;
     offset?: { x: number; y: number; z: number };
-    currentConfig?: ConfigType | null;
-    onConfigChange?: ((config: ConfigType) => void) | null;
+    currentConfig?: NdmvrConfig | null;
+    onConfigChange?: ((config: NdmvrConfig) => void) | null;
 }
 
 export default function SettingsPanel({
@@ -35,6 +36,7 @@ export default function SettingsPanel({
 }: SettingsPanelProps) {
     const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};
     const flatSchema = flattenSchema(envSchema);
+    // @ts-expect-error FIXME: Config
     const initialEnv = currentConfig?.config?.environment ?? {};
 
     const [settings, setSettings] = useState(() =>
@@ -54,8 +56,11 @@ export default function SettingsPanel({
         const next = {
             ...currentConfig,
             config: {
+                // @ts-expect-error FIXME: Config
                 ...(currentConfig?.config ?? {}),
                 environment: {
+
+                    // @ts-expect-error FIXME: Config
                     ...(currentConfig?.config?.environment ?? {}),
                     ...newEnv,
                 },

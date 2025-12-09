@@ -12,12 +12,13 @@ import ConnectionMenu from "./ConnectionMenu.tsx";
 import BinInfo from "./BinInfo.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
 import DrawOptions from "./DrawOptions.tsx";
+import { NdmvrConfig } from "../../../interfaces/NdmvrConfig.ts";
 
 export interface MenuProps {
     originRef: React.RefObject<THREE.Group>;
     offset?: { x: number; y: number; z: number };
     onClose?: () => void;
-    currentConfig?: Record<string, unknown> | null;
+    currentConfig?: NdmvrConfig | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
 }
 
