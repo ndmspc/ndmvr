@@ -12,6 +12,7 @@ const __dirname = dirname(__filename);
 export default defineConfig(({ mode }) => ({
     base: mode === "production" ? "/ndmvr-r3f/" : "/",
     build: {
+        chunkSizeWarningLimit: 1000,
         lib: {
             entry: resolve(__dirname, "src/lib/index.tsx"),
             name: "Ndmvr r3f React Library Vite",
