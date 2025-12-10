@@ -28,6 +28,8 @@ export default function JsrootEnv() {
         const sub = configSubjectGet()
             .getObservable()
             .subscribe((c) => {
+                console.log("[JsrootEnv]")
+                console.log(c.config);
                 setConfig(c.config);
             });
         const cinemaSub = canvasSubjectGet()
@@ -44,10 +46,14 @@ export default function JsrootEnv() {
         };
     }, []);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const pads = config?.environment?.histogramPads ?? [];
-    const n = pads.length;
+    // const pads = config?.environment?.histogramPads ?? [];
+    // const n = pads.length;
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const pads = [{
+        id: "histogram1"
+    }];
+    const n: number  = 1;
     const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
 
     useEffect(() => {
@@ -60,6 +66,7 @@ export default function JsrootEnv() {
         );
 
         const sub = merge(...streams).subscribe(({ id, obj }) => {
+            console.log(id);
             jsrootRedraw(obj?.obj, id);
             jsrootRedraw(obj?.obj, `full-${id}`);
         });
@@ -69,7 +76,20 @@ export default function JsrootEnv() {
 
     return (
         <Tabs>
-            <Tab name={n === 1 ? pads[0]?.id : "All histograms"}>
+            <Tab name="Cinema">
+                <div
+                    id={histoCinemaID}
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        overflow: "hidden",
+                        aspectRatio: "1 / 1",
+                        border: "1px solid black",
+                    }}
+                />
+            </Tab>
+            {/*<Tab name={n === 1 ? pads[0]?.id : "All histograms"}>*/}
+            <Tab name={n === 1 ? "Canvas" : "All histograms"}>
                 <div
                     style={{
                         display: "grid",
@@ -102,18 +122,6 @@ export default function JsrootEnv() {
                         />
                     ))}
                 </div>
-            </Tab>
-            <Tab name="Cinema">
-                <div
-                    id={histoCinemaID}
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        overflow: "hidden",
-                        aspectRatio: "1 / 1",
-                        border: "1px solid black",
-                    }}
-                />
             </Tab>
             {n > 1 &&
                 pads.map((pad) => (
