@@ -54,7 +54,7 @@ publish:
     SIGSTORE_ID_TOKEN:
       aud: sigstore
   script:
-    - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
+    - "sed -i -e 's/^    \\\"version\\\".*/    \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
     - npm config set legacy-peer-deps=true
     - npm install -g npm@latest
     - CI=true npm install
