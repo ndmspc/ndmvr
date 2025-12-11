@@ -1,5 +1,8 @@
 variables:
   PUBLIC_URL: "/ndmvr-r3f/"
+  NODE_VERSION: "22"
+
+image: node:${NODE_VERSION}
 
 stages:
   - build
@@ -7,7 +10,8 @@ stages:
 
 test-prod:
   stage: build
-  image: node:22
+  tags:
+    - ndmspc-hosted
   script:
     - CI=true npm install
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
@@ -15,19 +19,6 @@ test-prod:
     - CI=true npm run build-app
   except:
     - main
-    - tags
-
-deploy:
-  stage: deploy
-  image: node:22
-  script:
-    - "sed -i -e 's/^    \\\"version\\\".*/    \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
-    - CI=true npm install
-    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
-    - CI=true npm run build
-    - npm config set //registry.npmjs.org/:_authToken ${NPM_AUTH_TOKEN}
-    - CI=true npm publish --access public
-  only:
     - tags
 
 cache:
@@ -40,7 +31,8 @@ cache:
 
 pages:
   stage: deploy
-  image: node:22
+  tags:
+    - ndmspc-hosted
   script:
     - CI=true npm install
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
@@ -51,3 +43,25 @@ pages:
       - public
   only:
     - main
+
+publish:
+  stage: deploy
+  tags:
+    - gitlab-org-docker
+  id_tokens:
+    NPM_ID_TOKEN:
+      aud: "npm:registry.npmjs.org"
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  script:
+    - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
+    - npm config set legacy-peer-deps=true
+    - npm install -g npm@latest
+    - CI=true npm install
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build
+    - export MY_VER_RELEASE=$(echo ${CI_COMMIT_REF_NAME/v/} | cut -sd '-' -f2)
+    - if [ -z "$MY_VER_RELEASE" ];then CI=true npm publish --access public; fi
+    - if [ -n "$MY_VER_RELEASE" ];then CI=true npm publish --access public --tag rc; fi
+  only:
+    - tags
