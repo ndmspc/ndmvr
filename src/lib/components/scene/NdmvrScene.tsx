@@ -2,11 +2,11 @@ import * as THREE from "three";
 import { Sky } from "@react-three/drei";
 import { binInfoSubjectGet, configSubjectGet, NdmvrRaycaster } from "@ndmspc/ndmvr-aframe";
 import { useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CanvasComponent from "./CanvasComponent.tsx";
 import HistogramWrapper from "./HistogramWrapper.tsx";
 import RaycasterBridge from "./RaycasterBridge.tsx";
-import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
+import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 
 export interface NdmvrSceneProps {
     originRef: React.RefObject<THREE.Group>;
@@ -14,11 +14,13 @@ export interface NdmvrSceneProps {
 
 export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
     const { scene, gl } = useThree();
-    const [raycaster, setRaycaster] = useState(null);
+    const raycasterRef = useRef(null);
     const [config, setConfig] = useState(null);
 
     const grid = useMemo(() => new THREE.GridHelper(100, 100), []);
     const axes = useMemo(() => new THREE.AxesHelper(5), []);
+
+    const { vrEnabled, uiHover, shouldDisableRaycaster } = useSceneModeStore();
 
     useEffect(() => {
         const configSub = configSubjectGet()
@@ -38,12 +40,31 @@ export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
     }, []);
 
     useEffect(() => {
-        if (scene) {
-            const raycaster = new NdmvrRaycaster(scene, gl.domElement);
-            console.log(raycaster);
-            setRaycaster(raycaster);
+        if (scene && gl.domElement) {
+            const newRaycaster = new NdmvrRaycaster(scene, gl.domElement);
+            raycasterRef.current = newRaycaster;
+            console.log(newRaycaster);
         }
-    }, [scene]);
+        return () => {
+            raycasterRef.current?.destroyRaycasting();
+        };
+    }, [scene, gl]);
+
+    useEffect(() => {
+        if (shouldDisableRaycaster()) {
+            console.log("DisableRaycaster");
+            raycasterRef.current?.destroyRaycasting();
+            if (raycasterRef.current.raycastOn != undefined) {
+                raycasterRef.current.raycastOn = false;
+            }
+        } else {
+            console.log("EnableRaycaster");
+            raycasterRef.current?.setupRaycasting();
+            if (raycasterRef.current.raycastOn != undefined) {
+                raycasterRef.current.raycastOn = true;
+            }
+        }
+    }, [vrEnabled, uiHover, shouldDisableRaycaster]);
 
     return (
         <>
@@ -70,7 +91,11 @@ export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
                 <meshStandardMaterial color="lightgray" />
             </mesh>
 
-            <RaycasterBridge rc={raycaster} originRef={originRef} />
+            {/* eslint-disable-next-line react-hooks/refs */}
+            {raycasterRef.current && (
+                // eslint-disable-next-line react-hooks/refs
+                <RaycasterBridge rc={raycasterRef.current} originRef={originRef} />
+            )}
 
             <primitive object={grid} />
             <primitive object={axes} />

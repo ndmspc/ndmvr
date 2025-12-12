@@ -57,6 +57,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
         return () => {
             configSub.unsubscribe();
+            nestedHistogram.current?.remove();
+            jsrootHistogram.current?.remove();
         };
     }, [scene]);
 
@@ -114,7 +116,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         clearJsrootMesh();
 
                         if (nestedHistogram.current) {
-                            console.log("REMOVEEEEE__________");
                             nestedHistogram.current.updateHistogram(histo);
                             // nestedHistogram.current.remove();
                             // nestedHistogram.current = undefined;

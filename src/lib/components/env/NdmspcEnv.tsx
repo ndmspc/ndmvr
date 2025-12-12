@@ -7,6 +7,7 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 import defaultConfig from "../../config.json";
+import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
@@ -27,6 +28,8 @@ export default function NdmspcEnv({
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
     const [appConfig, setAppConfig] = useState(defaultConfig);
+
+    const { setUIHover, setVrEnabled } = useSceneModeStore();
 
     console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
 
@@ -78,7 +81,15 @@ export default function NdmspcEnv({
                 </NdmvrEnv>
             </div>
 
-            <Switch startState={true} onToggle={(checked: boolean) => setVRMode(checked)} />
+            <Switch
+                onMouseEnter={() => setUIHover(true)}
+                onMouseLeave={() => setUIHover(false)}
+                startState={true}
+                onToggle={(checked: boolean) => {
+                    setVrEnabled(checked);
+                    setVRMode(checked);
+                }}
+            />
         </div>
     );
 }
