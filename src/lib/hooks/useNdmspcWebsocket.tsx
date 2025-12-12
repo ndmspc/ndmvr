@@ -1,18 +1,11 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect } from "react";
 import { parse as jsrootParse } from "jsroot";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { NdmspcConfig } from '../interfaces/NdmspcConfig';
+import { NdmspcConfig } from "../interfaces/NdmspcConfig";
 
 const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeout = 60) => {
-
-
     useLayoutEffect(() => {
-
-        brokerManagerGet().createWs(
-            url,
-            false,
-            timeout,
-        );
+        brokerManagerGet().createWs(url, false, timeout);
         const sub = brokerManagerGet()
             .getSubject()
             .subscribe((v: unknown) => {
@@ -45,7 +38,6 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
                         }
                     }
                 } else if (obj._typename) {
-
                     histogramSubjectGet().next({
                         id: `histogram1`,
                         opts: { render: "" },
@@ -59,5 +51,5 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
     }, [url, timeout]);
 
     return null;
-}
-export default useNdmspcWebsocket
+};
+export default useNdmspcWebsocket;

@@ -9,15 +9,16 @@ import { FocusProvider } from "./context/FocusContext.tsx";
 
 import CameraSync from "../systems/CameraSync.tsx";
 import Menu from "../ui/shared/Menu.tsx";
-import BinInfo from "../ui/shared/BinInfo.tsx";
 import Controllers from "../systems/inputs/Controllers.tsx";
 import NdmvrScene from "../scene/NdmvrScene.tsx";
 import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
-import Demo from "../ui/shared/Demo.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { map, merge } from "rxjs";
+import HelperTips from "../ui/shared/HelperTips.tsx";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
+// eslint-disable-next-line react-refresh/only-export-components
 export const HistogramContext = createContext(null);
 
 export interface NdmvrEnvProps {
@@ -26,20 +27,20 @@ export interface NdmvrEnvProps {
     currentConfig?: NdmvrConfig;
     onConfigChange?: ((config: NdmvrConfig) => void) | null;
     menu?: boolean;
+    help?: boolean;
 }
 
 export default function NdmvrEnv({
     children,
-    controlsHelp = true,
     currentConfig = null,
     onConfigChange = null,
-    menu = true,
+    menu = false,
+    help = false,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
     const [showMenu, setShowMenu] = useState(menu);
-    const [showBinInfo, setShowBinInfo] = useState(false);
-    const [showDemo, setShowDemo] = useState(false);
+    const [showHelp, setShowHelp] = useState(menu ? false : help);
 
     const [config, setConfig] = useState(null);
     const [histogram, setHistogram] = useState(null);
@@ -71,6 +72,16 @@ export default function NdmvrEnv({
 
     const { x = 0, y = 1.7, z = 10 } = config?.environment?.camera?.position ?? {};
 
+    const newSetShowMenu = (p) => {
+        setShowMenu(p);
+        if (p) setShowHelp(false);
+    };
+
+    const newSetShowHelp = (p) => {
+        setShowHelp(p);
+        if (p) setShowMenu(false);
+    };
+
     return (
         <div
             style={{
@@ -93,9 +104,7 @@ export default function NdmvrEnv({
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
 
-                    <NdmvrScene controlsHelp={controlsHelp} originRef={xrOriginRef} />
-
-                    {controlsHelp && <ControlsHelp />}
+                    <NdmvrScene originRef={xrOriginRef} />
 
                     <HistogramContext.Provider value={histogram}>
                         <FocusProvider>
@@ -105,20 +114,26 @@ export default function NdmvrEnv({
                                     currentConfig={currentConfig}
                                     onConfigChange={onConfigChange}
                                     onClose={() => setShowMenu(false)}
+                                    help={help}
+                                    openHelp={() => {
+                                        setShowMenu(false);
+                                        setShowHelp(true);
+                                    }}
                                 />
                             )}
 
-                            {showBinInfo && <BinInfo originRef={xrOriginRef} />}
+                            {showHelp && <HelperTips originRef={xrOriginRef} />}
 
-                            {showDemo && <Demo originRef={xrOriginRef} />}
+                            {/*{showBinInfo && <BinInfo originRef={xrOriginRef} />}*/}
+
+                            {/*{showDemo && <Demo originRef={xrOriginRef} />}*/}
                             {children}
 
                             <Controllers
                                 originRef={xrOriginRef}
                                 cameraRef={cameraRef}
-                                setShowMenu={setShowMenu}
-                                setShowBinInfo={setShowBinInfo}
-                                setShowDemo={setShowDemo}
+                                setShowMenu={newSetShowMenu}
+                                setShowHelp={newSetShowHelp}
                                 desktopSpeed={config?.environment?.desktopSpeed ?? 5}
                                 vrSpeed={config?.environment?.vrSpeed ?? 2}
                             />

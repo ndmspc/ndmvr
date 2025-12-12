@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface IframeMessage {
     data: {
         action: string;
-        content: string
+        content: string;
     };
 }
 
@@ -13,22 +13,19 @@ interface IframeServiceProps {
 }
 
 const IframeService = ({ targetOrigin = "*", onMessage = null }: IframeServiceProps) => {
-
     const handlePostMessage = (event: IframeMessage) => {
-        console.log("Event: ", event)
+        console.log("Event: ", event);
         if (onMessage) onMessage(event);
     };
 
     useEffect(() => {
         window.parent.postMessage({ event: "init" }, targetOrigin);
-        window.addEventListener('message', handlePostMessage);
+        window.addEventListener("message", handlePostMessage);
         return () => {
-            window.removeEventListener('message', handlePostMessage);
+            window.removeEventListener("message", handlePostMessage);
         };
     }, []);
-
 
     return null;
 };
 export default IframeService;
-

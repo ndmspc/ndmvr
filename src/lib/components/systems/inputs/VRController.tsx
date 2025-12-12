@@ -10,8 +10,7 @@ export interface VRControllerProps {
     snapAngle?: number;
     snapDelay?: number;
     onToggleMenu?: () => void;
-    onToggleBinInfo?: () => void;
-    onToggleDemo?: () => void;
+    onToggleHelp?: () => void;
 }
 
 export default function VRController({
@@ -20,8 +19,7 @@ export default function VRController({
     snapAngle = Math.PI / 6,
     snapDelay = 0.3,
     onToggleMenu,
-    onToggleBinInfo,
-    onToggleDemo,
+    onToggleHelp,
 }: VRControllerProps) {
     const session = useXR((s) => s.session);
     const [controllersReady, setControllersReady] = useState({
@@ -39,6 +37,7 @@ export default function VRController({
     const lastA = useRef(false);
     const lastB = useRef(false);
     const lastX = useRef(false);
+    const lastY = useRef(false);
     const snapTimer = useRef(0);
     const hasSnapped = useRef(false);
     const { focused } = useFocus();
@@ -138,6 +137,13 @@ export default function VRController({
             if (xBtn?.state !== "pressed") {
                 lastX.current = false;
             }
+
+            const yBtn = leftGamepad["y-button"];
+            if (yBtn?.state === "pressed" && !lastY.current) {
+                onToggleHelp?.();
+                lastY.current = true;
+            }
+            if (yBtn?.state !== "pressed") lastY.current = false;
         }
 
         if (rightGamepad) {

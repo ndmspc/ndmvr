@@ -1,6 +1,6 @@
-import { Container} from "@react-three/uikit";
+import { Container } from "@react-three/uikit";
 import { useEffect, useRef, useState } from "react";
-import TreeViewer from './TreeViewer.tsx'
+import TreeViewer from "./TreeViewer.tsx";
 import { HierarchyPainter } from "jsroot";
 
 interface FileBrowserProps {
@@ -46,13 +46,7 @@ export default function FileBrowser({ url }: FileBrowserProps) {
             justifyContent="flex-start"
         >
             <Container gap={8} display="flex" flexDirection="column">
-                {root && (
-                    <TreeViewer
-                        hierarchy={hierarchy}
-                        root={root}
-                        doc={treeRef}
-                    />
-                )}
+                {root && <TreeViewer hierarchy={hierarchy} root={root} doc={treeRef} />}
             </Container>
         </Container>
     );

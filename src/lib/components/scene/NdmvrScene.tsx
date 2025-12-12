@@ -10,10 +10,9 @@ import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
 
 export interface NdmvrSceneProps {
     originRef: React.RefObject<THREE.Group>;
-    controlsHelp?: boolean;
 }
 
-export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSceneProps) {
+export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
     const { scene, gl } = useThree();
     const [raycaster, setRaycaster] = useState(null);
     const [config, setConfig] = useState(null);
@@ -59,17 +58,6 @@ export default function NdmvrScene({ originRef, controlsHelp = false }: NdmvrSce
                     />
                 )}
             </group>
-
-            {controlsHelp && (
-                <>
-                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4, 0]}>
-                        <ControlsHelp />
-                    </group>
-                    <group position={[-3.5, 1.5, 7]} rotation={[0, Math.PI / 4 + Math.PI, 0]}>
-                        <ControlsHelp />
-                    </group>
-                </>
-            )}
 
             <Sky />
             {/*<fog attach="fog" args={["#997D31", 5, 60]}/>*/}

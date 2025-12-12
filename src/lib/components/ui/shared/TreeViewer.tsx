@@ -22,17 +22,15 @@ interface TreeViewerProps {
 }
 
 function Line({
-                  type,
-                  color = "#7c7c7c",
-              }: {
+    type,
+    color = "#7c7c7c",
+}: {
     type: "vertical" | "horizontal" | "corner";
     color?: string;
 }) {
     switch (type) {
         case "vertical":
-            return (
-                <Container width={2} height="100%" backgroundColor={color} />
-            );
+            return <Container width={2} height="100%" backgroundColor={color} />;
 
         case "horizontal":
             return (
@@ -43,11 +41,7 @@ function Line({
                     alignItems="center"
                     justifyContent="center"
                 >
-                    <Container
-                        width="100%"
-                        height={2}
-                        backgroundColor={color}
-                    />
+                    <Container width="100%" height={2} backgroundColor={color} />
                 </Container>
             );
 
@@ -59,15 +53,14 @@ function Line({
     }
 }
 
-
 export default function TreeViewer({
-                        hierarchy,
-                        root,
-                        path = "",
-                        doc,
-                        expandable = false,
-                        onSelect = null
-                    }: TreeViewerProps) {
+    hierarchy,
+    root,
+    path = "",
+    doc,
+    expandable = false,
+    onSelect = null,
+}: TreeViewerProps) {
     const [show, setShow] = useState(false);
     const [isExpanded, setExpand] = useState(false);
     const [nodeName, setNodeName] = useState("");
@@ -78,15 +71,12 @@ export default function TreeViewer({
     useEffect(() => {
         const raw = root._childs;
 
-        const childsArray: RootNode[] = Array.isArray(raw)
-            ? raw
-            : Object.values(raw || {});
+        const childsArray: RootNode[] = Array.isArray(raw) ? raw : Object.values(raw || {});
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setNodeName(root._name);
         setPath(path + "/" + root._name);
         setChilds(childsArray);
-
 
         // elements with + or - can be expanded
         const pluses =
@@ -107,15 +97,11 @@ export default function TreeViewer({
     }, [show]);
 
     const handler = async () => {
-
-
         if (!isExpanded) {
             await hierarchy.expandItem(root._name);
 
             const raw = root._childs;
-            const childsArray: RootNode[] = Array.isArray(raw)
-                ? raw
-                : Object.values(raw || {});
+            const childsArray: RootNode[] = Array.isArray(raw) ? raw : Object.values(raw || {});
 
             setChilds(childsArray);
             setExpand(true);
@@ -130,8 +116,7 @@ export default function TreeViewer({
                 await handler();
             })();
         }
-    }, [ root]);
-
+    }, [root]);
 
     return (
         <Container flexDirection="column" height="auto">
@@ -176,18 +161,14 @@ export default function TreeViewer({
                         </Text>
                     </Container>
                 ) : (
-                    <Text onClick={() => onSelect(path_) }>{nodeName}</Text>
+                    <Text onClick={() => onSelect(path_)}>{nodeName}</Text>
                 )}
 
                 {show && childs.length > 0 ? (
                     <Container flexDirection="column">
                         {childs.map((child, index) => (
                             <Container key={index} flexDirection="row">
-                                <Container
-                                    flexDirection="row"
-                                    justifyContent="flex-end"
-                                    width={25}
-                                >
+                                <Container flexDirection="row" justifyContent="flex-end" width={25}>
                                     {index === childs.length - 1 ? (
                                         <Line type="corner" />
                                     ) : (
@@ -195,11 +176,7 @@ export default function TreeViewer({
                                     )}
                                 </Container>
 
-                                <Container
-                                    flexDirection="row"
-                                    justifyContent="center"
-                                    width={25}
-                                >
+                                <Container flexDirection="row" justifyContent="center" width={25}>
                                     <Line type="horizontal" />
                                 </Container>
 
@@ -220,5 +197,3 @@ export default function TreeViewer({
         </Container>
     );
 }
-
-
