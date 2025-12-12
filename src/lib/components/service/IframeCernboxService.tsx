@@ -41,7 +41,7 @@ const IframeCernboxService = ({ targetOrigin = "*", onConfigLoad = null }: Ifram
         } else if (event?.data?.action === "init_save") {
             console.log("IframeCernboxService: save:", JSON.stringify(config));
             window.parent.postMessage(
-                { event: "save", content: JSON.stringify(config) },
+                { event: "upload", content: JSON.stringify(config) },
                 targetOrigin
             );
         }
