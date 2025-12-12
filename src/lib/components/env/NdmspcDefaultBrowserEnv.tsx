@@ -19,6 +19,8 @@ export interface NdmspcDefaultBrowserEnvProps {
     controlsHelp?: boolean;
     renderer?: "jsroot" | "ndmvr";
     vr?: boolean;
+    menu?: boolean;
+    help?: boolean;
     file?: string | null;
     item?: string | null;
     opt?: string | null;
@@ -31,7 +33,8 @@ export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
     onConfigChange = null,
-    controlsHelp = false,
+    menu = false,
+    help = false,
     renderer = "jsroot",
     vr = false,
     file = "https://root.cern.ch/js/files/hsimple.root",
@@ -176,11 +179,11 @@ export default function NdmspcDefaultBrowserEnv({
                 }}
             >
                 <NdmvrEnv
-                    controlsHelp={controlsHelp}
                     // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
-                    menu={false}
+                    menu={menu}
+                    help={help}
                 >
                     {children}
                 </NdmvrEnv>

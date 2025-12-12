@@ -14,14 +14,15 @@ export interface NdmspcEnvProps {
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
     controlsHelp?: boolean;
     menu?: boolean;
+    help?: boolean;
 }
 
 export default function NdmspcEnv({
     children = null,
     config = null,
     onConfigChange = null,
-    controlsHelp = false,
-    menu = true,
+    help = false,
+    menu = false,
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
@@ -67,11 +68,11 @@ export default function NdmspcEnv({
                 }}
             >
                 <NdmvrEnv
-                    controlsHelp={controlsHelp}
                     // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
                     menu={menu}
+                    help={help}
                 >
                     {children}
                 </NdmvrEnv>

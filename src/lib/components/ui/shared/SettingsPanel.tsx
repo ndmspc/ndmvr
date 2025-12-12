@@ -59,7 +59,6 @@ export default function SettingsPanel({
                 // @ts-expect-error FIXME: Config
                 ...(currentConfig?.config ?? {}),
                 environment: {
-
                     // @ts-expect-error FIXME: Config
                     ...(currentConfig?.config?.environment ?? {}),
                     ...newEnv,

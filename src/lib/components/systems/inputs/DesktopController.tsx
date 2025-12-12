@@ -8,8 +8,7 @@ export interface DesktopControllerProps {
     cameraRef: React.RefObject<THREE.Camera>;
     speed?: number;
     onToggleMenu?: () => void;
-    onToggleBinInfo?: () => void;
-    onToggleDemo?: () => void;
+    onToggleHelp?: () => void;
 }
 
 export default function DesktopController({
@@ -17,8 +16,7 @@ export default function DesktopController({
     cameraRef,
     speed = 5,
     onToggleMenu,
-    onToggleBinInfo,
-    onToggleDemo,
+    onToggleHelp,
 }: DesktopControllerProps) {
     const keys = useRef({});
     const isMouseDown = useRef(false);
@@ -29,7 +27,8 @@ export default function DesktopController({
     useEffect(() => {
         const onKeyDown = (e) => {
             keys.current[e.code] = true;
-            if (e.code === "KeyF" && !focused) onToggleMenu?.();
+            if (e.code === "KeyM" && !focused) onToggleMenu?.();
+            if (e.code === "KeyH" && !focused) onToggleHelp?.();
             // if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
             // if (e.code === "KeyN" && !focused) onToggleDemo?.();
             if (e.code === "KeyR") {
@@ -65,7 +64,7 @@ export default function DesktopController({
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         };
-    }, [onToggleMenu, onToggleBinInfo, focused]);
+    }, [onToggleMenu, onToggleHelp, focused]);
 
     useEffect(() => {
         const onMouseDown = (e) => {

@@ -20,6 +20,8 @@ export interface MenuProps {
     onClose?: () => void;
     currentConfig?: NdmvrConfig | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
+    openHelp?: () => void;
+    help?: boolean;
 }
 
 export default function Menu({
@@ -28,6 +30,7 @@ export default function Menu({
     onClose,
     currentConfig,
     onConfigChange,
+    openHelp,
 }: MenuProps) {
     const [loadMode, setLoadMode] = useState(null);
     const mode = useXR((state) => state.mode);
@@ -92,6 +95,11 @@ export default function Menu({
                                 <RadioGroupItem value="settings">
                                     <Label>
                                         <Text>Settings</Text>
+                                    </Label>
+                                </RadioGroupItem>
+                                <RadioGroupItem value="help" onClick={openHelp}>
+                                    <Label>
+                                        <Text>Help</Text>
                                     </Label>
                                 </RadioGroupItem>
                             </RadioGroup>

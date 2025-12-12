@@ -28,7 +28,7 @@ export default function JsrootEnv() {
         const sub = configSubjectGet()
             .getObservable()
             .subscribe((c) => {
-                console.log("[JsrootEnv]")
+                console.log("[JsrootEnv]");
                 console.log(c.config);
                 setConfig(c.config);
             });
@@ -50,10 +50,12 @@ export default function JsrootEnv() {
     // const n = pads.length;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const pads = [{
-        id: "histogram1"
-    }];
-    const n: number  = 1;
+    const pads = [
+        {
+            id: "histogram1",
+        },
+    ];
+    const n: number = 1;
     const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
 
     useEffect(() => {

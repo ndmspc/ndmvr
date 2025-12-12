@@ -57,7 +57,6 @@ function App() {
     //
     // }, []);
     function onConfigLoad(config: NdmspcConfig) {
-
         console.log("Config loaded:", config);
 
         if (configState.type === "") {
@@ -69,7 +68,6 @@ function App() {
                 setConfigState(config as NdmspcConfig);
             }
         }
-
     }
 
     useEffect(() => {
@@ -129,7 +127,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcNavigator>
+                <NdmspcNavigator menu={true} help={false}>
                     <IframeCernboxService onConfigLoad={onConfigLoad} />
                 </NdmspcNavigator>
                 {/* <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" /> */}
