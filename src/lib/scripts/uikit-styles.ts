@@ -28,7 +28,7 @@ StyleSheet["menuContainer"] = {
     color: "#fff",
     borderRadius: 24,
     padding: 20,
-    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+    // boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
     borderWidth: 1,
     borderColor: "#334155",
     flexDirection: "column",
@@ -71,14 +71,14 @@ StyleSheet["input"] = {
     backgroundColor: "#020617",
     borderColor: "#475569",
     color: "#f1f5f9",
-    placeholderColor: "#64748b",
+    // placeholderColor: "#64748b",
     borderWidth: 1,
     paddingX: 12,
     paddingY: 12,
     borderRadius: 8,
     focus: {
         borderColor: "#10b981",
-        boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
+        // boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
     },
 };
 
@@ -92,13 +92,13 @@ StyleSheet["dropdown"] = {
     backgroundColor: "#020617",
     borderColor: "#475569",
     color: "#f1f5f9",
-    placeholderColor: "#64748b",
+    // placeholderColor: "#64748b",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     hover: {
         borderColor: "#10b981",
-        boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
+        // boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
     },
     cursor: "pointer",
 };
@@ -112,7 +112,7 @@ StyleSheet["dropdownListWrapper"] = {
     borderColor: "#475569",
     borderWidth: 1,
     borderRadius: 8,
-    boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
+    // boxShadow: "0 0 0 2px rgba(16,185,129,0.5)",
     zIndex: 10,
     overflow: "hidden",
 };

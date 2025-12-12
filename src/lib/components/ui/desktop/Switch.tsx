@@ -69,12 +69,16 @@ interface SwitchProps {
     onToggle?: (checked: boolean) => void;
     label?: string;
     startState?: boolean;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
 export default function Switch({
     onToggle,
     label = "Full 3D Mode",
     startState = false,
+    onMouseEnter,
+    onMouseLeave,
 }: SwitchProps) {
     const [checked, setChecked] = useState(startState);
 
@@ -84,7 +88,7 @@ export default function Switch({
     };
 
     return (
-        <SwitchWrapper>
+        <SwitchWrapper onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
             <SwitchLabel>
                 <input type="checkbox" checked={checked} onChange={handleChange} />
                 <span className="slider" />
