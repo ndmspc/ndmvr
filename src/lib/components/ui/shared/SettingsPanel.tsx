@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
-import { Button } from "@react-three/uikit-default";
-import { Container, Input, Text } from "@react-three/uikit";
-import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
+import {useMemo, useState} from "react";
 import * as THREE from "three";
+import {Button} from "@react-three/uikit-default";
+import { Input, Text} from "@react-three/uikit";
+import Container from "../interactions/Container";
+import openapiSchema from "../../../../ndmvrConfigOpenApi.json"
 
 import {
     buildEnvironmentFromSettings,
@@ -183,7 +184,7 @@ export default function SettingsPanel({
                         onClick={importConfig}
                         minWidth={120}
                     >
-                        <Text>Import Config</Text>
+                        <Text>Apply</Text>
                     </Button>
                 </Container>
             </Container>
