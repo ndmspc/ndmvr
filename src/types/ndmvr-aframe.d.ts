@@ -118,7 +118,7 @@ declare module "@ndmspc/ndmvr-aframe" {
     }
 
     export interface ConfigSubject {
-        next(config: any): void;
+        next(config: any): Record<string, unknown>;
         getValue(): any;
         getObservable(): Subject<any>;
         appendPads(ids: string[], disp_kind: string, settings: Record<string, unknown>): void;

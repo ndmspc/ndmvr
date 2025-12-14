@@ -1,0 +1,82 @@
+site_name: NDMVR R3F
+repo_name: ndmspc/ndmvr-r3f
+repo_url: https://gitlab.com/ndmspc/ndmvr-r3f/docs
+edit_uri: edit/main/docs/
+nav:
+  - "Home": index.md
+extra:
+  version: v1.0.0
+  ndmspc:
+    name: NDMSPC
+    comming_soon: Comming soon ...
+    version: v1.0.0-rc4
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - mermaid2
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      skip_classes:
+        - custom-skip-class-name
+      auto_caption: true
+      caption_position: bottom
+      background: white
+      shadow: true
+  - macros
+  - git-revision-date-localized:
+      fallback_to_build_date: false
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - pymdownx.arithmatex
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - toc:
+      toc_depth: 2
+      permalink: true
+      title: On this page
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.extra
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML

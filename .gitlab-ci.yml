@@ -29,21 +29,6 @@ cache:
   paths:
     - node_modules/
 
-pages:
-  stage: deploy
-  tags:
-    - ndmspc-hosted
-  script:
-    - CI=true npm install
-    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
-    - CI=true npm run build -- -c vite.config.app.js --mode pages --base=$PUBLIC_URL
-    - cp -a dist/. public/
-  artifacts:
-    paths:
-      - public
-  only:
-    - main
-
 publish:
   stage: deploy
   tags:
@@ -65,3 +50,22 @@ publish:
     - if [ -n "$MY_VER_RELEASE" ];then CI=true npm publish --access public --tag rc; fi
   only:
     - tags
+
+pages:
+  stage: deploy
+  image: registry.gitlab.com/ndmspc/docs/ndmspc-doc
+  tags:
+    - ndmspc-hosted
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - mkdocs build -d public/docs
+    - CI=true npm install
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build -- -c vite.config.app.js --mode pages --base=$PUBLIC_URL
+    - cp -a dist/. public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

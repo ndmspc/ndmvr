@@ -27,6 +27,7 @@ export default function NdmspcEnv({
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
+    const initializedRef2 = useRef(false);
     const [appConfig, setAppConfig] = useState(defaultConfig);
 
     const { setUIHover, setVrEnabled } = useSceneModeStore();
@@ -46,11 +47,38 @@ export default function NdmspcEnv({
     useEffect(() => {
         if (initializedRef.current) return;
         initializedRef.current = true;
-        const current = configSubjectGet().getValue() ?? {};
-        const merged = { ...current, ...defaultConfig, ...(config ?? {}) };
-        configSubjectGet().next(merged);
-        setAppConfig(merged);
+
+        // const current = configSubjectGet().getValue() ?? {};
+        // const merged = { ...current, ...defaultConfig, ...(config ?? {}) };
+        const newConfig: NdmvrConfig = configSubjectGet().next(defaultConfig);
+        console.log("NdmspcEnv initialized, config:", newConfig);
+        // @ts-expect-error FIXME: Config
+        setAppConfig(newConfig);
     }, [config]);
+
+    // useEffect(() => {
+    //     if (initializedRef2.current) return;
+    //     initializedRef2.current = true;
+    //
+    //     setTimeout(() => {
+    //         configSubjectGet().next({
+    //             config: {
+    //                 histogram: {
+    //                     scale: {
+    //                         default: {
+    //                             min: 0.5
+    //                         }
+    //                     },
+    //                     sets: {
+    //                         scale: {
+    //                             maximum: "absolute"
+    //                         }
+    //                     },
+    //                 }
+    //             }
+    //         });
+    //     }, 6000);
+    // }, []);
 
     return (
         <div style={{ width: "100%", height: "100%", position: "relative" }}>

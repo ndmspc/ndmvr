@@ -15,8 +15,8 @@
     ],
     "sideEffects": [
         "**/*.css",
-        "**/uikit-styles.js",
-        "./src/lib/scripts/uikit-styles.js"
+        "**/uikit-styles.ts",
+        "./src/lib/scripts/uikit-styles.ts"
     ],
     "type": "module",
     "types": "./dist/ndmvr-r3f.d.ts",
@@ -46,7 +46,7 @@
         "react-dom": "^19.2.0"
     },
     "dependencies": {
-        "@ndmspc/ndmvr-aframe": "1.0.0-rc.49",
+        "@ndmspc/ndmvr-aframe": "1.0.0-rc.51",
         "@pmndrs/uikit": "^1.0.58",
         "@react-three/drei": "^10.4.2",
         "@react-three/fiber": "^9.4.0",
