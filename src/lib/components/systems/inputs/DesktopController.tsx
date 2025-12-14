@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useFocus } from "../../env/context/FocusContext";
+import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -23,6 +24,8 @@ export default function DesktopController({
     const yaw = useRef(0);
     const pitch = useRef(0);
     const { focused } = useFocus();
+    const isInteracting = useUIInteraction((state) => state.isInteracting);
+    const frozenRotation = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
         const onKeyDown = (e) => {
@@ -96,6 +99,14 @@ export default function DesktopController({
         };
     }, []);
 
+
+    useEffect(() => {
+        if (isInteracting && cameraRef.current) {
+            frozenRotation.current.x = cameraRef.current.rotation.x;
+            frozenRotation.current.y = cameraRef.current.rotation.y;
+        }
+    }, [isInteracting]);
+
     useFrame((_, delta) => {
         if (!originRef.current) return;
         if (focused) return;
@@ -122,11 +133,20 @@ export default function DesktopController({
             originRef.current.position.add(velocity);
         }
 
-        if (cameraRef?.current) {
-            cameraRef.current.position.copy(originRef.current.position);
+        if (!cameraRef?.current) return;
+
+        cameraRef.current.position.copy(originRef.current.position);
+
+        if (!isInteracting) {
             cameraRef.current.rotation.order = "YXZ";
             cameraRef.current.rotation.y = yaw.current;
             cameraRef.current.rotation.x = pitch.current;
+        } else {
+            cameraRef.current.rotation.order = "YXZ";
+            cameraRef.current.rotation.y = frozenRotation.current.y;
+            cameraRef.current.rotation.x = frozenRotation.current.x;
+            yaw.current = cameraRef.current.rotation.y;
+            pitch.current = cameraRef.current.rotation.x;
         }
     });
 

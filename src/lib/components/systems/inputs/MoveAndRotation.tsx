@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { use, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
 
 interface UseMoveAndRotationOptions {
     originRef: React.RefObject<THREE.Group> | null;
@@ -32,6 +33,7 @@ export function useMoveAndRotation({
     const startAngles = useRef({ yaw: 0, pitch: 0 });
 
     const lastClickTime = useRef(0);
+    
 
     const LIMITS = {
         xMin: -4,
@@ -117,6 +119,7 @@ export function useMoveAndRotation({
     const onDragStart = (e) => {
         if (!groupRef.current || !e.ray) return;
 
+        if(useUIInteraction.getState().isInteracting) return;
         isDragging.current = true;
 
         e.target.setPointerCapture?.(e.pointerId);

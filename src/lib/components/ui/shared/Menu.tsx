@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useXR } from "@react-three/xr";
-import { Container, Text } from "@react-three/uikit";
+import {Text } from "@react-three/uikit";
+import Container from "../interactions/Container";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import * as THREE from "three";
 
