@@ -147,8 +147,8 @@ StyleSheet["checkboxBox"] = {
     alignItems: "center",
     justifyContent: "center",
     hover: {
-        borderColor: '#10b981',
-    }
+        borderColor: "#10b981",
+    },
 };
 
 StyleSheet["checkboxBoxChecked"] = {

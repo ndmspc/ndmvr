@@ -6,7 +6,6 @@ import { HierarchyPainter, setDefaultDrawOpt, draw } from "jsroot";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
 
-import defaultConfig from "../../config.json";
 import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";
 import { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
@@ -46,7 +45,7 @@ export default function NdmspcDefaultBrowserEnv({
 }: NdmspcDefaultBrowserEnvProps) {
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
-    const [appConfig, setAppConfig] = useState(defaultConfig);
+    const [appConfig, setAppConfig] = useState(null);
     const painterRef = useRef(null);
     const pads = useRef([]);
     const padsCounter = useRef(0);
@@ -71,10 +70,10 @@ export default function NdmspcDefaultBrowserEnv({
     );
 
     useEffect(() => {
-        configSubjectGet().next(defaultConfig);
         if (config) {
             configSubjectGet().next(config);
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAppConfig(configSubjectGet().getValue());
     }, [config]);
 
@@ -147,6 +146,7 @@ export default function NdmspcDefaultBrowserEnv({
         };
         painterDisplay();
     }, [itemState, optState]);
+
     return (
         <div
             style={{
@@ -179,7 +179,6 @@ export default function NdmspcDefaultBrowserEnv({
                 }}
             >
                 <NdmvrEnv
-                    // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
                     menu={menu}

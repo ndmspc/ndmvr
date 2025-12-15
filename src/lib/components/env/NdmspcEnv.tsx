@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
-import defaultConfig from "../../config.json";
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 
 export interface NdmspcEnvProps {
@@ -18,6 +17,15 @@ export interface NdmspcEnvProps {
     help?: boolean;
 }
 
+function isEmptyObject(obj: any): boolean {
+    return (
+        obj != null &&
+        typeof obj === "object" &&
+        !Array.isArray(obj) &&
+        Object.keys(obj).length === 0
+    );
+}
+
 export default function NdmspcEnv({
     children = null,
     config = null,
@@ -27,8 +35,8 @@ export default function NdmspcEnv({
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
-    const initializedRef2 = useRef(false);
-    const [appConfig, setAppConfig] = useState(defaultConfig);
+    // const initializedRef2 = useRef(false);
+    const [appConfig, setAppConfig] = useState(null);
 
     const { setUIHover, setVrEnabled } = useSceneModeStore();
 
@@ -48,11 +56,17 @@ export default function NdmspcEnv({
         if (initializedRef.current) return;
         initializedRef.current = true;
 
-        // const current = configSubjectGet().getValue() ?? {};
-        // const merged = { ...current, ...defaultConfig, ...(config ?? {}) };
-        const newConfig: NdmvrConfig = configSubjectGet().next(defaultConfig);
-        console.log("NdmspcEnv initialized, config:", newConfig);
-        // @ts-expect-error FIXME: Config
+        let newConfig: NdmvrConfig;
+        if (config && !isEmptyObject(config)) {
+            newConfig = configSubjectGet().next(config);
+        } else {
+            console.log("[WARNING] Using Default Config]");
+            newConfig = configSubjectGet().getValue();
+        }
+        console.log("[CONFIG] NdmspcEnv initialized, config:", newConfig);
+
+        // @ts-error FIXME: Config
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAppConfig(newConfig);
     }, [config]);
 
@@ -99,7 +113,6 @@ export default function NdmspcEnv({
                 }}
             >
                 <NdmvrEnv
-                    // @ts-expect-error FIXME: Config
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
                     menu={menu}
