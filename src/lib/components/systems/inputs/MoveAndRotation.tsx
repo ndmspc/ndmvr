@@ -33,7 +33,6 @@ export function useMoveAndRotation({
     const startAngles = useRef({ yaw: 0, pitch: 0 });
 
     const lastClickTime = useRef(0);
-    
 
     const LIMITS = {
         xMin: -4,
@@ -119,7 +118,7 @@ export function useMoveAndRotation({
     const onDragStart = (e) => {
         if (!groupRef.current || !e.ray) return;
 
-        if(useUIInteraction.getState().isInteracting) return;
+        if (useUIInteraction.getState().isInteracting) return;
         isDragging.current = true;
 
         e.target.setPointerCapture?.(e.pointerId);

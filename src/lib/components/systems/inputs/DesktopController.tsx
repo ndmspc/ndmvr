@@ -99,7 +99,6 @@ export default function DesktopController({
         };
     }, []);
 
-
     useEffect(() => {
         if (isInteracting && cameraRef.current) {
             frozenRotation.current.x = cameraRef.current.rotation.x;
