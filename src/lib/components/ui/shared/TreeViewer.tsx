@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Container, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Container } from "../interactions/Container";
 
 interface RootNode {
     _name: string;
