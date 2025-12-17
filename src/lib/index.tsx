@@ -74,7 +74,6 @@ export type { DesktopControllerProps } from "./components/systems/inputs/Desktop
 export type { VRControllerProps } from "./components/systems/inputs/VRController.tsx";
 export type { MenuProps } from "./components/ui/shared/Menu.tsx";
 export type { BinInfoProps } from "./components/ui/shared/BinInfo.tsx";
-export type { FocusContextType } from "./components/env/context/FocusContext.tsx";
 export type { NdmspcConfig } from "./interfaces/NdmspcConfig.ts";
 export type { NdmvrConfig } from "./interfaces/NdmvrConfig.ts";
 

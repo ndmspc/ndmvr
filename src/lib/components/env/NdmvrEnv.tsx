@@ -5,7 +5,6 @@ import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import { createXRStore, XR, XROrigin } from "@react-three/xr";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
-import { FocusProvider } from "./context/FocusContext.tsx";
 
 import CameraSync from "../systems/CameraSync.tsx";
 import Menu from "../ui/shared/Menu.tsx";
@@ -107,37 +106,35 @@ export default function NdmvrEnv({
                     <NdmvrScene originRef={xrOriginRef} />
 
                     <HistogramContext.Provider value={histogram}>
-                        <FocusProvider>
-                            {showMenu && (
-                                <Menu
-                                    originRef={xrOriginRef}
-                                    currentConfig={currentConfig}
-                                    onConfigChange={onConfigChange}
-                                    onClose={() => setShowMenu(false)}
-                                    help={help}
-                                    openHelp={() => {
-                                        setShowMenu(false);
-                                        setShowHelp(true);
-                                    }}
-                                />
-                            )}
-
-                            {showHelp && <HelperTips originRef={xrOriginRef} />}
-
-                            {/*{showBinInfo && <BinInfo originRef={xrOriginRef} />}*/}
-
-                            {/*{showDemo && <Demo originRef={xrOriginRef} />}*/}
-                            {children}
-
-                            <Controllers
+                        {showMenu && (
+                            <Menu
                                 originRef={xrOriginRef}
-                                cameraRef={cameraRef}
-                                setShowMenu={newSetShowMenu}
-                                setShowHelp={newSetShowHelp}
-                                desktopSpeed={config?.environment?.desktopSpeed ?? 5}
-                                vrSpeed={config?.environment?.vrSpeed ?? 2}
+                                currentConfig={currentConfig}
+                                onConfigChange={onConfigChange}
+                                onClose={() => setShowMenu(false)}
+                                help={help}
+                                openHelp={() => {
+                                    setShowMenu(false);
+                                    setShowHelp(true);
+                                }}
                             />
-                        </FocusProvider>
+                        )}
+
+                        {showHelp && <HelperTips originRef={xrOriginRef} />}
+
+                        {/*{showBinInfo && <BinInfo originRef={xrOriginRef} />}*/}
+
+                        {/*{showDemo && <Demo originRef={xrOriginRef} />}*/}
+                        {children}
+
+                        <Controllers
+                            originRef={xrOriginRef}
+                            cameraRef={cameraRef}
+                            setShowMenu={newSetShowMenu}
+                            setShowHelp={newSetShowHelp}
+                            desktopSpeed={config?.environment?.desktopSpeed ?? 5}
+                            vrSpeed={config?.environment?.vrSpeed ?? 2}
+                        />
                     </HistogramContext.Provider>
                     <XROrigin ref={xrOriginRef} position={[x, y, z]} />
                 </XR>

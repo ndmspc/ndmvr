@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useXR, useXRInputSourceState } from "@react-three/xr";
+import { useInputFocus } from "../../ui/focus/useInputFocus";
 import * as THREE from "three";
-import { useFocus } from "../../env/context/FocusContext.tsx";
 
 export interface VRControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -40,7 +40,7 @@ export default function VRController({
     const lastY = useRef(false);
     const snapTimer = useRef(0);
     const hasSnapped = useRef(false);
-    const { focused } = useFocus();
+    const isFocused = useInputFocus((state) => state.isFocused);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -78,7 +78,7 @@ export default function VRController({
 
     const handleControllers = (delta) => {
         if (!originRef?.current) return;
-        if (focused) return;
+        if (isFocused) return;
 
         if (!leftController || !rightController) return;
 

@@ -1,9 +1,9 @@
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import { Input, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container.tsx";
+import { Input } from "../focus/Input.tsx";
 import { STAT, ConnectionStatus } from "../../../stores/broker/constants.ts";
 import { useRef, useState } from "react";
-import { useFocus } from "../../env/context/FocusContext.tsx";
 
 interface InputCardProps {
     type: "http" | "ws";
@@ -32,7 +32,6 @@ export default function InputCard({
     connError,
     onSubmit,
 }: InputCardProps) {
-    const { setFocused } = useFocus();
     const isVisible = modeSelected === type;
     const [value, setValue] = useState(firstValue);
 
@@ -58,7 +57,6 @@ export default function InputCard({
                         minWidth={350}
                         value={value}
                         onValueChange={handleChangeForWs}
-                        onFocusChange={(c) => setFocused(c)}
                         // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
                         multiline={false}
                         wordBreak="keep-all"
@@ -117,7 +115,7 @@ export default function InputCard({
                             setValue(v);
                             onChange(v);
                         }}
-                        onFocusChange={(c) => setFocused(c)}
+                        // onFocusChange={(c) => setFocused(c)}
                         // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
                         multiline={false}
                         wordBreak="keep-all"
