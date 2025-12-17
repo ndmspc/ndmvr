@@ -1,4 +1,5 @@
-import { Container, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Container } from "../interactions/Container";
 import { Check } from "@react-three/uikit-lucide";
 
 import { useState } from "react";

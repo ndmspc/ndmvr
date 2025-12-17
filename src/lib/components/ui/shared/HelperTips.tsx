@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { useXR } from "@react-three/xr";
-import { Container, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Container } from "../interactions/Container";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 

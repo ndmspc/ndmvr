@@ -1,4 +1,5 @@
-import { Container, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Container } from "../interactions/Container";
 
 export default function ControlsHelp() {
     const Cell = ({ children, weight = "normal" }) => (

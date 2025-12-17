@@ -1,4 +1,5 @@
-import { Container, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Container } from "../interactions/Container";
 import { Button } from "@react-three/uikit-default";
 import { Cross } from "@react-three/uikit-lucide";
 

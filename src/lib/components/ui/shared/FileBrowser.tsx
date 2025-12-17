@@ -1,4 +1,4 @@
-import { Container } from "@react-three/uikit";
+import { Container } from "../interactions/Container.tsx";
 import { useEffect, useRef, useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
 import { HierarchyPainter } from "jsroot";
