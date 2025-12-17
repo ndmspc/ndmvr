@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 import { Button } from "@react-three/uikit-default";
-import { Input, Text } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import { Input } from "../focus/Input.tsx";
 import Container from "../interactions/Container";
 import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
 

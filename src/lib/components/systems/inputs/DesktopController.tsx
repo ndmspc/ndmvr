@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useFocus } from "../../env/context/FocusContext";
 import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
+import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -23,17 +24,17 @@ export default function DesktopController({
     const isMouseDown = useRef(false);
     const yaw = useRef(0);
     const pitch = useRef(0);
-    const { focused } = useFocus();
     const isInteracting = useUIInteraction((state) => state.isInteracting);
+    const isFocused = useInputFocus((state) => state.isFocused);
     const frozenRotation = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
         const onKeyDown = (e) => {
             keys.current[e.code] = true;
-            if (e.code === "KeyM" && !focused) onToggleMenu?.();
-            if (e.code === "KeyH" && !focused) onToggleHelp?.();
-            // if (e.code === "KeyB" && !focused) onToggleBinInfo?.();
-            // if (e.code === "KeyN" && !focused) onToggleDemo?.();
+            if (e.code === "KeyM" && !isFocused) onToggleMenu?.();
+            if (e.code === "KeyH" && !isFocused) onToggleHelp?.();
+            // if (e.code === "KeyB" && !isFocused) onToggleBinInfo?.();
+            // if (e.code === "KeyN" && !isFocused) onToggleDemo?.();
             if (e.code === "KeyR") {
                 window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
             }
@@ -48,8 +49,6 @@ export default function DesktopController({
         };
         const onKeyUp = (e) => {
             keys.current[e.code] = false;
-
-            if (focused) return;
 
             if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
                 window.dispatchEvent(
@@ -67,7 +66,7 @@ export default function DesktopController({
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         };
-    }, [onToggleMenu, onToggleHelp, focused]);
+    }, [onToggleMenu, onToggleHelp, isFocused]);
 
     useEffect(() => {
         const onMouseDown = (e) => {
@@ -108,7 +107,8 @@ export default function DesktopController({
 
     useFrame((_, delta) => {
         if (!originRef.current) return;
-        if (focused) return;
+        
+        if (isFocused) return;
 
         const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(
             new THREE.Vector3(0, 1, 0),
