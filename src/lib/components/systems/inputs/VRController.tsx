@@ -22,10 +22,12 @@ export default function VRController({
     onToggleHelp,
 }: VRControllerProps) {
     const session = useXR((s) => s.session);
+
     const [controllersReady, setControllersReady] = useState({
         left: false,
         right: false,
     });
+
     const rightController = useXRInputSourceState("controller", "right");
     const leftController = useXRInputSourceState("controller", "left");
     const { camera } = useThree();
@@ -38,8 +40,11 @@ export default function VRController({
     const lastB = useRef(false);
     const lastX = useRef(false);
     const lastY = useRef(false);
+    const lastRightSqueeze = useRef(false);
+
     const snapTimer = useRef(0);
     const hasSnapped = useRef(false);
+
     const isFocused = useInputFocus((state) => state.isFocused);
 
     const DEADZONE = 0.15;
@@ -64,7 +69,6 @@ export default function VRController({
             const hasRight = validControllers.some((c) => c.handedness === "right");
 
             setControllersReady({ left: hasLeft, right: hasRight });
-
             console.log(`Controllers: Left=${hasLeft}, Right=${hasRight}`);
         };
 
@@ -76,7 +80,7 @@ export default function VRController({
         };
     }, [session]);
 
-    const handleControllers = (delta) => {
+    const handleControllers = (delta: number) => {
         if (!originRef?.current) return;
         if (isFocused) return;
 
@@ -85,10 +89,15 @@ export default function VRController({
         const leftGamepad = controllersReady.left ? leftController?.gamepad : null;
         const rightGamepad = controllersReady.right ? rightController?.gamepad : null;
 
+        const rightSqueeze = rightGamepad ? (rightGamepad as any)["xr-standard-squeeze"] : null;
+        const rightSqueezePressed =
+            !!rightSqueeze &&
+            (rightSqueeze.state === "pressed" || (rightSqueeze.button ?? 0) > SQUEEZE_T);
+
         if (leftGamepad) {
-            const leftThumbstick = leftGamepad["xr-standard-thumbstick"];
-            const leftTrigger = leftGamepad["xr-standard-trigger"];
-            const leftSqueeze = leftGamepad["xr-standard-squeeze"];
+            const leftThumbstick = (leftGamepad as any)["xr-standard-thumbstick"];
+            const leftTrigger = (leftGamepad as any)["xr-standard-trigger"];
+            const leftSqueeze = (leftGamepad as any)["xr-standard-squeeze"];
 
             if (leftThumbstick) {
                 const lx =
@@ -100,21 +109,23 @@ export default function VRController({
                         ? (leftThumbstick.yAxis ?? 0)
                         : 0;
 
-                camera.getWorldDirection(cameraDirection.current);
-                cameraDirection.current.y = 0;
-                cameraDirection.current.normalize();
+                if (!rightSqueezePressed && (lx !== 0 || lz !== 0)) {
+                    camera.getWorldDirection(cameraDirection.current);
+                    cameraDirection.current.y = 0;
+                    cameraDirection.current.normalize();
 
-                strafeDirection.current
-                    .crossVectors(cameraDirection.current, new THREE.Vector3(0, 1, 0))
-                    .normalize();
+                    strafeDirection.current
+                        .crossVectors(cameraDirection.current, new THREE.Vector3(0, 1, 0))
+                        .normalize();
 
-                moveVec.current.set(0, 0, 0);
-                moveVec.current.addScaledVector(cameraDirection.current, -lz);
-                moveVec.current.addScaledVector(strafeDirection.current, lx);
+                    moveVec.current.set(0, 0, 0);
+                    moveVec.current.addScaledVector(cameraDirection.current, -lz);
+                    moveVec.current.addScaledVector(strafeDirection.current, lx);
 
-                if (moveVec.current.lengthSq() > 0) {
-                    moveVec.current.normalize();
-                    originRef.current.position.addScaledVector(moveVec.current, speed * delta);
+                    if (moveVec.current.lengthSq() > 0) {
+                        moveVec.current.normalize();
+                        originRef.current.position.addScaledVector(moveVec.current, speed * delta);
+                    }
                 }
             }
 
@@ -129,26 +140,23 @@ export default function VRController({
                 if (descend) originRef.current.position.y -= speed * delta;
             }
 
-            const xBtn = leftGamepad["x-button"];
-            if (xBtn?.state === "pressed" && !lastX.current) {
+            const xBtn = (leftGamepad as any)["x-button"];
+            const xPressed = !!xBtn && xBtn.state === "pressed";
+            if (xPressed && !lastX.current) {
                 window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
-                lastX.current = true;
             }
-            if (xBtn?.state !== "pressed") {
-                lastX.current = false;
-            }
+            lastX.current = xPressed;
 
-            const yBtn = leftGamepad["y-button"];
-            if (yBtn?.state === "pressed" && !lastY.current) {
+            const yBtn = (leftGamepad as any)["y-button"];
+            const yPressed = !!yBtn && yBtn.state === "pressed";
+            if (yPressed && !lastY.current) {
                 onToggleHelp?.();
-                lastY.current = true;
             }
-            if (yBtn?.state !== "pressed") lastY.current = false;
+            lastY.current = yPressed;
         }
 
         if (rightGamepad) {
-            const rightThumbstick = rightGamepad["xr-standard-thumbstick"];
-
+            const rightThumbstick = (rightGamepad as any)["xr-standard-thumbstick"];
             if (rightThumbstick) {
                 const rx = rightThumbstick.xAxis ?? 0;
 
@@ -173,31 +181,45 @@ export default function VRController({
                 }
             }
 
-            const bBtn = rightGamepad["b-button"];
-            if (bBtn?.state === "pressed" && !lastB.current) {
+            const bBtn = (rightGamepad as any)["b-button"];
+            const bPressed = !!bBtn && bBtn.state === "pressed";
+            if (bPressed && !lastB.current) {
                 onToggleMenu?.();
-                lastB.current = true;
             }
-            if (bBtn?.state !== "pressed") lastB.current = false;
+            lastB.current = bPressed;
 
-            const aBtn = rightGamepad["a-button"];
-            if (aBtn.state === "pressed" && !lastA.current) {
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-menu-shift", {
-                        detail: { pressed: true },
-                    })
-                );
-                lastA.current = true;
+            const aBtn = (rightGamepad as any)["a-button"];
+            const aPressed = !!aBtn && aBtn.state === "pressed";
+            if (aPressed && !lastA.current) {
+                window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
+            }
+            lastA.current = aPressed;
+        }
+
+        if (leftGamepad && rightGamepad) {
+            const leftThumbstick = (leftGamepad as any)["xr-standard-thumbstick"];
+
+            if (rightSqueezePressed && leftThumbstick) {
+                const rawLX = leftThumbstick.xAxis ?? 0;
+                const rawLZ = leftThumbstick.yAxis ?? 0;
+
+                const orbitX = Math.abs(rawLX) > DEADZONE ? rawLX : 0;
+                const orbitY = Math.abs(rawLZ) > DEADZONE ? rawLZ : 0;
+
+                if (orbitX !== 0 || orbitY !== 0) {
+                    window.dispatchEvent(
+                        new CustomEvent("ndmvr-menu-orbit", {
+                            detail: { axisX: orbitX, axisY: orbitY, delta },
+                        })
+                    );
+                }
             }
 
-            if (aBtn.state !== "pressed" && lastA.current) {
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-menu-shift", {
-                        detail: { pressed: false },
-                    })
-                );
-                lastA.current = false;
+            if (!rightSqueezePressed && lastRightSqueeze.current) {
+                window.dispatchEvent(new CustomEvent("ndmvr-menu-orbit-end"));
             }
+
+            lastRightSqueeze.current = rightSqueezePressed;
         }
     };
 

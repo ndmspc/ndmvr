@@ -27,6 +27,8 @@ export interface NdmvrEnvProps {
     onConfigChange?: ((config: NdmvrConfig) => void) | null;
     menu?: boolean;
     help?: boolean;
+    showUIExternal?: boolean;
+    onUIStateChange?: (isVisible: boolean) => void; // Новий prop!
 }
 
 export default function NdmvrEnv({
@@ -35,14 +37,59 @@ export default function NdmvrEnv({
     onConfigChange = null,
     menu = false,
     help = false,
+    showUIExternal = false,
+    onUIStateChange = null,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
-    const [showMenu, setShowMenu] = useState(menu);
-    const [showHelp, setShowHelp] = useState(menu ? false : help);
+    const [showMenu, setShowMenu] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
 
     const [config, setConfig] = useState(null);
     const [histogram, setHistogram] = useState(null);
+    const [isSceneReady, setIsSceneReady] = useState(false);
+
+    const prevShowUIExternalRef = useRef(showUIExternal);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setIsSceneReady(true);
+        }, 100);
+
+        return () => clearTimeout(timeout);
+    }, []);
+
+    useEffect(() => {
+        if (!isSceneReady) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setShowMenu(menu);
+        setShowHelp(menu ? false : help);
+    }, [isSceneReady, menu, help]);
+
+    useEffect(() => {
+        const prevShowUI = prevShowUIExternalRef.current;
+        const currentShowUI = showUIExternal;
+
+        prevShowUIExternalRef.current = currentShowUI;
+
+        if (!currentShowUI && prevShowUI) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setShowMenu(false);
+            setShowHelp(false);
+            return;
+        }
+
+        if (currentShowUI && !prevShowUI) {
+            if (!showMenu && !showHelp) {
+                setShowMenu(true);
+            }
+        }
+    }, [showUIExternal, showMenu, showHelp]);
+
+    useEffect(() => {
+        const isUIVisible = showMenu || showHelp;
+        onUIStateChange?.(isUIVisible);
+    }, [showMenu, showHelp, onUIStateChange]);
 
     useEffect(() => {
         const pads = config?.environment?.histogramPads ?? [];

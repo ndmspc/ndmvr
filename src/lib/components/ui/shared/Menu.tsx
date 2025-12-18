@@ -106,29 +106,29 @@ export default function Menu({
                             </RadioGroup>
                         </Container>
 
-                        {mode === null ? (
-                            <Button
-                                // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types
-                                classList={["VRButton"]}
-                                onClick={() => store.enterVR()}
-                                hover={{
-                                    backgroundColor: "#475569",
-                                }}
-                            >
-                                <Text>Enter VR</Text>
-                            </Button>
-                        ) : (
-                            <Button
-                                // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types
-                                classList={["VRButton"]}
-                                onClick={() => session.end()}
-                                hover={{
-                                    backgroundColor: "#475569",
-                                }}
-                            >
-                                <Text>Exit VR</Text>
-                            </Button>
-                        )}
+                        {/* {mode === null ? ( */}
+                        {/*     <Button */}
+                        {/*         // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types */}
+                        {/*         classList={["VRButton"]} */}
+                        {/*         onClick={() => store.enterVR()} */}
+                        {/*         hover={{ */}
+                        {/*             backgroundColor: "#475569", */}
+                        {/*         }} */}
+                        {/*     > */}
+                        {/*         <Text>Enter VR</Text> */}
+                        {/*     </Button> */}
+                        {/* ) : ( */}
+                        {/*     <Button */}
+                        {/*         // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types */}
+                        {/*         classList={["VRButton"]} */}
+                        {/*         onClick={() => session.end()} */}
+                        {/*         hover={{ */}
+                        {/*             backgroundColor: "#475569", */}
+                        {/*         }} */}
+                        {/*     > */}
+                        {/*         <Text>Exit VR</Text> */}
+                        {/*     </Button> */}
+                        {/* )} */}
                     </Container>
                 </FloatingContainer>
             )}

@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
 import { useInputFocus } from "../../ui/focus/useInputFocus";
-import { is } from "@react-three/fiber/dist/declarations/src/core/utils";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -22,6 +21,8 @@ export default function DesktopController({
 }: DesktopControllerProps) {
     const keys = useRef({});
     const isMouseDown = useRef(false);
+    const isTouching = useRef(false); // Новий ref для тачів
+    const lastTouchPosition = useRef({ x: 0, y: 0 }); // Зберігаємо останню позицію тачу
     const yaw = useRef(0);
     const pitch = useRef(0);
     const isInteracting = useUIInteraction((state) => state.isInteracting);
@@ -33,8 +34,6 @@ export default function DesktopController({
             keys.current[e.code] = true;
             if (e.code === "KeyM" && !isFocused) onToggleMenu?.();
             if (e.code === "KeyH" && !isFocused) onToggleHelp?.();
-            // if (e.code === "KeyB" && !isFocused) onToggleBinInfo?.();
-            // if (e.code === "KeyN" && !isFocused) onToggleDemo?.();
             if (e.code === "KeyR") {
                 window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
             }
@@ -99,6 +98,55 @@ export default function DesktopController({
     }, []);
 
     useEffect(() => {
+        const onTouchStart = (e) => {
+            if (e.touches.length === 1) {
+                isTouching.current = true;
+                lastTouchPosition.current = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                };
+            }
+        };
+
+        const onTouchEnd = () => {
+            isTouching.current = false;
+        };
+
+        const onTouchMove = (e) => {
+            if (!isTouching.current || e.touches.length !== 1) return;
+
+            const currentTouch = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+            };
+
+            const movementX = currentTouch.x - lastTouchPosition.current.x;
+            const movementY = currentTouch.y - lastTouchPosition.current.y;
+
+            lastTouchPosition.current = currentTouch;
+
+            const sensitivity = 0.002;
+            yaw.current -= movementX * sensitivity;
+            pitch.current -= movementY * sensitivity;
+            pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
+
+            e.preventDefault();
+        };
+
+        document.addEventListener("touchstart", onTouchStart);
+        document.addEventListener("touchend", onTouchEnd);
+        document.addEventListener("touchcancel", onTouchEnd);
+        document.addEventListener("touchmove", onTouchMove, { passive: false });
+
+        return () => {
+            document.removeEventListener("touchstart", onTouchStart);
+            document.removeEventListener("touchend", onTouchEnd);
+            document.removeEventListener("touchcancel", onTouchEnd);
+            document.removeEventListener("touchmove", onTouchMove);
+        };
+    }, []);
+
+    useEffect(() => {
         if (isInteracting && cameraRef.current) {
             frozenRotation.current.x = cameraRef.current.rotation.x;
             frozenRotation.current.y = cameraRef.current.rotation.y;
@@ -107,7 +155,7 @@ export default function DesktopController({
 
     useFrame((_, delta) => {
         if (!originRef.current) return;
-        
+
         if (isFocused) return;
 
         const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(

@@ -12,8 +12,8 @@ export const Input = (props) => {
     return (
         <UIKitInput
             {...props}
-            onFocusChange={mergeHandlers(props.onFocusChange, (c) =>{ 
-                setFocused(c)
+            onFocusChange={mergeHandlers(props.onFocusChange, (c) => {
+                setFocused(c);
                 console.log("Input focus changed:", c);
             })}
         />

@@ -12,15 +12,9 @@ interface PositionAndRotation {
 
 export interface HelperTipsProps {
     originRef: React.RefObject<THREE.Group> | null;
-    smoothFollow?: boolean;
-    lerpFactor?: number;
 }
 
-export default function HelperTips({
-    originRef,
-    smoothFollow = true,
-    lerpFactor = 0.25,
-}: HelperTipsProps) {
+export default function HelperTips({ originRef }: HelperTipsProps) {
     const xr = useXR();
     const isPresenting = !!xr.session;
     const groupRef = useRef(null);
@@ -95,11 +89,7 @@ export default function HelperTips({
         const o = originRef.current.position;
         const target = new THREE.Vector3(o.x, o.y, o.z);
 
-        if (smoothFollow) {
-            groupRef.current.position.lerp(target, lerpFactor);
-        } else {
-            groupRef.current.position.copy(target);
-        }
+        groupRef.current.position.copy(target);
     });
 
     const tips = isPresenting ? vrTips : desktopTips;
