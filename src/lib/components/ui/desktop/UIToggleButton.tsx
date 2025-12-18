@@ -1,4 +1,8 @@
 import styled from "styled-components";
+// @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
+import showMenuIcon from "../../../assets/icons/show_menu.svg";
+// @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
+import closeMenuIcon from "../../../assets/icons/close_menu.svg";
 
 interface ToggleButtonWrapperProps {
     $isActive: boolean;
@@ -9,26 +13,30 @@ const ToggleButtonWrapper = styled.div<ToggleButtonWrapperProps>`
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
     z-index: 10;
     cursor: pointer;
-    background: ${(props) => (props.$isActive ? "rgba(0, 150, 255, 0.5)" : "rgba(0, 0, 0, 0.5)")};
-    padding: 10px 15px;
+    padding: 5px 5px;
     border-radius: 4px;
     transition: background 0.3s ease;
-
     &:hover {
         background: ${(props) =>
-            props.$isActive ? "rgba(0, 150, 255, 0.7)" : "rgba(255, 0, 0, 0.5)"};
+        props.$isActive ? "rgba(0, 150, 255, 0.7)" : "rgba(0, 150, 255, 0.7)"};
     }
 `;
 
-const ToggleText = styled.span`
-    font-family: Arial, sans-serif;
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
+const ShowMenuImage = styled.img`
+    display: block;
+    height: 30px;
+    opacity: 1;
+    user-select: none;
+`;
+
+
+const CloseMenuImage = styled.img`
+    display: block;
+    height: 30px;
     opacity: 1;
     user-select: none;
 `;
@@ -41,7 +49,7 @@ interface UIToggleButtonProps {
 export default function UIToggleButton({ isActive, onToggle }: UIToggleButtonProps) {
     return (
         <ToggleButtonWrapper $isActive={isActive} onClick={onToggle}>
-            <ToggleText>{isActive ? "Close menu" : "Show menu"}</ToggleText>
+            {isActive ? <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} /> : <ShowMenuImage src={showMenuIcon} alt={"Show menu"} />}
         </ToggleButtonWrapper>
     );
 }

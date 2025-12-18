@@ -1,5 +1,5 @@
 import styled from "styled-components";
-// @ts-ignore
+// @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
 import icon from "../../../assets/icons/fullscreen.svg";
 import { useEffect, useState } from "react";
 
