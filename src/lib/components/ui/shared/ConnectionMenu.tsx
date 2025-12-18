@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Checkbox from "./Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
-import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import * as THREE from "three";
@@ -103,7 +103,7 @@ export default function ConnectionMenu({
     };
 
     const [inputValues, setInputValues] = useState({
-        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-aframe/demo/test_125.json",
+        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-core/demo/test_125.json",
         ws: "ws://localhost:8080/ws/root.websocket",
     });
 

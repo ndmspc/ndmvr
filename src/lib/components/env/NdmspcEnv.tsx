@@ -3,7 +3,7 @@ import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { configSubjectGet } from "@ndmspc/ndmvr-core";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";

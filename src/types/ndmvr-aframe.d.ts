@@ -1,4 +1,4 @@
-declare module "@ndmspc/ndmvr-aframe" {
+declare module "@ndmspc/ndmvr-core" {
     import { Subject, Subscription } from "rxjs";
     import * as THREE from "three";
 

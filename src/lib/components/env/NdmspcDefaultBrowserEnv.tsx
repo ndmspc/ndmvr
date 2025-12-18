@@ -4,7 +4,7 @@ import Switch from "../ui/desktop/Switch.tsx";
 import { HierarchyPainter, setDefaultDrawOpt, draw } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 
 import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";

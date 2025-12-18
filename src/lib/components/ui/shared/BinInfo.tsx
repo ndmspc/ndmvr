@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import { Color } from "three";
-import { binInfoSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 import * as THREE from "three";
 
 import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json";

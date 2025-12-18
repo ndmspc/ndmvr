@@ -1,7 +1,7 @@
 import { redraw } from "jsroot";
 import { useEffect, useState } from "react";
 import { map, merge } from "rxjs";
-import { canvasSubjectGet, configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { canvasSubjectGet, configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { Tabs } from "../ui/desktop/Tabs.tsx";
 import { Tab } from "../ui/desktop/Tab.tsx";
 

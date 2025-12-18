@@ -27,7 +27,7 @@ import {
     configSubjectGet,
     functionSubjectGet,
     stateSubjectGet,
-} from "@ndmspc/ndmvr-aframe";
+} from "@ndmspc/ndmvr-core";
 
 export {
     NdmspcNavigator,

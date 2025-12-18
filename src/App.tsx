@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 // import NdmspcEnv from "./lib/components/env/NdmspcEnv.tsx";
 // import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
-import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
 import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
 function App() {
