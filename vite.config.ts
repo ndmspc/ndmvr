@@ -10,13 +10,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
-    base: mode === "production" ? "/ndmvr-r3f/" : "/",
+    base: mode === "production" ? "/ndmvr/" : "/",
     build: {
         chunkSizeWarningLimit: 1000,
         lib: {
             entry: resolve(__dirname, "src/lib/index.tsx"),
-            name: "Ndmvr r3f React Library Vite",
-            fileName: (format) => `ndmvr-r3f.${format}.js`,
+            name: "NDMVR R3F React Library Vite",
+            fileName: (format) => `ndmvr.${format}.js`,
         },
         rollupOptions: {
             external: [
