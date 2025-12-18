@@ -16,8 +16,8 @@ interface NdmspcNavigatorProps {
 }
 function NdmspcNavigator({
     children = null,
-    menu = true,
-    help = true,
+    menu = false,
+    help = false,
     ndmspcConfig = null,
     ndmvrConfig = null,
 }: NdmspcNavigatorProps) {

@@ -7,6 +7,8 @@ import { configSubjectGet } from "@ndmspc/ndmvr-aframe";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
+import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
+import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
@@ -38,9 +40,18 @@ export default function NdmspcEnv({
     // const initializedRef2 = useRef(false);
     const [appConfig, setAppConfig] = useState(null);
 
+    const [showUI, setShowUI] = useState(menu || help);
     const { setUIHover, setVrEnabled } = useSceneModeStore();
 
     console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
+
+    const handleUIToggle = () => {
+        setShowUI((prev) => !prev);
+    };
+
+    const handleUIStateChange = (isUIVisible: boolean) => {
+        setShowUI(isUIVisible);
+    };
 
     const applyConfig = useCallback(
         (newConfig) => {
@@ -117,6 +128,8 @@ export default function NdmspcEnv({
                     onConfigChange={applyConfig}
                     menu={menu}
                     help={help}
+                    showUIExternal={showUI}
+                    onUIStateChange={handleUIStateChange}
                 >
                     {children}
                 </NdmvrEnv>
@@ -131,6 +144,8 @@ export default function NdmspcEnv({
                     setVRMode(checked);
                 }}
             />
+            <FullscreenButton />
+            <UIToggleButton isActive={showUI} onToggle={handleUIToggle} />
         </div>
     );
 }
