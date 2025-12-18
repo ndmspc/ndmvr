@@ -22,7 +22,7 @@ const ToggleButtonWrapper = styled.div<ToggleButtonWrapperProps>`
     transition: background 0.3s ease;
     &:hover {
         background: ${(props) =>
-        props.$isActive ? "rgba(0, 150, 255, 0.7)" : "rgba(0, 150, 255, 0.7)"};
+            props.$isActive ? "rgba(0, 150, 255, 0.7)" : "rgba(0, 150, 255, 0.7)"};
     }
 `;
 
@@ -32,7 +32,6 @@ const ShowMenuImage = styled.img`
     opacity: 1;
     user-select: none;
 `;
-
 
 const CloseMenuImage = styled.img`
     display: block;
@@ -49,7 +48,11 @@ interface UIToggleButtonProps {
 export default function UIToggleButton({ isActive, onToggle }: UIToggleButtonProps) {
     return (
         <ToggleButtonWrapper $isActive={isActive} onClick={onToggle}>
-            {isActive ? <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} /> : <ShowMenuImage src={showMenuIcon} alt={"Show menu"} />}
+            {isActive ? (
+                <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} />
+            ) : (
+                <ShowMenuImage src={showMenuIcon} alt={"Show menu"} />
+            )}
         </ToggleButtonWrapper>
     );
 }
