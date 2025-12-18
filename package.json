@@ -1,11 +1,11 @@
 {
-    "name": "@ndmspc/ndmvr-r3f",
+    "name": "@ndmspc/ndmvr",
     "version": "0.0.1",
-    "description": "Ndmvr r3f",
-    "author": "Martin Vala",
+    "description": "NDMVR React three fiber components",
+    "author": "NDMSPC community",
     "repository": {
         "type": "git",
-        "url": "https://gitlab.com/ndmspc/ndmvr-r3f.git"
+        "url": "https://gitlab.com/ndmspc/ndmvr.git"
     },
     "license": "MIT",
     "keywords": [],
@@ -19,16 +19,16 @@
         "./src/lib/scripts/uikit-styles.ts"
     ],
     "type": "module",
-    "types": "./dist/ndmvr-r3f.d.ts",
-    "main": "./dist/ndmvr-r3f.umd.js",
-    "module": "./dist/ndmvr-r3f.es.js",
+    "types": "./dist/ndmvr.d.ts",
+    "main": "./dist/ndmvr.umd.js",
+    "module": "./dist/ndmvr.es.js",
     "exports": {
         ".": {
-            "types": "./dist/ndmvr-r3f.d.ts",
-            "import": "./dist/ndmvr-r3f.es.js",
-            "require": "./dist/ndmvr-r3f.umd.js"
+            "types": "./dist/ndmvr.d.ts",
+            "import": "./dist/ndmvr.es.js",
+            "require": "./dist/ndmvr.umd.js"
         },
-        "./style.css": "./dist/ndmvr-r3f.css"
+        "./style.css": "./dist/ndmvr.css"
     },
     "scripts": {
         "dev": "vite",
