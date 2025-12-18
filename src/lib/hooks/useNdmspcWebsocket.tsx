@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "react";
 import { parse as jsrootParse } from "jsroot";
-import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { NdmspcConfig } from "../interfaces/NdmspcConfig";
 
 const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeout = 60) => {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { brokerManagerGet } from "@ndmspc/ndmvr-aframe";
+import { brokerManagerGet } from "@ndmspc/ndmvr-core";
 import { ERR, STAT, ConnectionStatus, ErrorMessage } from "./constants.ts";
 import { interceptWsProperty } from "./helpers.ts";
 import { Subscription } from "rxjs";

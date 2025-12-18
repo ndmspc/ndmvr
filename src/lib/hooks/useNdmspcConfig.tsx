@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "react";
 import { parse as jsrootParse } from "jsroot";
-import { histogramSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { NdmspcConfig } from "../interfaces/NdmspcConfig";
 
 const useNdmspcConfig = (config: NdmspcConfig) => {

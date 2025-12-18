@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import Checkbox from "./Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
-import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-aframe";
+import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";

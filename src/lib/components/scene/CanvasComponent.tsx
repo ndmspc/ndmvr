@@ -1,6 +1,6 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
-import { CanvasClass, Position, Rotation, Scale } from "@ndmspc/ndmvr-aframe";
+import { CanvasClass, Position, Rotation, Scale } from "@ndmspc/ndmvr-core";
 
 export interface CanvasLocation {
     position?: Position;

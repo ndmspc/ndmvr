@@ -7,7 +7,7 @@ import {
     HistogramJsrootClass,
     histogramSubjectGet,
     THnPainter,
-} from "@ndmspc/ndmvr-aframe";
+} from "@ndmspc/ndmvr-core";
 import { vector3ToArray } from "../../utils/helper-functions.ts";
 
 export interface HistogramWrapperProps {

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Sky } from "@react-three/drei";
-import { binInfoSubjectGet, configSubjectGet, NdmvrRaycaster } from "@ndmspc/ndmvr-aframe";
+import { binInfoSubjectGet, configSubjectGet, NdmvrRaycaster } from "@ndmspc/ndmvr-core";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CanvasComponent from "./CanvasComponent.tsx";

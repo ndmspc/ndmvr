@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import { useXRInputSourceState, useXR } from "@react-three/xr";
 import * as THREE from "three";
-import { NdmvrRaycaster } from "@ndmspc/ndmvr-aframe";
+import { NdmvrRaycaster } from "@ndmspc/ndmvr-core";
 
 export interface RaycasterBridgeProps {
     rc: NdmvrRaycaster | null;
