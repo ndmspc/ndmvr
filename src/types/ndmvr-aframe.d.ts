@@ -88,6 +88,7 @@ declare module "@ndmspc/ndmvr-core" {
         availableSets: string[];
         renderHistory: string[];
         dirtyInstance: string[];
+        limits: any;
         mesh: THREE.InstancedMesh;
         instGeom: THREE.BufferGeometry;
         material: THREE.Material;

@@ -10,9 +10,10 @@ import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 
 export interface NdmvrSceneProps {
     originRef: React.RefObject<THREE.Group>;
+    onHistogramModify?: (id, scale: THREE.Vector3) => void;
 }
 
-export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
+export default function NdmvrScene({ originRef, onHistogramModify }: NdmvrSceneProps) {
     const { scene, gl } = useThree();
     const raycasterRef = useRef(null);
     const [config, setConfig] = useState(null);
@@ -21,6 +22,11 @@ export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
     const axes = useMemo(() => new THREE.AxesHelper(5), []);
 
     const { vrEnabled, uiHover, shouldDisableRaycaster } = useSceneModeStore();
+
+    const applyHistogramModification = (id, scale: THREE.Vector3) => {
+        console.log("Config changed from SettingsPanel:", scale);
+        onHistogramModify?.(id, scale);
+    }
 
     useEffect(() => {
         const configSub = configSubjectGet()
@@ -70,7 +76,7 @@ export default function NdmvrScene({ originRef }: NdmvrSceneProps) {
         <>
             <group>
                 {config?.environment?.histogramPads?.map((object) => (
-                    <HistogramWrapper key={object.id} id={object.id} />
+                    <HistogramWrapper key={object.id} id={object.id} onHistogramModify={applyHistogramModification} />
                 ))}
                 {config?.environment?.histogramPads?.length > 0 && (
                     <CanvasComponent

@@ -29,6 +29,7 @@ export interface NdmvrEnvProps {
     help?: boolean;
     showUIExternal?: boolean;
     onUIStateChange?: (isVisible: boolean) => void; // Новий prop!
+    onHistogramModify?: (id, scale: THREE.Vector3) => void;
 }
 
 export default function NdmvrEnv({
@@ -39,6 +40,7 @@ export default function NdmvrEnv({
     help = false,
     showUIExternal = false,
     onUIStateChange = null,
+    onHistogramModify = null,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
@@ -50,6 +52,10 @@ export default function NdmvrEnv({
     const [isSceneReady, setIsSceneReady] = useState(false);
 
     const prevShowUIExternalRef = useRef(showUIExternal);
+
+    const applyHistogramModification = (id, scale: THREE.Vector3) => {
+        onHistogramModify?.(id, scale.clone());
+    }
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -150,7 +156,7 @@ export default function NdmvrEnv({
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
 
-                    <NdmvrScene originRef={xrOriginRef} />
+                    <NdmvrScene originRef={xrOriginRef} onHistogramModify={applyHistogramModification} />
 
                     <HistogramContext.Provider value={histogram}>
                         {showMenu && (

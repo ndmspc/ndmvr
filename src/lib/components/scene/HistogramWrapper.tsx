@@ -2,6 +2,7 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 import { filter } from "rxjs";
 import { Text } from "@react-three/drei";
+import * as THREE from "three";
 import {
     configSubjectGet,
     HistogramJsrootClass,
@@ -9,21 +10,38 @@ import {
     THnPainter,
 } from "@ndmspc/ndmvr-core";
 import { vector3ToArray } from "../../utils/helper-functions.ts";
+import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
+import BoundingFrameBox from "./BoundingFrameBox";
 
 export interface HistogramWrapperProps {
     id: string;
+    onHistogramModify?: (id, scale: THREE.Vector3) => void;
 }
 
-export default function HistogramWrapper({ id }: HistogramWrapperProps) {
+export default function HistogramWrapper({ id, onHistogramModify }: HistogramWrapperProps) {
     const { scene, camera } = useThree();
     const jsrootHistogram = useRef(null);
     const nestedHistogram = useRef(null);
     const [config, setConfig] = useState(null);
+    const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
 
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
     const [nestedMesh, setNestedMesh] = useState(null);
     const [wireframeObj, setWireframeObj] = useState(null);
+    const [painterLimits, setPainterLimits] = useState(null);
+
+    const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
+        setPainterLimits({ 
+            position: position.clone(), 
+            scale: scale.clone()
+        });
+    }
+
+    const onBoundingBoxDragEnd = (scale: THREE.Vector3) => {
+        console.log("Config changed from Wrapper:", scale);
+        onHistogramModify?.(id, scale.clone());
+    }
 
     const disposeThree = (obj) => {
         if (!obj) return;
@@ -48,6 +66,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         if (wireframeObj) disposeThree(wireframeObj);
         setNestedMesh(null);
         setWireframeObj(null);
+        setPainterLimits(null);
     };
 
     useEffect(() => {
@@ -117,6 +136,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
                         if (nestedHistogram.current) {
                             nestedHistogram.current.updateHistogram(histo);
+                            // Update painter limits when histogram is updated
+                            setPainterLimits(nestedHistogram.current.limits);
                             // nestedHistogram.current.remove();
                             // nestedHistogram.current = undefined;
                         } else {
@@ -125,6 +146,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
                             setNestedMesh(() => painter.mesh);
                             setWireframeObj(() => painter.wireframe.wireframe);
+                            setPainterLimits(painter.limits);
                         }
                     }
                 } catch (e) {
@@ -158,6 +180,14 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             </group>
             {nestedMesh && <primitive object={nestedMesh} />}
             {wireframeObj && <primitive object={wireframeObj} />}
+            {painterLimits && modifyModeEnabled && (
+                <BoundingFrameBox
+                    position={painterLimits.position}
+                    scale={new THREE.Vector3().copy(painterLimits.scale)}
+                    onChange={onBoundingBoxChange}
+                    onDragEnd={onBoundingBoxDragEnd}
+                />
+            )}
         </>
     );
 }

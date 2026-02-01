@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useXR, useXRInputSourceState } from "@react-three/xr";
 import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
 import * as THREE from "three";
 
 export interface VRControllerProps {
@@ -46,6 +47,9 @@ export default function VRController({
     const hasSnapped = useRef(false);
 
     const isFocused = useInputFocus((state) => state.isFocused);
+
+    const modifyModeEnabled = useSceneModeStore(s => s.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore(s => s.setModifyModeEnabled);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -153,6 +157,21 @@ export default function VRController({
                 onToggleHelp?.();
             }
             lastY.current = yPressed;
+
+            const A = (rightGamepad as any)["a-button"];
+            const APressed =
+                !!A &&
+                (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
+            if (APressed && !lastA.current) {
+                // Toggle Modify Mode with left grip
+                setModifyModeEnabled(!modifyModeEnabled);
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-modify-mode-toggle", {
+                        detail: { enabled: !modifyModeEnabled },
+                    })
+                );
+            }
+            lastA.current = APressed;
         }
 
         if (rightGamepad) {
