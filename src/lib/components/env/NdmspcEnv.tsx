@@ -5,10 +5,12 @@ import Switch from "../ui/desktop/Switch.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
+import * as THREE from "three";
 
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
+import app from "../../../App.tsx";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
@@ -62,6 +64,30 @@ export default function NdmspcEnv({
         },
         [onConfigChange]
     );
+
+    const applyHistogramModification = useCallback(
+        (id, scale: THREE.Vector3) => {
+
+            if (!appConfig) return;
+            const newConfig = structuredClone(appConfig);
+
+            const pad = newConfig.config.environment.histogramPads
+                ?.find(p => p.id === id);
+            if (!pad) return;
+
+            pad.scale = {
+                x: scale.x,
+                y: scale.y,
+                z: scale.z,
+            };
+
+            applyConfig(newConfig);
+
+            console.log("CONFIG___________", appConfig);
+        },
+        [appConfig, applyConfig]
+    );
+
 
     useEffect(() => {
         if (initializedRef.current) return;
@@ -130,6 +156,7 @@ export default function NdmspcEnv({
                     help={help}
                     showUIExternal={showUI}
                     onUIStateChange={handleUIStateChange}
+                    onHistogramModify={applyHistogramModification}
                 >
                     {children}
                 </NdmvrEnv>

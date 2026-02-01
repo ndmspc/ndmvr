@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
 import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -28,14 +29,27 @@ export default function DesktopController({
     const isInteracting = useUIInteraction((state) => state.isInteracting);
     const isFocused = useInputFocus((state) => state.isFocused);
     const frozenRotation = useRef({ x: 0, y: 0 });
+    
+    const modifyModeEnabled = useSceneModeStore(s => s.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore(s => s.setModifyModeEnabled);
 
     useEffect(() => {
         const onKeyDown = (e) => {
             keys.current[e.code] = true;
-            if (e.code === "KeyM" && !isFocused) onToggleMenu?.();
+            if (e.code === "KeyM" && !e.ctrlKey && !isFocused) onToggleMenu?.();
             if (e.code === "KeyH" && !isFocused) onToggleHelp?.();
             if (e.code === "KeyR") {
                 window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+            }
+            // Toggle Modify Mode with Ctrl+M
+            if (e.code === "KeyM" && e.ctrlKey && !isFocused) {
+                e.preventDefault();
+                setModifyModeEnabled(!modifyModeEnabled);
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-modify-mode-toggle", {
+                        detail: { enabled: !modifyModeEnabled },
+                    })
+                );
             }
 
             if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
@@ -65,7 +79,7 @@ export default function DesktopController({
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         };
-    }, [onToggleMenu, onToggleHelp, isFocused]);
+    }, [onToggleMenu, onToggleHelp, isFocused, setModifyModeEnabled, modifyModeEnabled]);
 
     useEffect(() => {
         const onMouseDown = (e) => {
