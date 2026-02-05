@@ -29,7 +29,7 @@ export default function DesktopController({
     const isInteracting = useUIInteraction((state) => state.isInteracting);
     const isFocused = useInputFocus((state) => state.isFocused);
     const frozenRotation = useRef({ x: 0, y: 0 });
-    
+
     const modifyModeEnabled = useSceneModeStore(s => s.modifyModeEnabled);
     const setModifyModeEnabled = useSceneModeStore(s => s.setModifyModeEnabled);
 
@@ -210,6 +210,29 @@ export default function DesktopController({
             pitch.current = cameraRef.current.rotation.x;
         }
     });
+
+
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            const { dir, pressed } = e.detail;
+
+            const set = (code: string) => {
+                keys.current[code] = pressed;
+            };
+
+            if (dir === "forward") set("KeyW");
+            if (dir === "back") set("KeyS");
+            if (dir === "left") set("KeyA");
+            if (dir === "right") set("KeyD");
+            if (dir === "up") set("KeyE");
+            if (dir === "down") set("KeyQ");
+        };
+
+        window.addEventListener("mobile-move", handler);
+        return () => window.removeEventListener("mobile-move", handler);
+    }, []);
+
 
     return null;
 }
