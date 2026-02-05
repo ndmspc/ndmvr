@@ -32,8 +32,8 @@ export default function HistogramWrapper({ id, onHistogramModify }: HistogramWra
     const [painterLimits, setPainterLimits] = useState(null);
 
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
-        setPainterLimits({ 
-            position: position.clone(), 
+        setPainterLimits({
+            position: position.clone(),
             scale: scale.clone()
         });
     }
@@ -82,8 +82,6 @@ export default function HistogramWrapper({ id, onHistogramModify }: HistogramWra
     }, [scene]);
 
     useEffect(() => {
-        if (!config) return;
-
         const histoSub = histogramSubjectGet()
             .getStream(id)
             .pipe(filter((e) => (e as { id: string | number }).id === id))
@@ -160,7 +158,7 @@ export default function HistogramWrapper({ id, onHistogramModify }: HistogramWra
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [config, id]);
+    }, [id]);
 
     return (
         <>

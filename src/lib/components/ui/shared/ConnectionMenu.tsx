@@ -40,7 +40,7 @@ export default function ConnectionMenu({
     const idHistogram = "histogram1";
 
     useEffect(() => {
-        const stateSubject = stateSubjectGet()
+        const stateSubject = stateSubjectGet(idHistogram)
             .getObservable()
             .subscribe((e) => {
                 if (e.sets) setAvailableSets(e.sets);
@@ -60,8 +60,8 @@ export default function ConnectionMenu({
     }, []);
 
     const updateStateSubject = (updates) => {
-        const currentVal = stateSubjectGet().getValue();
-        stateSubjectGet().next({ ...currentVal, ...updates });
+        const currentVal = stateSubjectGet(idHistogram).getValue();
+        stateSubjectGet(idHistogram).next({ ...currentVal, ...updates });
     };
 
     const handleArraySelect = (value) => {
