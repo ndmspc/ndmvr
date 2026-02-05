@@ -30,7 +30,7 @@ export default function DrawOptions({
     const histogram = useContext(HistogramContext);
 
     useEffect(() => {
-        const stateSubject = stateSubjectGet()
+        const stateSubject = stateSubjectGet(histogram.id)
             .getObservable()
             .subscribe((e) => {
                 if (e.sets) setAvailableSets(e.sets);
@@ -45,8 +45,8 @@ export default function DrawOptions({
     }, []);
 
     const updateStateSubject = (updates) => {
-        const currentVal = stateSubjectGet().getValue();
-        stateSubjectGet().next({ ...currentVal, ...updates });
+        const currentVal = stateSubjectGet(histogram.id).getValue();
+        stateSubjectGet(histogram.id).next({ ...currentVal, ...updates });
     };
 
     const handleArraySelect = (value) => {

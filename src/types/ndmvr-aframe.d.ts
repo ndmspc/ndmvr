@@ -151,5 +151,5 @@ declare module "@ndmspc/ndmvr-core" {
     export function canvasSubjectGet(): CanvasSubject;
     export function functionSubjectGet(): FunctionSubject;
     export function binInfoSubjectGet(): BinInfoSubject;
-    export function stateSubjectGet(): StateSubject;
+    export function stateSubjectGet(id: string): StateSubject;
 }
