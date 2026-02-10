@@ -29,7 +29,7 @@ export interface NdmvrEnvProps {
     help?: boolean;
     showUIExternal?: boolean;
     onUIStateChange?: (isVisible: boolean) => void; // Новий prop!
-    onHistogramModify?: (id, scale: THREE.Vector3) => void;
+    onHistogramModify?: (id, position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
 export default function NdmvrEnv({
@@ -53,8 +53,8 @@ export default function NdmvrEnv({
 
     const prevShowUIExternalRef = useRef(showUIExternal);
 
-    const applyHistogramModification = (id, scale: THREE.Vector3) => {
-        onHistogramModify?.(id, scale.clone());
+    const applyHistogramModification = (id, position: THREE.Vector3, scale: THREE.Vector3) => {
+        onHistogramModify?.(id ,position.clone(), scale.clone());
     }
 
     useEffect(() => {
