@@ -84,7 +84,7 @@ export default function NdmspcEnv({
     );
 
     const applyHistogramModification = useCallback(
-        (id, scale: THREE.Vector3) => {
+        (id, position: THREE.Vector3, scale: THREE.Vector3) => {
 
             if (!appConfig) return;
             const newConfig = structuredClone(appConfig);
@@ -92,6 +92,12 @@ export default function NdmspcEnv({
             const pad = newConfig.config.environment.histogramPads
                 ?.find(p => p.id === id);
             if (!pad) return;
+
+            pad.position = {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            }
 
             pad.scale = {
                 x: scale.x,

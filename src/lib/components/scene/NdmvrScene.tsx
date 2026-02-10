@@ -10,7 +10,7 @@ import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 
 export interface NdmvrSceneProps {
     originRef: React.RefObject<THREE.Group>;
-    onHistogramModify?: (id, scale: THREE.Vector3) => void;
+    onHistogramModify?: (id, position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
 export default function NdmvrScene({ originRef, onHistogramModify }: NdmvrSceneProps) {
@@ -23,9 +23,9 @@ export default function NdmvrScene({ originRef, onHistogramModify }: NdmvrSceneP
 
     const { vrEnabled, uiHover, shouldDisableRaycaster } = useSceneModeStore();
 
-    const applyHistogramModification = (id, scale: THREE.Vector3) => {
-        console.log("Config changed from SettingsPanel:", scale);
-        onHistogramModify?.(id, scale);
+    const applyHistogramModification = (id, position: THREE.Vector3, scale: THREE.Vector3) => {
+        console.log("Config changed from SettingsPanel:",position, scale);
+        onHistogramModify?.(id, position, scale);
     }
 
     useEffect(() => {

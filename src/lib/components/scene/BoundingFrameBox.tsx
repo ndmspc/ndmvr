@@ -6,6 +6,7 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 import { getUnifiedRay } from "../ui/hover/UnifiedRay";
 import { useUIInteraction } from "../ui/interactions/useUIInteraction";
+import { last } from "rxjs";
 
 type Axis = "X" | "Y" | "Z";
 
@@ -24,7 +25,7 @@ interface BoundingFrameBoxProps {
     position: THREE.Vector3;
     scale: THREE.Vector3;
     onChange?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
-    onDragEnd?: (scale: THREE.Vector3) => void;
+    onDragEnd?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
 interface EdgeInfo {
@@ -74,6 +75,7 @@ export default function BoundingFrameBox({
         useState<"idle" | "drag">("idle");
 
     const lastScaleRef = useRef<THREE.Vector3>(scale.clone());
+    const lastPositionRef = useRef<THREE.Vector3>(position.clone());
 
     const dragRef = useRef<DragContext | null>(null);
     const dragPlaneRef = useRef<THREE.Plane | null>(null);
@@ -248,9 +250,17 @@ export default function BoundingFrameBox({
 
         // Store last scale for drag end callback
         lastScaleRef.current = newScale.clone();
+        
+        if (groupRef.current) {
+            const pos = groupRef.current.position.clone();
+            pos.y = newScale.y / 2;
+            groupRef.current.position.copy(pos);
+        }
 
+        lastPositionRef.current = groupRef.current.position.clone();
+        const newPosition = groupRef.current.position.clone();
         // Notify parent about live scale change
-        onChange?.(dragCtx.startPosition, newScale);
+        onChange?.(newPosition, newScale);
     }
 
 
@@ -335,7 +345,7 @@ export default function BoundingFrameBox({
 
     function onPointerUp() {
         if (interactionState === "drag" && dragRef.current) {
-            onDragEnd?.(lastScaleRef.current.clone());
+            onDragEnd?.(lastPositionRef.current.clone(), lastScaleRef.current.clone());
         }
 
         setInteractionState("idle");

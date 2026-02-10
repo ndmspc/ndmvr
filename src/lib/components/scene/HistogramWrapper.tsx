@@ -15,7 +15,7 @@ import BoundingFrameBox from "./BoundingFrameBox";
 
 export interface HistogramWrapperProps {
     id: string;
-    onHistogramModify?: (id, scale: THREE.Vector3) => void;
+    onHistogramModify?: (id, position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
 export default function HistogramWrapper({ id, onHistogramModify }: HistogramWrapperProps) {
@@ -38,9 +38,9 @@ export default function HistogramWrapper({ id, onHistogramModify }: HistogramWra
         });
     }
 
-    const onBoundingBoxDragEnd = (scale: THREE.Vector3) => {
-        console.log("Config changed from Wrapper:", scale);
-        onHistogramModify?.(id, scale.clone());
+    const onBoundingBoxDragEnd = (position: THREE.Vector3 , scale: THREE.Vector3) => {
+        console.log("Config changed from Wrapper:   ",position, scale);
+        onHistogramModify?.(id, position.clone(), scale.clone());
     }
 
     const disposeThree = (obj) => {
