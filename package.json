@@ -46,7 +46,7 @@
         "react-dom": "^19.2.0"
     },
     "dependencies": {
-        "@ndmspc/ndmvr-core": "1.1.0-rc.2",
+        "@ndmspc/ndmvr-core": "1.1.0-rc.4",
         "@pmndrs/uikit": "^1.0.58",
         "@react-three/drei": "^10.4.2",
         "@react-three/fiber": "^9.4.0",
@@ -61,7 +61,7 @@
         "jsroot": "github:root-project/jsroot#30c16c1c5b73eb71fe741bf6ecc27c603f7658be",
         "rxjs": "^7.8.2",
         "styled-components": "^6.1.19",
-        "three": "~0.173.0",
+        "three": "^0.182.0",
         "zustand": "^5.0.9"
     },
     "devDependencies": {
@@ -69,7 +69,7 @@
         "@types/node": "^24.10.1",
         "@types/react": "^19.2.5",
         "@types/react-dom": "^19.2.3",
-        "@types/three": "^0.173.0",
+        "@types/three": "^0.182.0",
         "@typescript-eslint/eslint-plugin": "^8.19.1",
         "@typescript-eslint/parser": "^8.19.1",
         "@vitejs/plugin-react": "^5.1.1",
