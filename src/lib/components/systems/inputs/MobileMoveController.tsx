@@ -21,7 +21,7 @@ const ControllerWrapper = styled.div`
     grid-template-rows: 64px 64px 64px;
     gap: 8px;
 
-    z-index: 20;
+    z-index: 0;
     user-select: none;
     touch-action: none;
 `;

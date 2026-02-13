@@ -208,7 +208,7 @@ export default function NdmspcEnv({
             />
             <FullscreenButton />
             <UIToggleButton isActive={showUI} onToggle={handleUIToggle} />
-            { touch && (
+            { vrMode && touch && (
                 <MobileMoveController
                     onMoveStart={startMove}
                     onMoveEnd={stopMove}
