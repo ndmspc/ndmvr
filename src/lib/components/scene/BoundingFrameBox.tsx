@@ -6,7 +6,6 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
 import { getUnifiedRay } from "../ui/hover/UnifiedRay";
 import { useUIInteraction } from "../ui/interactions/useUIInteraction";
-import { last } from "rxjs";
 
 type Axis = "X" | "Y" | "Z";
 
@@ -41,11 +40,12 @@ interface CornerInfo {
 interface DragContext {
     type: "edge" | "corner";
     axes: Axis[];
-    signs: Partial<Record<Axis, 1 | -1>>;
     startScale: THREE.Vector3;
     startPosition: THREE.Vector3;
     startPoint: THREE.Vector3;
 }
+
+
 // Raycaster tolerance for detecting thin objects (lines, small meshes)
 const HOVER_THRESHOLD = 0.05;
 
@@ -140,117 +140,73 @@ export default function BoundingFrameBox({
     /* ---------- DRAG ---------- */
 
     function handleDrag(ray: THREE.Ray) {
-        // Drag is not active or required data is missing
         if (!dragPlaneRef.current || !dragRef.current || !groupRef.current) return;
 
-        // Find intersection point of the mouse ray with the drag plane
-        const intersectionPoint = new THREE.Vector3();
-        if (!ray.intersectPlane(dragPlaneRef.current, intersectionPoint)) return;
+
+
+        const intersection = new THREE.Vector3();
+        if (!ray.intersectPlane(dragPlaneRef.current, intersection)) return;
 
         const dragCtx = dragRef.current;
 
-        // World-space movement since drag start
-        const deltaWorld = intersectionPoint.clone().sub(dragCtx.startPoint);
+        const center = dragCtx.startPosition.clone();
+        const local = intersection.clone().sub(center);
 
-        // Start from the initial scale
-        const newScale = dragCtx.startScale.clone();
+        let newScale = dragCtx.startScale.clone();
 
-        /* ---------- CORNER DRAG ---------- */
+        /* ---------- CORNER ---------- */
         if (dragCtx.type === "corner") {
-            // Camera basis vectors in world space
-            const cameraRight = new THREE.Vector3();
-            const cameraUp = new THREE.Vector3();
-            const cameraDir = new THREE.Vector3();
 
-            camera.getWorldDirection(cameraDir);
-            cameraRight.crossVectors(cameraDir, camera.up).normalize();
-            cameraUp.copy(camera.up).normalize();
+            const halfX = Math.abs(local.x);
+            const halfZ = Math.abs(local.z);
 
-            // Mouse movement projected onto screen-space axes
-            const rightAmount = deltaWorld.dot(cameraRight);
-            const upAmount = deltaWorld.dot(cameraUp);
+            const height = Math.max(0.2, intersection.y);
 
-            dragCtx.axes.forEach((axis) => {
-                // Unit vector for the current axis
-                const axisDir = new THREE.Vector3(
-                    axis === "X" ? 1 : 0,
-                    axis === "Y" ? 1 : 0,
-                    axis === "Z" ? 1 : 0
-                );
-
-                // Determine whether this axis reacts more to horizontal or vertical drag
-                const hInfluence = Math.abs(axisDir.dot(cameraRight));
-                const vInfluence = Math.abs(axisDir.dot(cameraUp));
-
-                let axisDelta = 0;
-
-                // Use the dominant screen-space direction
-                if (hInfluence > vInfluence) {
-                    axisDelta = rightAmount * Math.sign(axisDir.dot(cameraRight));
-                } else {
-                    axisDelta = upAmount * Math.sign(axisDir.dot(cameraUp));
-                }
-
-                const axisIndex = axis === "X" ? 0 : axis === "Y" ? 1 : 2;
-                const sign = dragCtx.signs[axis] ?? 1;
-
-                // Scale changes twice as fast as edge movement (box grows from center)
-                const scaleDelta = axisDelta * sign * 2;
-
-                const value =
-                    dragCtx.startScale.getComponent(axisIndex) + scaleDelta;
-
-                // Clamp to minimum scale
-                newScale.setComponent(axisIndex, Math.max(0.2, value));
-            });
+            newScale.set(
+                Math.max(0.2, halfX * 2),
+                height,
+                Math.max(0.2, halfZ * 2)
+            );
         }
 
-        /* ---------- EDGE DRAG ---------- */
+        /* ---------- EDGE ---------- */
         if (dragCtx.type === "edge") {
-            let maxDot = 0;
-            let mainAxis: Axis | null = null;
+            const local = intersection.clone().sub(dragCtx.startPosition);
 
-            // Find the axis that best matches the drag direction
-            dragCtx.axes.forEach((axis) => {
-                const axisDir = new THREE.Vector3(
-                    axis === "X" ? 1 : 0,
-                    axis === "Y" ? 1 : 0,
-                    axis === "Z" ? 1 : 0
-                ).normalize();
-
-                const dot = Math.abs(deltaWorld.dot(axisDir));
-                if (dot > maxDot) {
-                    maxDot = dot;
-                    mainAxis = axis;
+            // Calculate contributions along each axis based on drag direction
+            const contributions: Partial<Record<Axis, number>> = {};
+            dragCtx.axes.forEach(axis => {
+                if (axis === "Y") {
+                    contributions.Y = intersection.y; // from ground
+                } else {
+                    const idx = axis === "X" ? 0 : 2; // X/Z
+                    contributions[axis] = local.getComponent(idx);
                 }
             });
 
-            if (mainAxis) {
-                const sign = dragCtx.signs[mainAxis] ?? 1;
+            // Dominant axis determines the primary direction of scaling
+            const dominant = dragCtx.axes.reduce((a, b) =>
+                Math.abs(contributions[a]!) > Math.abs(contributions[b]!) ? a : b
+            );
 
-                const axisDir = new THREE.Vector3(
-                    mainAxis === "X" ? 1 : 0,
-                    mainAxis === "Y" ? 1 : 0,
-                    mainAxis === "Z" ? 1 : 0
-                );
-
-                // Project drag movement onto the selected axis
-                const axisDelta = deltaWorld.dot(axisDir);
-                const idx = mainAxis === "X" ? 0 : mainAxis === "Y" ? 1 : 2;
-
-                // Update scale only on the dominant axis
-                const newValue = Math.max(
-                    0.2,
-                    dragCtx.startScale.getComponent(idx) + axisDelta * sign * 2
-                );
-
-                newScale.setComponent(idx, newValue);
+            // New scale based on dominant axis
+            if (dominant === "Y") {
+                newScale.y = Math.max(0.1, contributions.Y!);
+            } else {
+                const idx = dominant === "X" ? 0 : 2;
+                const halfSize = Math.abs(contributions[dominant]!);
+                newScale.setComponent(idx, Math.max(0.2, halfSize * 2));
             }
+        }
+
+
+        if (newScale.y !== lastScaleRef.current.y) {
+            newScale.y = Math.max(0.2, newScale.y);
         }
 
         // Store last scale for drag end callback
         lastScaleRef.current = newScale.clone();
-        
+
         if (groupRef.current) {
             const pos = groupRef.current.position.clone();
             pos.y = newScale.y / 2;
@@ -267,74 +223,41 @@ export default function BoundingFrameBox({
     function onPointerDown(e: ThreeEvent<PointerEvent>) {
         if (!hovered || !groupRef.current) return;
 
-        const planeNormal = new THREE.Vector3();
         const group = groupRef.current;
 
         let dragType: "edge" | "corner" = "edge";
         let axes: Axis[] = [];
-        let signs: Partial<Record<Axis, 1 | -1>> = {};
 
-        /* ---------- EDGE CLICK ---------- */
         if (edges.current.has(hovered as Line2)) {
             const edgeInfo = edges.current.get(hovered as Line2)!;
             const edge = edgeInfo.edge;
 
-            // For an edge, scaling is allowed only on the two axes
-            // that form the face connected to this edge
             if (edge.axis === "X") axes = ["X", "Z"];
             if (edge.axis === "Y") axes = ["Y", "X"];
             if (edge.axis === "Z") axes = ["Z", "Y"];
-
-            // Edge drag always expands equally in both directions
-            axes.forEach((a) => (signs[a] = 1));
-
-            // Drag plane faces the camera to ensure stable screen-space dragging
-            camera.getWorldDirection(planeNormal);
         }
 
-        /* ---------- CORNER CLICK ---------- */
         if (corners.current.has(hovered as THREE.Mesh)) {
-            const cornerInfo = corners.current.get(hovered as THREE.Mesh)!;
-            const corner = cornerInfo.corner;
-
             dragType = "corner";
-
-            // Corner allows scaling on all three axes
             axes = ["X", "Y", "Z"];
-
-            // Each axis grows or shrinks based on which corner is dragged
-            signs = {
-                X: corner.x,
-                Y: corner.y,
-                Z: corner.z,
-            };
-
-            // Plane faces the camera so drag follows mouse direction
-            camera.getWorldDirection(planeNormal).negate().normalize();
         }
 
-        // Plane passes through the box center
-        const planePoint = group.getWorldPosition(new THREE.Vector3());
+        const planeNormal = new THREE.Vector3();
+        camera.getWorldDirection(planeNormal);
 
-        // Create drag plane
         const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
             planeNormal,
-            planePoint
+            e.point
         );
 
-        // Find initial intersection point
-        const startPoint = new THREE.Vector3();
-        if (!e.ray.intersectPlane(plane, startPoint)) return;
-
-        // Store drag context
         dragPlaneRef.current = plane;
+
         dragRef.current = {
             type: dragType,
             axes,
-            signs,
             startScale: scale.clone(),
             startPosition: group.position.clone(),
-            startPoint,
+            startPoint: e.point.clone(),
         };
 
         setInteractionState("drag");
