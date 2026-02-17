@@ -14,6 +14,8 @@ import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { map, merge } from "rxjs";
 import HelperTips from "../ui/shared/HelperTips.tsx";
+import FileBrowser from "../ui/shared/FileBrowser.tsx";
+import { Vector3 } from "three";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
@@ -29,7 +31,12 @@ export interface NdmvrEnvProps {
     help?: boolean;
     showUIExternal?: boolean;
     onUIStateChange?: (isVisible: boolean) => void; // Новий prop!
-    onHistogramModify?: (id, position: THREE.Vector3, scale: THREE.Vector3) => void;
+    onHistogramModify?: (id, scale: Vector3, vector3: Vector3) => void;
+    hierarchy?: any;
+    rootNode?: any;
+    hierarchyDocRef?: React.MutableRefObject<HTMLDivElement>;
+    onSelectItem?: (path: string) => void;
+    browser?: boolean;
 }
 
 export default function NdmvrEnv({
@@ -41,6 +48,11 @@ export default function NdmvrEnv({
     showUIExternal = false,
     onUIStateChange = null,
     onHistogramModify = null,
+    hierarchy = null,
+    rootNode = null,
+    hierarchyDocRef = null,
+    onSelectItem = null,
+    browser = false,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
@@ -155,6 +167,22 @@ export default function NdmvrEnv({
 
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
+                    {/*<FileBrowser*/}
+                    {/*    hierarchy={hierarchy}*/}
+                    {/*    root={rootNode}*/}
+                    {/*    doc={hierarchyDocRef}*/}
+                    {/*    onSelect={(p) => onSelectItem?.(p)}*/}
+                    {/*/>*/}
+
+                    { browser && ( <group position={[-12, 2, 0]}>
+                        <FileBrowser
+                            hierarchy={hierarchy}
+                            root={rootNode}
+                            doc={hierarchyDocRef}
+                            onSelect={(p) => onSelectItem?.(p)}
+                        />
+                    </group> )
+                    }
 
                     <NdmvrScene originRef={xrOriginRef} onHistogramModify={applyHistogramModification} />
 

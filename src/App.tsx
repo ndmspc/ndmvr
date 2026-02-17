@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
 import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
+import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
 function App() {
     const [configState, setConfigState] = useState<NdmspcConfig>({ type: "" });
     // const effectRan = useRef(false);
@@ -127,7 +128,10 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcNavigator menu={true} help={false}>
+                <NdmspcNavigator menu={true} help={false}
+                                 // ndmspcConfig={{type:"browser"}}
+                >
+
                     <IframeCernboxService onConfigLoad={onConfigLoad} />
                 </NdmspcNavigator>
                 {/* <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" /> */}

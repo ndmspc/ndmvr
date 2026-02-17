@@ -28,6 +28,10 @@ export interface NdmspcDefaultBrowserEnvProps {
     defaultDrawOpt?: Record<string, string> | null;
 }
 
+
+
+
+
 export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
@@ -36,7 +40,10 @@ export default function NdmspcDefaultBrowserEnv({
     help = false,
     renderer = "jsroot",
     vr = false,
-    file = "https://root.cern.ch/js/files/hsimple.root",
+    // file = "/nested_objects.root",
+    // file = "/nested2.root",
+    file = "/hsimple.root",
+    // file = "/nested.root",
     item = null,
     opt = null,
     title = "Ndmspc Default Browser Environment",
@@ -51,6 +58,12 @@ export default function NdmspcDefaultBrowserEnv({
     const padsCounter = useRef(0);
     const [itemState, setItemState] = useState(item);
     const [optState, setOptState] = useState(opt);
+    const hiddenTreeDivRef = useRef<HTMLDivElement>(document.createElement("div"));
+
+    const [hierarchy, setHierarchy] = useState<any>(null);
+    const [rootNode, setRootNode] = useState<any>(null);
+
+
 
     console.log(
         "NdmspcDefaultBrowserEnv render, config:",
@@ -85,9 +98,17 @@ export default function NdmspcDefaultBrowserEnv({
         if (initializedRef.current) return;
         initializedRef.current = true;
 
-        const painter = new HierarchyPainter("example", "myTreeDiv");
+        console.log("Read file: " , file);
+        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current);
+        // const painter = new HierarchyPainter("example", "myTreeDiv");
+
+
 
         painter.setDrawFunc((dom, obj, opt) => {
+            // console.log("call draw func");
+            // console.log("dom:", dom);
+            // console.log("obj:", obj);
+            // console.log("opt:", opt);
             histogramSubjectGet().next({
                 id: `pad${padsCounter.current + 1}`,
                 opts: { render: renderer },
@@ -118,12 +139,20 @@ export default function NdmspcDefaultBrowserEnv({
                 padding: { x: 0, y: 0, z: 0 },
                 origin: { x: -5, y: 0.5, z: 1 },
             };
+            // console.log("Try to open");
             await painter.openRootFile(file).then((v) => {
                 const ps = getPads(v.disp_kind);
                 pads.current = ps;
+                // console.log("File h: ", painter.h );
                 console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
                 configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
+                setHierarchy(painter);
+                setRootNode((painter as any).h);
             });
+
+
+
+
             // if (item) {
             await painter.display(item, opt);
             setItemState(item);
@@ -136,6 +165,8 @@ export default function NdmspcDefaultBrowserEnv({
         console.log(title);
     }, []);
 
+
+
     useEffect(() => {
         if (!initializedRef.current) return;
         if (itemState === null) return;
@@ -147,48 +178,76 @@ export default function NdmspcDefaultBrowserEnv({
         painterDisplay();
     }, [itemState, optState]);
 
+
+
+    const handleSelect = async (path: string) => {
+        // console.log("call handelerSelect");
+        // console.log("handlerSelect path: ", path);
+        if (!painterRef.current) return;
+        await painterRef.current.display(path, optState ?? "");
+        setItemState(path);
+    };
+
     return (
         <div
             style={{
                 width: "100%",
                 height: "100%",
                 position: "relative",
+
             }}
         >
             <div
                 id="myTreeDiv"
+                ref={hiddenTreeDivRef}
                 style={{
+
                     width: "250px",
                     height: "100%",
                     float: "left",
+                    // display: "flex",
+                    display: !vrMode ? "flex" : "none",
                 }}
             ></div>
 
             <div
                 id="myMainDiv"
                 className="main-div"
+
                 style={{
+
                     display: !vrMode ? "flex" : "none",
+
                 }}
             ></div>
 
-            <div
-                className="main-div"
-                style={{
-                    display: vrMode ? "flex" : "none",
-                }}
-            >
-                <NdmvrEnv
-                    currentConfig={appConfig}
-                    onConfigChange={applyConfig}
-                    menu={menu}
-                    help={help}
-                >
-                    {children}
-                </NdmvrEnv>
-            </div>
 
-            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
-        </div>
-    );
-}
+
+
+                <div
+                    className="main-div"
+                    // style={{
+                    //     // display: vrMode ? "flex" : "none",
+                    //     width: 100%
+                    // }}
+                    style={{ width: "100%", height: "100%" }}
+                >
+                    <NdmvrEnv
+                        currentConfig={appConfig}
+                        onConfigChange={applyConfig}
+                        menu={menu}
+                        help={help}
+                        hierarchy={hierarchy}
+                        rootNode={rootNode}
+                        hierarchyDocRef={hiddenTreeDivRef}
+                        onSelectItem={handleSelect}
+                        browser={true}
+                    >
+                        {children}
+                    </NdmvrEnv>
+                </div>
+
+                <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+            </div>
+            );
+            }

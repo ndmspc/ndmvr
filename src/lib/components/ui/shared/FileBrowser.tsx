@@ -3,35 +3,17 @@ import { useEffect, useRef, useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
 import { HierarchyPainter } from "jsroot";
 
+
 interface FileBrowserProps {
-    url: string;
-    openFunction?: () => void;
+    hierarchy: any;
+    root: any;
+    doc: React.MutableRefObject<HTMLDivElement>;
+    onSelect?: (path: string) => void;
 }
 
-interface RootNode {
-    _name: string;
-    _childs?: RootNode[] | Record<string, RootNode>;
-}
+export default function FileBrowser({ hierarchy, root, doc, onSelect }: FileBrowserProps) {
 
-interface JSRootHierarchy {
-    h: RootNode;
-    expandItem(name: string): Promise<void>;
-    openRootFile(path: string): Promise<void>;
-}
-
-export default function FileBrowser({ url }: FileBrowserProps) {
-    const treeRef = useRef<HTMLDivElement>(document.createElement("div"));
-    const [hierarchy, setHierarchy] = useState<JSRootHierarchy | null>(null);
-    const [root, setRoot] = useState<RootNode | null>(null);
-
-    useEffect(() => {
-        const h = new HierarchyPainter("example", treeRef.current);
-
-        h.openRootFile(url).then(() => {
-            setHierarchy(h);
-            setRoot(h.h);
-        });
-    }, [url]);
+    // console.log(" FileBrowser Slelect: ", onSelect);
 
     return (
         <Container
@@ -46,7 +28,15 @@ export default function FileBrowser({ url }: FileBrowserProps) {
             justifyContent="flex-start"
         >
             <Container gap={8} display="flex" flexDirection="column">
-                {root && <TreeViewer hierarchy={hierarchy} root={root} doc={treeRef} />}
+                {root && (
+                    <TreeViewer
+                        hierarchy={hierarchy}
+                        root={root}
+                        doc={doc}
+                        // expandable={true}
+                        onSelect={(p) => onSelect?.(p)}
+                    />
+                ) }
             </Container>
         </Container>
     );
