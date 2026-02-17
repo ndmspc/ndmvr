@@ -156,11 +156,11 @@ export default function NdmspcEnv({
     // }, []);
 
     const touch = shouldUseMobileControls();
-
+    
     const startMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
         window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: true } }));
     };
-
+    
     const stopMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
         window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: false } }));
     };
