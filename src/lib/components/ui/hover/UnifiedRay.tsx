@@ -3,9 +3,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 const _ray = new THREE.Ray();
 
-export function getUnifiedRay(
-    e: PointerEvent | ThreeEvent<PointerEvent>
-): THREE.Ray | null {
+export function getUnifiedRay(e: PointerEvent | ThreeEvent<PointerEvent>): THREE.Ray | null {
     // R3F provides a ready-to-use world-space ray (mouse, touch, XR)
     if ("ray" in e && e.ray) {
         console.log("VR raycasting");

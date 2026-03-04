@@ -28,10 +28,6 @@ export interface NdmspcDefaultBrowserEnvProps {
     defaultDrawOpt?: Record<string, string> | null;
 }
 
-
-
-
-
 export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
@@ -62,8 +58,6 @@ export default function NdmspcDefaultBrowserEnv({
 
     const [hierarchy, setHierarchy] = useState<any>(null);
     const [rootNode, setRootNode] = useState<any>(null);
-
-
 
     console.log(
         "NdmspcDefaultBrowserEnv render, config:",
@@ -98,11 +92,9 @@ export default function NdmspcDefaultBrowserEnv({
         if (initializedRef.current) return;
         initializedRef.current = true;
 
-        console.log("Read file: " , file);
+        console.log("Read file: ", file);
         const painter = new HierarchyPainter("example", hiddenTreeDivRef.current);
         // const painter = new HierarchyPainter("example", "myTreeDiv");
-
-
 
         painter.setDrawFunc((dom, obj, opt) => {
             // console.log("call draw func");
@@ -150,9 +142,6 @@ export default function NdmspcDefaultBrowserEnv({
                 setRootNode((painter as any).h);
             });
 
-
-
-
             // if (item) {
             await painter.display(item, opt);
             setItemState(item);
@@ -165,8 +154,6 @@ export default function NdmspcDefaultBrowserEnv({
         console.log(title);
     }, []);
 
-
-
     useEffect(() => {
         if (!initializedRef.current) return;
         if (itemState === null) return;
@@ -177,8 +164,6 @@ export default function NdmspcDefaultBrowserEnv({
         };
         painterDisplay();
     }, [itemState, optState]);
-
-
 
     const handleSelect = async (path: string) => {
         // console.log("call handelerSelect");
@@ -194,14 +179,12 @@ export default function NdmspcDefaultBrowserEnv({
                 width: "100%",
                 height: "100%",
                 position: "relative",
-
             }}
         >
             <div
                 id="myTreeDiv"
                 ref={hiddenTreeDivRef}
                 style={{
-
                     width: "250px",
                     height: "100%",
                     float: "left",
@@ -213,41 +196,35 @@ export default function NdmspcDefaultBrowserEnv({
             <div
                 id="myMainDiv"
                 className="main-div"
-
                 style={{
-
                     display: !vrMode ? "flex" : "none",
-
                 }}
             ></div>
 
-
-
-
-                <div
-                    className="main-div"
-                    // style={{
-                    //     // display: vrMode ? "flex" : "none",
-                    //     width: 100%
-                    // }}
-                    style={{ width: "100%", height: "100%" }}
+            <div
+                className="main-div"
+                // style={{
+                //     // display: vrMode ? "flex" : "none",
+                //     width: 100%
+                // }}
+                style={{ width: "100%", height: "100%" }}
+            >
+                <NdmvrEnv
+                    currentConfig={appConfig}
+                    onConfigChange={applyConfig}
+                    menu={menu}
+                    help={help}
+                    hierarchy={hierarchy}
+                    rootNode={rootNode}
+                    hierarchyDocRef={hiddenTreeDivRef}
+                    onSelectItem={handleSelect}
+                    browser={true}
                 >
-                    <NdmvrEnv
-                        currentConfig={appConfig}
-                        onConfigChange={applyConfig}
-                        menu={menu}
-                        help={help}
-                        hierarchy={hierarchy}
-                        rootNode={rootNode}
-                        hierarchyDocRef={hiddenTreeDivRef}
-                        onSelectItem={handleSelect}
-                        browser={true}
-                    >
-                        {children}
-                    </NdmvrEnv>
-                </div>
-
-                <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+                    {children}
+                </NdmvrEnv>
             </div>
-            );
-            }
+
+            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+        </div>
+    );
+}

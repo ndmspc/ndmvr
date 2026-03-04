@@ -30,8 +30,8 @@ export default function DesktopController({
     const isFocused = useInputFocus((state) => state.isFocused);
     const frozenRotation = useRef({ x: 0, y: 0 });
 
-    const modifyModeEnabled = useSceneModeStore(s => s.modifyModeEnabled);
-    const setModifyModeEnabled = useSceneModeStore(s => s.setModifyModeEnabled);
+    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
 
     useEffect(() => {
         const onKeyDown = (e) => {
@@ -211,8 +211,6 @@ export default function DesktopController({
         }
     });
 
-
-
     useEffect(() => {
         const handler = (e: any) => {
             const { dir, pressed } = e.detail;
@@ -232,7 +230,6 @@ export default function DesktopController({
         window.addEventListener("mobile-move", handler);
         return () => window.removeEventListener("mobile-move", handler);
     }, []);
-
 
     return null;
 }

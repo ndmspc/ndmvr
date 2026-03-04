@@ -51,32 +51,33 @@ const MoveButton = styled.button<ButtonProps>`
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 12px;
 
-    background: ${(p) =>
-        p.$active ? "rgba(0,150,255,0.75)" : "rgba(0,0,0,0.45)"};
+    background: ${(p) => (p.$active ? "rgba(0,150,255,0.75)" : "rgba(0,0,0,0.45)")};
 
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: none;
 
     transform: ${(p) => (p.$active ? "scale(0.96)" : "scale(1)")};
-    transition: transform 0.05s linear, background 0.08s linear;
+    transition:
+        transform 0.05s linear,
+        background 0.08s linear;
 
     cursor: pointer;
 `;
 
 const ArrowIcon = styled.img<{ $rotate?: number }>`
-  width: 28px;
-  height: 28px;
-  pointer-events: none;
-  transform: rotate(${(p) => p.$rotate ?? 0}deg);
+    width: 28px;
+    height: 28px;
+    pointer-events: none;
+    transform: rotate(${(p) => p.$rotate ?? 0}deg);
     filter: brightness(0) invert(1);
 `;
 
 const ArrowIconBig = styled.img<{ $rotate?: number }>`
-  width: 35px;
-  height: 35px;
-  pointer-events: none;
-  transform: rotate(${(p) => p.$rotate ?? 0}deg);
+    width: 35px;
+    height: 35px;
+    pointer-events: none;
+    transform: rotate(${(p) => p.$rotate ?? 0}deg);
     filter: brightness(0) invert(1);
 `;
 
@@ -86,9 +87,9 @@ interface MobileMoveControllerProps {
 }
 
 export default function MobileMoveController({
-                                                 onMoveStart,
-                                                 onMoveEnd,
-                                             }: MobileMoveControllerProps) {
+    onMoveStart,
+    onMoveEnd,
+}: MobileMoveControllerProps) {
     const [active, setActive] = useState<Record<Dir, boolean>>({
         forward: false,
         back: false,

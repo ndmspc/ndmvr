@@ -5,7 +5,6 @@ import Switch from "../ui/desktop/Switch.tsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
-import * as THREE from "three";
 
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
@@ -28,7 +27,6 @@ export function shouldUseMobileControls() {
 
     return uaMobile || (hasMultiTouch && noHover && coarse && phoneSized);
 }
-
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
@@ -64,6 +62,7 @@ export default function NdmspcEnv({
     const { setUIHover, setVrEnabled } = useSceneModeStore();
 
     console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
+    console.log("[NEW] onConfigChange:", onConfigChange);
 
     const handleUIToggle = () => {
         setShowUI((prev) => !prev);
@@ -82,36 +81,6 @@ export default function NdmspcEnv({
         },
         [onConfigChange]
     );
-
-    const applyHistogramModification = useCallback(
-        (id, position: THREE.Vector3, scale: THREE.Vector3) => {
-
-            if (!appConfig) return;
-            const newConfig = structuredClone(appConfig);
-
-            const pad = newConfig.config.environment.histogramPads
-                ?.find(p => p.id === id);
-            if (!pad) return;
-
-            pad.position = {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-            }
-
-            pad.scale = {
-                x: scale.x,
-                y: scale.y,
-                z: scale.z,
-            };
-
-            applyConfig(newConfig);
-
-            console.log("CONFIG___________", appConfig);
-        },
-        [appConfig, applyConfig]
-    );
-
 
     useEffect(() => {
         if (initializedRef.current) return;
@@ -156,15 +125,14 @@ export default function NdmspcEnv({
     // }, []);
 
     const touch = shouldUseMobileControls();
-    
+
     const startMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
         window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: true } }));
     };
-    
+
     const stopMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
         window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: false } }));
     };
-
 
     return (
         <div style={{ width: "100%", height: "100%", position: "relative" }}>
@@ -191,7 +159,6 @@ export default function NdmspcEnv({
                     help={help}
                     showUIExternal={showUI}
                     onUIStateChange={handleUIStateChange}
-                    onHistogramModify={applyHistogramModification}
                 >
                     {children}
                 </NdmvrEnv>
@@ -208,13 +175,9 @@ export default function NdmspcEnv({
             />
             <FullscreenButton />
             <UIToggleButton isActive={showUI} onToggle={handleUIToggle} />
-            { vrMode && touch && (
-                <MobileMoveController
-                    onMoveStart={startMove}
-                    onMoveEnd={stopMove}
-                />
+            {vrMode && touch && (
+                <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />
             )}
-
         </div>
     );
 }
