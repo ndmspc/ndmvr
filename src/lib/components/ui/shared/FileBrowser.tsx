@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
 import { HierarchyPainter } from "jsroot";
 
-
 interface FileBrowserProps {
     hierarchy: any;
     root: any;
@@ -12,7 +11,6 @@ interface FileBrowserProps {
 }
 
 export default function FileBrowser({ hierarchy, root, doc, onSelect }: FileBrowserProps) {
-
     // console.log(" FileBrowser Slelect: ", onSelect);
 
     return (
@@ -36,7 +34,7 @@ export default function FileBrowser({ hierarchy, root, doc, onSelect }: FileBrow
                         // expandable={true}
                         onSelect={(p) => onSelect?.(p)}
                     />
-                ) }
+                )}
             </Container>
         </Container>
     );

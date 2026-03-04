@@ -9,8 +9,9 @@ import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import CameraSync from "../systems/CameraSync.tsx";
 import Menu from "../ui/shared/Menu.tsx";
 import Controllers from "../systems/inputs/Controllers.tsx";
-import NdmvrScene from "../scene/NdmvrScene.tsx";
-import ControlsHelp from "../ui/shared/ControlsHelp.tsx";
+import NdmvrContent from "../scene/NdmvrContent.tsx";
+import SceneDecorations from "../scene/SceneDecorations.tsx";
+import RaycasterManager from "../scene/RaycasterManager.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { map, merge } from "rxjs";
 import HelperTips from "../ui/shared/HelperTips.tsx";
@@ -24,35 +25,32 @@ export const HistogramContext = createContext(null);
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
-    controlsHelp?: boolean;
-    currentConfig?: NdmvrConfig;
-    onConfigChange?: ((config: NdmvrConfig) => void) | null;
     menu?: boolean;
     help?: boolean;
+    browser?: boolean;
     showUIExternal?: boolean;
-    onUIStateChange?: (isVisible: boolean) => void; // Новий prop!
-    onHistogramModify?: (id, scale: Vector3, vector3: Vector3) => void;
+    currentConfig?: NdmvrConfig;
     hierarchy?: any;
     rootNode?: any;
     hierarchyDocRef?: React.MutableRefObject<HTMLDivElement>;
+    onConfigChange?: ((config: NdmvrConfig) => void) | null;
+    onUIStateChange?: (isVisible: boolean) => void;
     onSelectItem?: (path: string) => void;
-    browser?: boolean;
 }
 
 export default function NdmvrEnv({
     children,
-    currentConfig = null,
-    onConfigChange = null,
     menu = false,
     help = false,
+    browser = false,
     showUIExternal = false,
-    onUIStateChange = null,
-    onHistogramModify = null,
+    currentConfig = null,
     hierarchy = null,
     rootNode = null,
     hierarchyDocRef = null,
+    onConfigChange = null,
+    onUIStateChange = null,
     onSelectItem = null,
-    browser = false,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
@@ -64,10 +62,6 @@ export default function NdmvrEnv({
     const [isSceneReady, setIsSceneReady] = useState(false);
 
     const prevShowUIExternalRef = useRef(showUIExternal);
-
-    const applyHistogramModification = (id, position: THREE.Vector3, scale: THREE.Vector3) => {
-        onHistogramModify?.(id ,position.clone(), scale.clone());
-    }
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -167,24 +161,21 @@ export default function NdmvrEnv({
 
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
-                    {/*<FileBrowser*/}
-                    {/*    hierarchy={hierarchy}*/}
-                    {/*    root={rootNode}*/}
-                    {/*    doc={hierarchyDocRef}*/}
-                    {/*    onSelect={(p) => onSelectItem?.(p)}*/}
-                    {/*/>*/}
 
-                    { browser && ( <group position={[-12, 2, 0]}>
-                        <FileBrowser
-                            hierarchy={hierarchy}
-                            root={rootNode}
-                            doc={hierarchyDocRef}
-                            onSelect={(p) => onSelectItem?.(p)}
-                        />
-                    </group> )
-                    }
+                    {browser && (
+                        <group position={[-12, 2, 0]}>
+                            <FileBrowser
+                                hierarchy={hierarchy}
+                                root={rootNode}
+                                doc={hierarchyDocRef}
+                                onSelect={(p) => onSelectItem?.(p)}
+                            />
+                        </group>
+                    )}
 
-                    <NdmvrScene originRef={xrOriginRef} onHistogramModify={applyHistogramModification} />
+                    <SceneDecorations />
+                    <NdmvrContent />
+                    <RaycasterManager originRef={xrOriginRef} />
 
                     <HistogramContext.Provider value={histogram}>
                         {showMenu && (
@@ -203,9 +194,6 @@ export default function NdmvrEnv({
 
                         {showHelp && <HelperTips originRef={xrOriginRef} />}
 
-                        {/*{showBinInfo && <BinInfo originRef={xrOriginRef} />}*/}
-
-                        {/*{showDemo && <Demo originRef={xrOriginRef} />}*/}
                         {children}
 
                         <Controllers

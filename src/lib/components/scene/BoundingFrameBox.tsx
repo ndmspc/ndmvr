@@ -45,7 +45,6 @@ interface DragContext {
     startPoint: THREE.Vector3;
 }
 
-
 // Raycaster tolerance for detecting thin objects (lines, small meshes)
 const HOVER_THRESHOLD = 0.05;
 
@@ -61,7 +60,6 @@ export default function BoundingFrameBox({
     onChange,
     onDragEnd,
 }: BoundingFrameBoxProps) {
-
     const { camera } = useThree();
     const groupRef = useRef<THREE.Group>(null);
 
@@ -71,8 +69,7 @@ export default function BoundingFrameBox({
 
     const [hovered, setHovered] = useState<THREE.Object3D | null>(null);
     const setInteracting = useUIInteraction((state) => state.setInteracting);
-    const [interactionState, setInteractionState] =
-        useState<"idle" | "drag">("idle");
+    const [interactionState, setInteractionState] = useState<"idle" | "drag">("idle");
 
     const lastScaleRef = useRef<THREE.Vector3>(scale.clone());
     const lastPositionRef = useRef<THREE.Vector3>(position.clone());
@@ -89,10 +86,7 @@ export default function BoundingFrameBox({
         raycaster.current.camera = camera;
         raycaster.current.ray.copy(ray);
 
-        const objects = [
-            ...edges.current.keys(),
-            ...corners.current.keys(),
-        ];
+        const objects = [...edges.current.keys(), ...corners.current.keys()];
 
         const hits = raycaster.current.intersectObjects(objects);
         const hit = hits[0]?.object ?? null;
@@ -142,8 +136,6 @@ export default function BoundingFrameBox({
     function handleDrag(ray: THREE.Ray) {
         if (!dragPlaneRef.current || !dragRef.current || !groupRef.current) return;
 
-
-
         const intersection = new THREE.Vector3();
         if (!ray.intersectPlane(dragPlaneRef.current, intersection)) return;
 
@@ -156,17 +148,12 @@ export default function BoundingFrameBox({
 
         /* ---------- CORNER ---------- */
         if (dragCtx.type === "corner") {
-
             const halfX = Math.abs(local.x);
             const halfZ = Math.abs(local.z);
 
             const height = Math.max(0.2, intersection.y);
 
-            newScale.set(
-                Math.max(0.2, halfX * 2),
-                height,
-                Math.max(0.2, halfZ * 2)
-            );
+            newScale.set(Math.max(0.2, halfX * 2), height, Math.max(0.2, halfZ * 2));
         }
 
         /* ---------- EDGE ---------- */
@@ -175,7 +162,7 @@ export default function BoundingFrameBox({
 
             // Calculate contributions along each axis based on drag direction
             const contributions: Partial<Record<Axis, number>> = {};
-            dragCtx.axes.forEach(axis => {
+            dragCtx.axes.forEach((axis) => {
                 if (axis === "Y") {
                     contributions.Y = intersection.y; // from ground
                 } else {
@@ -199,7 +186,6 @@ export default function BoundingFrameBox({
             }
         }
 
-
         if (newScale.y !== lastScaleRef.current.y) {
             newScale.y = Math.max(0.2, newScale.y);
         }
@@ -218,7 +204,6 @@ export default function BoundingFrameBox({
         // Notify parent about live scale change
         onChange?.(newPosition, newScale);
     }
-
 
     function onPointerDown(e: ThreeEvent<PointerEvent>) {
         if (!hovered || !groupRef.current) return;
@@ -245,10 +230,7 @@ export default function BoundingFrameBox({
         const planeNormal = new THREE.Vector3();
         camera.getWorldDirection(planeNormal);
 
-        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
-            planeNormal,
-            e.point
-        );
+        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, e.point);
 
         dragPlaneRef.current = plane;
 
@@ -264,7 +246,6 @@ export default function BoundingFrameBox({
         setInteracting(true);
         document.body.style.cursor = "grabbing";
     }
-
 
     function onPointerUp() {
         if (interactionState === "drag" && dragRef.current) {
@@ -364,10 +345,7 @@ export default function BoundingFrameBox({
 
         edgeDefs.forEach(({ indices, edge }) => {
             const geometry = new LineGeometry();
-            geometry.setPositions([
-                ...vertices[indices[0]],
-                ...vertices[indices[1]],
-            ]);
+            geometry.setPositions([...vertices[indices[0]], ...vertices[indices[1]]]);
 
             const material = new LineMaterial({
                 color: 0xffffff,

@@ -4,7 +4,7 @@ import NdmvrEnv from "./components/env/NdmvrEnv.tsx";
 import NdmspcDefaultBrowserEnv from "./components/env/NdmspcDefaultBrowserEnv.tsx";
 import CanvasComponent from "./components/scene/CanvasComponent.tsx";
 import HistogramWrapper from "./components/scene/HistogramWrapper.tsx";
-import NdmvrScene from "./components/scene/NdmvrScene.tsx";
+import NdmvrContent from "./components/scene/NdmvrContent.tsx";
 import RaycasterBridge from "./components/scene/RaycasterBridge.tsx";
 import CameraSync from "./components/systems/CameraSync.tsx";
 import Controllers from "./components/systems/inputs/Controllers.tsx";
@@ -37,7 +37,7 @@ export {
     NdmspcDefaultBrowserEnv,
     CanvasComponent,
     HistogramWrapper,
-    NdmvrScene,
+    NdmvrContent,
     RaycasterBridge,
     CameraSync,
     Menu,
@@ -66,7 +66,6 @@ export type { NdmvrEnvProps, HistogramContext } from "./components/env/NdmvrEnv.
 export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
 export type { CanvasComponentProps, CanvasLocation } from "./components/scene/CanvasComponent.tsx";
 export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";
-export type { NdmvrSceneProps } from "./components/scene/NdmvrScene.tsx";
 export type { RaycasterBridgeProps } from "./components/scene/RaycasterBridge.tsx";
 export type { CameraSyncProps } from "./components/systems/CameraSync.tsx";
 export type { ControllersProps } from "./components/systems/inputs/Controllers.tsx";

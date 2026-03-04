@@ -1,5 +1,5 @@
 import { useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { filter } from "rxjs";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -15,10 +15,9 @@ import BoundingFrameBox from "./BoundingFrameBox";
 
 export interface HistogramWrapperProps {
     id: string;
-    onHistogramModify?: (id, position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
-export default function HistogramWrapper({ id, onHistogramModify }: HistogramWrapperProps) {
+export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const { scene, camera } = useThree();
     const jsrootHistogram = useRef(null);
     const nestedHistogram = useRef(null);
@@ -34,14 +33,31 @@ export default function HistogramWrapper({ id, onHistogramModify }: HistogramWra
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
         setPainterLimits({
             position: position.clone(),
-            scale: scale.clone()
+            scale: scale.clone(),
         });
-    }
+    };
 
-    const onBoundingBoxDragEnd = (position: THREE.Vector3 , scale: THREE.Vector3) => {
-        console.log("Config changed from Wrapper:   ",position, scale);
-        onHistogramModify?.(id, position.clone(), scale.clone());
-    }
+    const applyHistogramModification = useCallback(
+        (position: THREE.Vector3, scale: THREE.Vector3) => {
+            const currentConfig = configSubjectGet().getValue();
+            if (!currentConfig) return;
+
+            const newConfig = structuredClone(currentConfig);
+            const pad = newConfig.config?.environment?.histogramPads?.find((p) => p.id === id);
+            if (!pad) return;
+
+            pad.position = { x: position.x, y: position.y, z: position.z };
+            pad.scale = { x: scale.x, y: scale.y, z: scale.z };
+
+            configSubjectGet().next(newConfig);
+        },
+        [id]
+    );
+
+    const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
+        console.log("Config changed from Wrapper:   ", position, scale);
+        applyHistogramModification(position.clone(), scale.clone());
+    };
 
     const disposeThree = (obj) => {
         if (!obj) return;

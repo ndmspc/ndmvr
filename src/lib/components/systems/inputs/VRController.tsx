@@ -48,8 +48,8 @@ export default function VRController({
 
     const isFocused = useInputFocus((state) => state.isFocused);
 
-    const modifyModeEnabled = useSceneModeStore(s => s.modifyModeEnabled);
-    const setModifyModeEnabled = useSceneModeStore(s => s.setModifyModeEnabled);
+    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -159,9 +159,7 @@ export default function VRController({
             lastY.current = yPressed;
 
             const A = (rightGamepad as any)["a-button"];
-            const APressed =
-                !!A &&
-                (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
+            const APressed = !!A && (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
             if (APressed && !lastA.current) {
                 // Toggle Modify Mode with left grip
                 setModifyModeEnabled(!modifyModeEnabled);

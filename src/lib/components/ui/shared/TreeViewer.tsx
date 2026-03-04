@@ -70,9 +70,7 @@ export default function TreeViewer({
     const [canOpen, setCanOpen] = useState<string[]>([]);
     const rootAutoOpened = useRef(false);
 
-
     const norm = (s: string) => (s ?? "").trim().replace(/;\d+$/, "");
-
 
     useEffect(() => {
         const raw = root._childs;
@@ -84,7 +82,7 @@ export default function TreeViewer({
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setNodeName(normName);
         const nextPath = path ? `${path}/${normName}` : normName;
-        setPath(nextPath)
+        setPath(nextPath);
         setChilds(childsArray);
 
         // console.log("DOC in Tree: ", doc.current );
@@ -94,7 +92,6 @@ export default function TreeViewer({
             doc.current.querySelectorAll(
                 ".img_plus, .img_plusbottom, .img_minus, .img_minusbottom, .img_folder, .img_folderopen"
             ) ?? [];
-
 
         const nodes: string[] = [];
         pluses.forEach((plus) => {
@@ -106,7 +103,6 @@ export default function TreeViewer({
         });
 
         setCanOpen(nodes);
-
     }, [doc, path, root._childs, root._name, show]);
 
     const isOpenIn2D = (nodeLabel: string) => {
@@ -125,12 +121,9 @@ export default function TreeViewer({
         return !!line.querySelector(".img_minus, .img_minusbottom, .img_folderopen");
     };
 
-
-
     const handler = async () => {
         if (!show) {
-
-            if ( hierarchy && !isOpenIn2D(nodeName)) {
+            if (hierarchy && !isOpenIn2D(nodeName)) {
                 // console.log("expand: ", path_);
                 await hierarchy.expandItem(path_);
             }
@@ -143,7 +136,6 @@ export default function TreeViewer({
 
         setShow((v) => !v);
     };
-
 
     useEffect(() => {
         if (path !== "") return;
@@ -165,7 +157,6 @@ export default function TreeViewer({
             setShow(true);
         })();
     }, [root, hierarchy, path, path_, nodeName]);
-
 
     return (
         <Container flexDirection="column" height="auto">
@@ -210,25 +201,27 @@ export default function TreeViewer({
                         </Text>
                     </Container>
                 ) : (
-                    <Text onClick={() => {
-                        // console.log("Not expandable ", path_);
+                    <Text
+                        onClick={() => {
+                            // console.log("Not expandable ", path_);
 
                             // console.log(onSelect)
-                        onSelect?.(path_);
+                            onSelect?.(path_);
 
-                        // console.log(path_)
-                        // hierarchy.display(path_, "");
+                            // console.log(path_)
+                            // hierarchy.display(path_, "");
 
-                        // const painter = hierarchy;
-                        // const painterDisplay = async () => {
-                        //     console.log("painterDis: " + path_);
-                        //     // console.log(;
-                        //     await painter.display(path_, "");
-                        // };
-                        // painterDisplay();
-
-                    }}
-                        >{nodeName}</Text>
+                            // const painter = hierarchy;
+                            // const painterDisplay = async () => {
+                            //     console.log("painterDis: " + path_);
+                            //     // console.log(;
+                            //     await painter.display(path_, "");
+                            // };
+                            // painterDisplay();
+                        }}
+                    >
+                        {nodeName}
+                    </Text>
                 )}
 
                 {show && childs.length > 0 ? (
@@ -266,4 +259,3 @@ export default function TreeViewer({
         </Container>
     );
 }
-
