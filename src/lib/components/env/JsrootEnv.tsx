@@ -1,7 +1,7 @@
 import { redraw } from "jsroot";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { map, merge } from "rxjs";
-import { canvasSubjectGet, configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
+import { canvasSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { Tabs } from "../ui/desktop/Tabs.tsx";
 import { Tab } from "../ui/desktop/Tab.tsx";
 
@@ -22,16 +22,8 @@ function jsrootRedraw(obj, elementId, onUser = defaultUserHandler) {
 }
 
 export default function JsrootEnv() {
-    const [config, setConfig] = useState(null);
     const histoCinemaID = "nh-canva";
     useEffect(() => {
-        const sub = configSubjectGet()
-            .getObservable()
-            .subscribe((c) => {
-                console.log("[JsrootEnv]");
-                console.log(c.config);
-                setConfig(c.config);
-            });
         const cinemaSub = canvasSubjectGet()
             .getObservable()
             .pipe()
@@ -41,7 +33,6 @@ export default function JsrootEnv() {
                 jsrootRedraw(obj?.obj, histoCinemaID);
             });
         return () => {
-            sub.unsubscribe();
             cinemaSub.unsubscribe();
         };
     }, []);
@@ -52,7 +43,7 @@ export default function JsrootEnv() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const pads = [
         {
-            id: "histogram1",
+            id: "pad1",
         },
     ];
     const n: number = 1;

@@ -11,12 +11,10 @@ import Menu from "../ui/shared/Menu.tsx";
 import Controllers from "../systems/inputs/Controllers.tsx";
 import NdmvrContent from "../scene/NdmvrContent.tsx";
 import SceneDecorations from "../scene/SceneDecorations.tsx";
-import RaycasterManager from "../scene/RaycasterManager.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { map, merge } from "rxjs";
 import HelperTips from "../ui/shared/HelperTips.tsx";
 import FileBrowser from "../ui/shared/FileBrowser.tsx";
-import { Vector3 } from "three";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
@@ -175,7 +173,6 @@ export default function NdmvrEnv({
 
                     <SceneDecorations />
                     <NdmvrContent />
-                    <RaycasterManager originRef={xrOriginRef} />
 
                     <HistogramContext.Provider value={histogram}>
                         {showMenu && (

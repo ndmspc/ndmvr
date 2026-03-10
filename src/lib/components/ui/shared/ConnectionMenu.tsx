@@ -37,7 +37,7 @@ export default function ConnectionMenu({
 
     const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
 
-    const idHistogram = "histogram1";
+    const idHistogram = "pad1";
 
     useEffect(() => {
         const stateSubject = stateSubjectGet(idHistogram)

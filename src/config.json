@@ -30,7 +30,7 @@
             },
             "histogramPads": {
                 "type": "grid1x1x1",
-                "prefix": "histogram",
+                "prefix": "pad",
                 "scale": {
                     "x": 20,
                     "y": 10,
