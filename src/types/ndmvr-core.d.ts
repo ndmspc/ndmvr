@@ -98,6 +98,8 @@ declare module "@ndmspc/ndmvr-core" {
         colorArray: Float32Array;
         updateHistogram(histo: HistogramData): void;
         remove(): void;
+        checkIntersectionBVH(ray: THREE.Ray): any[];
+        intersectionHandler(intersection: any, triggerSource: string): void;
     }
 
     export class HistogramJsrootClass {
@@ -145,11 +147,17 @@ declare module "@ndmspc/ndmvr-core" {
         getObservable(): Subject<any>;
     }
 
+    export interface DispatchSubject {
+        next(data: any): void;
+        getObservable(): Subject<any>;
+    }
+
     export function brokerManagerGet(): BrokerManager;
     export function histogramSubjectGet(): HistogramSubject;
     export function configSubjectGet(): ConfigSubject;
     export function canvasSubjectGet(): CanvasSubject;
     export function functionSubjectGet(): FunctionSubject;
     export function binInfoSubjectGet(): BinInfoSubject;
+    export function dispatchSubjectGet(): DispatchSubject;
     export function stateSubjectGet(id: string): StateSubject;
 }

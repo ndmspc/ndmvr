@@ -19,4 +19,4 @@ export type ErrorMessage = (typeof ERR)[keyof typeof ERR];
 
 export const RECONNECT_TIMEOUT_MS = 60000;
 
-export const HISTOGRAM_ID = "histogram1";
+export const HISTOGRAM_ID = "pad1";

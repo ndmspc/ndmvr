@@ -33,7 +33,7 @@ export default function Demo({ originRef, offset = { x: 0, y: 1.2, z: -4 } }: De
 
     const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
 
-    const idHistogram = "histogram1";
+    const idHistogram = "pad1";
     const histogramOptions = [
         "h3scat",
         "cernstaff_145_369",

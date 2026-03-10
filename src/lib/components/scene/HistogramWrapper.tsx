@@ -1,16 +1,17 @@
-import { useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { filter } from "rxjs";
-import { Text } from "@react-three/drei";
+import {useThree} from "@react-three/fiber";
+import {useEffect, useCallback, useMemo, useRef, useState} from "react";
+import {filter} from "rxjs";
+import {Text} from "@react-three/drei";
 import * as THREE from "three";
+import {useXR} from "@react-three/xr";
 import {
     configSubjectGet,
     HistogramJsrootClass,
     histogramSubjectGet,
     THnPainter,
 } from "@ndmspc/ndmvr-core";
-import { vector3ToArray } from "../../utils/helper-functions.ts";
-import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
+import {vector3ToArray} from "../../utils/helper-functions.ts";
+import {useSceneModeStore} from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
 
 export interface HistogramWrapperProps {
@@ -21,15 +22,39 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const { scene, camera } = useThree();
     const jsrootHistogram = useRef(null);
     const nestedHistogram = useRef(null);
-    const [config, setConfig] = useState(null);
     const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
-
+    const session = useXR((s) => s.session);
+    const squeezeHeld = useRef(false);
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
+
+
     const [nestedMesh, setNestedMesh] = useState(null);
+    const instMesh = useMemo(() => {
+        if (nestedMesh === null) return null;
+        nestedMesh.raycast = function (raycaster, intersects) {
+            const painter = nestedHistogram.current;
+            if (!painter) return;
+            try {
+                const res = painter.checkIntersectionBVH(raycaster.ray);
+                const hit = res[0];
+                if (hit) {
+                    intersects.push({
+                        ...hit,
+                        point: hit.target,
+                        object: this,
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        return nestedMesh;
+    }, [nestedMesh])
+    const meshRef = useRef(null)
+
     const [wireframeObj, setWireframeObj] = useState(null);
     const [painterLimits, setPainterLimits] = useState(null);
-
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
         setPainterLimits({
             position: position.clone(),
@@ -86,16 +111,53 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     };
 
     useEffect(() => {
-        const configSub = configSubjectGet()
-            .getObservable()
-            .subscribe((c) => setConfig(c.config));
-
         return () => {
-            configSub.unsubscribe();
             nestedHistogram.current?.remove();
             jsrootHistogram.current?.remove();
         };
     }, [scene]);
+
+    // Track VR squeeze as modifier (like Shift on desktop)
+    useEffect(() => {
+        if (!session) return;
+        const onSqueezeStart = () => { squeezeHeld.current = true; };
+        const onSqueezeEnd = () => { squeezeHeld.current = false; };
+        session.addEventListener("squeezestart", onSqueezeStart);
+        session.addEventListener("squeezeend", onSqueezeEnd);
+        return () => {
+            session.removeEventListener("squeezestart", onSqueezeStart);
+            session.removeEventListener("squeezeend", onSqueezeEnd);
+        };
+    }, [session]);
+
+    const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function raycastHandler(event) {
+        const painter = nestedHistogram.current;
+        if (!painter) return;
+
+        // Skip if a closer object (e.g. UI panel) was hit first
+        if (event.intersections[0]?.object !== event.object) return;
+
+        const isShift = event.nativeEvent?.shiftKey || squeezeHeld.current;
+
+        if (event.type === "click") {
+            const source = isShift ? "shiftmouseclick" : "mouseclick";
+            clickTimeout.current = setTimeout(() => {
+                clickTimeout.current = null;
+                painter.intersectionHandler(event, source);
+            }, 250);
+        } else if (event.type === "dblclick") {
+            if (clickTimeout.current) {
+                clearTimeout(clickTimeout.current);
+                clickTimeout.current = null;
+            }
+            const source = isShift ? "shiftmousedbclick" : "mousedbclick";
+            painter.intersectionHandler(event, source);
+        } else if (event.type === "pointermove") {
+            painter.intersectionHandler(event, "mousemove");
+        }
+    }
 
     useEffect(() => {
         const histoSub = histogramSubjectGet()
@@ -190,10 +252,14 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     </Text>
                 }
 
-                {jsrootMesh && <primitive object={jsrootMesh} />}
+                {jsrootMesh && <primitive object={jsrootMesh}/>}
             </group>
-            {nestedMesh && <primitive object={nestedMesh} />}
-            {wireframeObj && <primitive object={wireframeObj} />}
+            {nestedMesh && <primitive key={nestedMesh.uuid} ref={meshRef} object={instMesh}
+                                      onClick={raycastHandler}
+                                      onDoubleClick={raycastHandler}
+                                      onPointerMove={raycastHandler}
+            />}
+            {wireframeObj && <primitive object={wireframeObj}/>}
             {painterLimits && modifyModeEnabled && (
                 <BoundingFrameBox
                     position={painterLimits.position}
