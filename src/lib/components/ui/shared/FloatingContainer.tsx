@@ -9,19 +9,22 @@ interface FloatingContainerProps {
     classList?: string[];
     smoothFollow?: boolean;
     lerpFactor?: number;
+    faceUser?: boolean;
     [key: string]: unknown;
 }
 
 export default function FloatingContainer({
     children,
-    originRef,
+    originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
     classList = [],
+    faceUser = true,
     ...containerProps
 }: FloatingContainerProps) {
     const { groupRef, handlePointerDown, handlePointerMove, handlePointerUp } = useMoveAndRotation({
         originRef,
         offset,
+        faceUser,
     });
 
     return (

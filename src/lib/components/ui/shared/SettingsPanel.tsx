@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
-import * as THREE from "three";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@react-three/uikit-default";
 import { Text } from "@react-three/uikit";
 import { Input } from "../focus/Input.tsx";
 import Container from "../interactions/Container";
 import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
+import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import {
     buildEnvironmentFromSettings,
@@ -12,33 +12,20 @@ import {
     flattenSchema,
     getDeep,
 } from "../../../utils/schema-helpers";
-import FloatingContainer from "./FloatingContainer.tsx";
-import { NdmvrConfig } from "../../../interfaces/NdmvrConfig.ts";
 
-// interface ConfigType {
-//     config?: {
-//         environment?: Record<string, unknown>;
-//         [key: string]: unknown;
-//     };
-//     [key: string]: unknown;
-// }
-
-interface SettingsPanelProps {
-    originRef: React.RefObject<THREE.Group>;
-    offset?: { x: number; y: number; z: number };
-    currentConfig?: NdmvrConfig | null;
-    onConfigChange?: ((config: NdmvrConfig) => void) | null;
-}
-
-export default function SettingsPanel({
-    originRef,
-    offset = { x: 0, y: 1.2, z: -4 },
-    currentConfig,
-    onConfigChange,
-}: SettingsPanelProps) {
+export default function SettingsPanel() {
     const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};
     const flatSchema = flattenSchema(envSchema);
-    // @ts-expect-error FIXME: Config
+
+    const [currentConfig, setCurrentConfig] = useState(() => configSubjectGet().getValue());
+
+    useEffect(() => {
+        const sub = configSubjectGet()
+            .getObservable()
+            .subscribe((c) => setCurrentConfig(c));
+        return () => sub.unsubscribe();
+    }, []);
+
     const initialEnv = currentConfig?.config?.environment ?? {};
 
     const [settings, setSettings] = useState(() =>
@@ -50,9 +37,25 @@ export default function SettingsPanel({
         )
     );
 
+    // Sync settings when config changes externally
+    const prevConfigRef = useRef(currentConfig);
+    useEffect(() => {
+        if (prevConfigRef.current === currentConfig) return;
+        prevConfigRef.current = currentConfig;
+        const env = currentConfig?.config?.environment ?? {};
+        setSettings(
+            Object.fromEntries(
+                Object.entries(flatSchema).map(([path, schema]) => [
+                    path,
+                    getDeep(env, path) ?? schema.default ?? "",
+                ])
+            )
+        );
+    }, [currentConfig, flatSchema]);
+
     const validate = useMemo(() => createValidator(openapiSchema), []);
 
-    const applyNow = (updatedSettings: Record<string, any>) => {
+    const applyNow = (updatedSettings: Record<string, unknown>) => {
         const newEnv = buildEnvironmentFromSettings(flatSchema, updatedSettings);
 
         const next = {
@@ -60,7 +63,6 @@ export default function SettingsPanel({
             config: {
                 ...(currentConfig?.config ?? {}),
                 environment: {
-                    // @ts-expect-error FIXME: Config
                     ...(currentConfig?.config?.environment ?? {}),
                     ...newEnv,
                 },
@@ -72,8 +74,7 @@ export default function SettingsPanel({
             return;
         }
 
-        console.log("Applying new config:", next);
-        onConfigChange?.(next);
+        configSubjectGet().next(next);
     };
 
     const resetToDefaults = () => {
@@ -123,7 +124,7 @@ export default function SettingsPanel({
     };
 
     return (
-        <FloatingContainer originRef={originRef} offset={offset} classList={["menuContainer"]}>
+        <Container classList={["menuContainer"]}>
             <Text classList={["menuHeader"]}>Settings</Text>
             <Container
                 classList={["section", "sectionInner"]}
@@ -188,6 +189,9 @@ export default function SettingsPanel({
                     </Button>
                 </Container>
             </Container>
-        </FloatingContainer>
+        </Container>
     );
 }
+
+SettingsPanel.menuName = "settings";
+SettingsPanel.menuLabel = "Settings";

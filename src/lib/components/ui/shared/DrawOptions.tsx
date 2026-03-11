@@ -5,20 +5,10 @@ import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import FloatingContainer from "./FloatingContainer.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
-import { HistogramContext } from "../../env/NdmvrEnv.tsx";
-import * as THREE from "three";
+import { HistogramContext } from "../../scene/NdmvrContent.tsx";
 
-interface DrawOptionsProps {
-    originRef: React.RefObject<THREE.Group>;
-    offset?: { x: number; y: number; z: number };
-}
-
-export default function DrawOptions({
-    originRef,
-    offset = { x: 0, y: 1.2, z: -4 },
-}: DrawOptionsProps) {
+export default function DrawOptions() {
     const [availableArrays, setAvailableArrays] = useState([]);
     const [selectedArray, setSelectedArray] = useState("content");
 
@@ -30,6 +20,7 @@ export default function DrawOptions({
     const histogram = useContext(HistogramContext);
 
     useEffect(() => {
+        if (!histogram) return;
         const stateSubject = stateSubjectGet(histogram.id)
             .getObservable()
             .subscribe((e) => {
@@ -42,7 +33,7 @@ export default function DrawOptions({
         return () => {
             stateSubject.unsubscribe();
         };
-    }, []);
+    }, [histogram]);
 
     const updateStateSubject = (updates) => {
         const currentVal = stateSubjectGet(histogram.id).getValue();
@@ -94,7 +85,7 @@ export default function DrawOptions({
     };
 
     return (
-        <FloatingContainer originRef={originRef} offset={offset} classList={["menuContainer"]}>
+        <Container classList={["menuContainer"]}>
             <Text classList={["menuHeader"]}>Histogram Draw Option</Text>
             <WebsocketBanner />
             <DropdownProvider>
@@ -154,6 +145,9 @@ export default function DrawOptions({
                     </Container>
                 </Container>
             </DropdownProvider>
-        </FloatingContainer>
+        </Container>
     );
 }
+
+DrawOptions.menuName = "opt";
+DrawOptions.menuLabel = "Histogram Draw Options";

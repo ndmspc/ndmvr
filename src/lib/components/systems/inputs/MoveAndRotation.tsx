@@ -14,11 +14,13 @@ import {
 export interface UseMoveAndRotationOptions {
     originRef: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
+    faceUser?: boolean;
 }
 
 export type MoveAndRotationCtx = {
     originRef: React.RefObject<THREE.Group> | null;
     offset: { x: number; y: number; z: number };
+    faceUser: boolean;
 
     session: XRSession | null;
     camera: THREE.Camera;
@@ -71,8 +73,9 @@ export type MoveAndRotationCtx = {
 };
 
 export function useMoveAndRotation({
-    originRef,
+    originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
+    faceUser = true,
 }: UseMoveAndRotationOptions) {
     const groupRef = useRef<THREE.Group | null>(null);
 
@@ -265,6 +268,7 @@ export function useMoveAndRotation({
     const ctx: MoveAndRotationCtx = {
         originRef,
         offset,
+        faceUser,
 
         session,
         camera,

@@ -4,10 +4,8 @@ import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
-import * as THREE from "three";
 
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import FloatingContainer from "./FloatingContainer.tsx";
 import { Divider } from "@react-three/uikit-horizon";
 import { useBrokerStore } from "../../../stores/broker/store.ts";
 import { parse } from "jsroot";
@@ -15,18 +13,22 @@ import InputCard from "./InputCard.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
 
 interface ConnectionMenuProps {
-    originRef?: React.RefObject<THREE.Group> | null;
-    offset?: { x: number; y: number; z: number };
     type?: "http" | "ws" | null;
-    onClose?: (() => void) | null;
 }
 
-export default function ConnectionMenu({
-    originRef = null,
-    offset = { x: 0, y: 1.2, z: -4 },
-    type = null,
-    onClose = null,
-}: ConnectionMenuProps) {
+export function WsConnectionMenu() {
+    return <ConnectionMenu type="ws" />;
+}
+WsConnectionMenu.menuName = "ws";
+WsConnectionMenu.menuLabel = "Live Stream (WebSocket)";
+
+export function HttpConnectionMenu() {
+    return <ConnectionMenu type="http" />;
+}
+HttpConnectionMenu.menuName = "http";
+HttpConnectionMenu.menuLabel = "Fetch via HTTP";
+
+function ConnectionMenu({ type }: ConnectionMenuProps) {
     const [selectedHistogram, setSelectedHistogram] = useState(null);
 
     const [availableArrays, setAvailableArrays] = useState([]);
@@ -203,7 +205,7 @@ export default function ConnectionMenu({
     };
 
     return (
-        <FloatingContainer originRef={originRef} offset={offset} classList={["menuContainer"]}>
+        <Container classList={["menuContainer"]}>
             <Text classList={["menuHeader"]}>
                 {type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}
             </Text>
@@ -306,6 +308,6 @@ export default function ConnectionMenu({
                 </Container>
                 {/*</Container>*/}
             </DropdownProvider>
-        </FloatingContainer>
+        </Container>
     );
 }

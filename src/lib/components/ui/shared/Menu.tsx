@@ -1,137 +1,154 @@
-import { useState } from "react";
-import { useXR } from "@react-three/xr";
+import { useEffect, useMemo, Children, isValidElement, cloneElement } from "react";
 import { Text } from "@react-three/uikit";
 import Container from "../interactions/Container";
-import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
+import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import * as THREE from "three";
 
 import FloatingContainer from "./FloatingContainer.tsx";
-import SettingsPanel from "./SettingsPanel.tsx";
-import { store } from "../../env/NdmvrEnv.tsx";
-import Demo from "./Demo.tsx";
-import ConnectionMenu from "./ConnectionMenu.tsx";
-import BinInfo from "./BinInfo.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
-import DrawOptions from "./DrawOptions.tsx";
-import { NdmvrConfig } from "../../../interfaces/NdmvrConfig.ts";
+import { useMenuStore } from "../../../stores/menu/store.ts";
+import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
+import { useInputFocus } from "../focus/useInputFocus.ts";
+import { useKeyboardStore } from "../../../stores/keyboard/store";
+
+const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
 
 export interface MenuProps {
-    originRef: React.RefObject<THREE.Group>;
+    children?: React.ReactNode;
+    defaultOpen?: boolean;
+    initialTabHelp?: boolean;
+    originRef?: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
-    onClose?: () => void;
-    currentConfig?: NdmvrConfig | null;
-    onConfigChange?: ((config: Record<string, unknown>) => void) | null;
-    openHelp?: () => void;
-    help?: boolean;
+    scale?: number;
 }
 
 export default function Menu({
-    originRef,
-    offset = { x: 0, y: 1.2, z: -4 },
-    onClose,
-    currentConfig,
-    onConfigChange,
-    openHelp,
+    children,
+    defaultOpen = false,
+    initialTabHelp = false,
+    originRef = null,
+    offset = DEFAULT_OFFSET,
+    scale = 1,
 }: MenuProps) {
-    const [loadMode, setLoadMode] = useState(null);
-    const mode = useXR((state) => state.mode);
-    const session = useXR((state) => state.session);
+    const { showMenu, activeTab, setShowMenu, setActiveTab, setMenuExists, toggleTab } =
+        useMenuStore();
+    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
+    const keys = useKeyboardStore((s) => s.keys);
+    const isFocused = useInputFocus((state) => state.isFocused);
 
+    const menuItems = useMemo(() => {
+        const items: { name: string; label: string }[] = [];
+        Children.forEach(children, (child) => {
+            if (!isValidElement(child)) return;
+            const type = child.type as any;
+            if (type?.menuName) {
+                items.push({ name: type.menuName, label: type.menuLabel });
+            }
+        });
+        return items;
+    }, [children]);
+
+    useEffect(() => {
+        setMenuExists(true);
+        setShowMenu(defaultOpen);
+        setActiveTab(initialTabHelp ? "help" : null);
+    }, []);
+
+    useEffect(() => {
+        if (isFocused) return;
+
+        if (keys["KeyM"] && !keys["ControlLeft"] && !keys["ControlRight"]) {
+            toggleTab?.(null);
+        }
+
+        if (keys["KeyH"] && menuItems.some((item) => item.name === "help")) {
+            toggleTab?.("help");
+        }
+
+        if (keys["KeyR"]) {
+            window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+        }
+
+        if (keys["KeyM"] && (keys["ControlLeft"] || keys["ControlRight"])) {
+            setModifyModeEnabled(!modifyModeEnabled);
+
+            window.dispatchEvent(
+                new CustomEvent("ndmvr-modify-mode-toggle", {
+                    detail: { enabled: !modifyModeEnabled },
+                })
+            );
+        }
+
+        if (keys["ShiftLeft"] || keys["ShiftRight"]) {
+            window.dispatchEvent(
+                new CustomEvent("ndmvr-menu-shift", {
+                    detail: { pressed: true },
+                })
+            );
+        } else {
+            window.dispatchEvent(
+                new CustomEvent("ndmvr-menu-shift", {
+                    detail: { pressed: false },
+                })
+            );
+        }
+    }, [keys, isFocused, modifyModeEnabled]);
+
+    if (!showMenu) return null;
     return (
         <>
-            {loadMode === "demo" && <Demo originRef={originRef} />}
-            {loadMode === "http" && (
-                <ConnectionMenu type="http" originRef={originRef} onClose={onClose} />
-            )}
-            {loadMode === "ws" && (
-                <ConnectionMenu type="ws" originRef={originRef} onClose={onClose} />
-            )}
-            {loadMode === "bin" && <BinInfo originRef={originRef} />}
-            {loadMode === "opt" && <DrawOptions originRef={originRef} />}
-            {loadMode === "settings" && (
-                <SettingsPanel
-                    originRef={originRef}
-                    currentConfig={currentConfig}
-                    onConfigChange={onConfigChange}
-                />
-            )}
-
-            {loadMode === null && (
+            {activeTab !== "help" && (
                 <FloatingContainer
                     originRef={originRef}
                     offset={offset}
-                    classList={["menuContainer"]}
+                    transformScaleX={scale}
+                    transformScaleY={scale}
+                    transformScaleZ={scale}
                 >
-                    <Text classList={["menuHeader"]}>Menu</Text>
+                    {activeTab === null && (
+                        <Container classList={["menuContainer"]}>
+                            <Text classList={["menuHeader"]}>Menu</Text>
 
-                    <Container flexDirection="column" gap={8}>
-                        <WebsocketBanner showTransient={loadMode !== "ws"} />
-                        <Container classList={["menuBlock"]}>
-                            <RadioGroup onValueChange={setLoadMode}>
-                                <RadioGroupItem value="demo">
-                                    <Label>
-                                        <Text>Demo</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="http">
-                                    <Label>
-                                        <Text>Fetch via HTTP</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="ws">
-                                    <Label>
-                                        <Text>Live Stream (WebSocket)</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="bin">
-                                    <Label>
-                                        <Text>Bin Information</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="opt">
-                                    <Label>
-                                        <Text>Histogram Draw Options</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="settings">
-                                    <Label>
-                                        <Text>Settings</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="help" onClick={openHelp}>
-                                    <Label>
-                                        <Text>Help</Text>
-                                    </Label>
-                                </RadioGroupItem>
-                            </RadioGroup>
+                            <Container flexDirection="column" gap={8}>
+                                <WebsocketBanner showTransient={true} />
+                                <Container classList={["menuBlock"]}>
+                                    <RadioGroup onValueChange={setActiveTab}>
+                                        {menuItems.map((item) => (
+                                            <RadioGroupItem key={item.name} value={item.name}>
+                                                <Label>
+                                                    <Text>{item.label}</Text>
+                                                </Label>
+                                            </RadioGroupItem>
+                                        ))}
+                                    </RadioGroup>
+                                </Container>
+                            </Container>
                         </Container>
-
-                        {/* {mode === null ? ( */}
-                        {/*     <Button */}
-                        {/*         // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types */}
-                        {/*         classList={["VRButton"]} */}
-                        {/*         onClick={() => store.enterVR()} */}
-                        {/*         hover={{ */}
-                        {/*             backgroundColor: "#475569", */}
-                        {/*         }} */}
-                        {/*     > */}
-                        {/*         <Text>Enter VR</Text> */}
-                        {/*     </Button> */}
-                        {/* ) : ( */}
-                        {/*     <Button */}
-                        {/*         // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types */}
-                        {/*         classList={["VRButton"]} */}
-                        {/*         onClick={() => session.end()} */}
-                        {/*         hover={{ */}
-                        {/*             backgroundColor: "#475569", */}
-                        {/*         }} */}
-                        {/*     > */}
-                        {/*         <Text>Exit VR</Text> */}
-                        {/*     </Button> */}
-                        {/* )} */}
-                    </Container>
+                    )}
+                    {activeTab !== null &&
+                        Children.map(children, (child) => {
+                            if (!isValidElement(child)) return null;
+                            const type = child.type as any;
+                            if (type?.menuName === activeTab) return child;
+                            return null;
+                        })}
                 </FloatingContainer>
             )}
+
+            {activeTab === "help" &&
+                Children.map(children, (child) => {
+                    if (!isValidElement(child)) return null;
+                    const type = child.type as any;
+                    if (type?.menuName === "help")
+                        return cloneElement(
+                            child as React.ReactElement<{
+                                originRef: React.RefObject<THREE.Group>;
+                            }>,
+                            { originRef }
+                        );
+                    return null;
+                })}
         </>
     );
 }

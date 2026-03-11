@@ -3,6 +3,7 @@ import styled from "styled-components";
 import showMenuIcon from "../../../assets/icons/show_menu.svg";
 // @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
 import closeMenuIcon from "../../../assets/icons/close_menu.svg";
+import { useMenuStore } from "../../../stores/menu/store";
 
 interface ToggleButtonWrapperProps {
     $isActive: boolean;
@@ -40,15 +41,18 @@ const CloseMenuImage = styled.img`
     user-select: none;
 `;
 
-interface UIToggleButtonProps {
-    isActive: boolean;
-    onToggle: () => void;
-}
+export default function UIToggleButton() {
+    const { showMenu, toggleTab, menuExists } = useMenuStore();
 
-export default function UIToggleButton({ isActive, onToggle }: UIToggleButtonProps) {
+    if (!menuExists) return null;
     return (
-        <ToggleButtonWrapper $isActive={isActive} onClick={onToggle}>
-            {isActive ? (
+        <ToggleButtonWrapper
+            $isActive={showMenu}
+            onClick={() => {
+                toggleTab(null);
+            }}
+        >
+            {showMenu ? (
                 <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} />
             ) : (
                 <ShowMenuImage src={showMenuIcon} alt={"Show menu"} />

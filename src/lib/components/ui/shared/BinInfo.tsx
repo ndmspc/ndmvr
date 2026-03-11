@@ -3,23 +3,15 @@ import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import { Color } from "three";
 import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
-import * as THREE from "three";
 
 import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json";
 import NotoBold from "../../../assets/fonts/NotoSans-Bold.json";
-import FloatingContainer from "./FloatingContainer.tsx";
 
 export interface BinInfoProps {
-    originRef: React.RefObject<THREE.Group>;
     precision?: number;
-    offset?: { x: number; y: number; z: number };
 }
 
-export default function BinInfo({
-    originRef,
-    precision = 2,
-    offset = { x: 0, y: 1, z: -4 },
-}: BinInfoProps) {
+export default function BinInfo({ precision = 2 }: BinInfoProps) {
     const [binInfo, setBinInfo] = useState(null);
     const prev = useRef(null);
 
@@ -49,9 +41,7 @@ export default function BinInfo({
     };
 
     return (
-        <FloatingContainer
-            originRef={originRef}
-            offset={offset}
+        <Container
             classList={["menuContainer"]}
             fontFamilies={{
                 noto: {
@@ -144,6 +134,9 @@ export default function BinInfo({
                     </Container>
                 );
             })}
-        </FloatingContainer>
+        </Container>
     );
 }
+
+BinInfo.menuName = "bin";
+BinInfo.menuLabel = "Bin Information";

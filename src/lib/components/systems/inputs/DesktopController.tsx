@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
 import { useInputFocus } from "../../ui/focus/useInputFocus";
-import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
+import { useKeyboardStore } from "../../../stores/keyboard/store";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -17,86 +17,41 @@ export default function DesktopController({
     originRef,
     cameraRef,
     speed = 5,
-    onToggleMenu,
-    onToggleHelp,
 }: DesktopControllerProps) {
-    const keys = useRef({});
     const isMouseDown = useRef(false);
-    const isTouching = useRef(false); // Новий ref для тачів
-    const lastTouchPosition = useRef({ x: 0, y: 0 }); // Зберігаємо останню позицію тачу
+    const isTouching = useRef(false);
+    const lastTouchPosition = useRef({ x: 0, y: 0 });
+
     const yaw = useRef(0);
     const pitch = useRef(0);
-    const isInteracting = useUIInteraction((state) => state.isInteracting);
-    const isFocused = useInputFocus((state) => state.isFocused);
+
+    const isInteracting = useUIInteraction((s) => s.isInteracting);
+    const isFocused = useInputFocus((s) => s.isFocused);
+
     const frozenRotation = useRef({ x: 0, y: 0 });
 
-    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
-    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
+    const velocity = useRef(new THREE.Vector3());
+    const forward = useRef(new THREE.Vector3());
+    const right = useRef(new THREE.Vector3());
+    const up = useRef(new THREE.Vector3(0, 1, 0));
 
     useEffect(() => {
-        const onKeyDown = (e) => {
-            keys.current[e.code] = true;
-            if (e.code === "KeyM" && !e.ctrlKey && !isFocused) onToggleMenu?.();
-            if (e.code === "KeyH" && !isFocused) onToggleHelp?.();
-            if (e.code === "KeyR") {
-                window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
-            }
-            // Toggle Modify Mode with Ctrl+M
-            if (e.code === "KeyM" && e.ctrlKey && !isFocused) {
-                e.preventDefault();
-                setModifyModeEnabled(!modifyModeEnabled);
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-modify-mode-toggle", {
-                        detail: { enabled: !modifyModeEnabled },
-                    })
-                );
-            }
-
-            if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-menu-shift", {
-                        detail: { pressed: true },
-                    })
-                );
-            }
-        };
-        const onKeyUp = (e) => {
-            keys.current[e.code] = false;
-
-            if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-menu-shift", {
-                        detail: { pressed: false },
-                    })
-                );
-            }
+        const onMouseDown = (e: MouseEvent) => {
+            if (e.button === 0) isMouseDown.current = true;
         };
 
-        window.addEventListener("keydown", onKeyDown);
-        window.addEventListener("keyup", onKeyUp);
+        const onMouseUp = (e: MouseEvent) => {
+            if (e.button === 0) isMouseDown.current = false;
+        };
 
-        return () => {
-            window.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("keyup", onKeyUp);
-        };
-    }, [onToggleMenu, onToggleHelp, isFocused, setModifyModeEnabled, modifyModeEnabled]);
-
-    useEffect(() => {
-        const onMouseDown = (e) => {
-            if (e.button === 0) {
-                isMouseDown.current = true;
-            }
-        };
-        const onMouseUp = (e) => {
-            if (e.button === 0) {
-                isMouseDown.current = false;
-            }
-        };
-        const onMouseMove = (e) => {
+        const onMouseMove = (e: MouseEvent) => {
             if (!isMouseDown.current) return;
+
             const sensitivity = 0.002;
+
             yaw.current -= e.movementX * sensitivity;
             pitch.current -= e.movementY * sensitivity;
+
             pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
         };
 
@@ -112,36 +67,39 @@ export default function DesktopController({
     }, []);
 
     useEffect(() => {
-        const onTouchStart = (e) => {
-            if (e.touches.length === 1) {
-                isTouching.current = true;
-                lastTouchPosition.current = {
-                    x: e.touches[0].clientX,
-                    y: e.touches[0].clientY,
-                };
-            }
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches.length !== 1) return;
+
+            isTouching.current = true;
+
+            lastTouchPosition.current = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+            };
         };
 
         const onTouchEnd = () => {
             isTouching.current = false;
         };
 
-        const onTouchMove = (e) => {
+        const onTouchMove = (e: TouchEvent) => {
             if (!isTouching.current || e.touches.length !== 1) return;
 
-            const currentTouch = {
+            const current = {
                 x: e.touches[0].clientX,
                 y: e.touches[0].clientY,
             };
 
-            const movementX = currentTouch.x - lastTouchPosition.current.x;
-            const movementY = currentTouch.y - lastTouchPosition.current.y;
+            const dx = current.x - lastTouchPosition.current.x;
+            const dy = current.y - lastTouchPosition.current.y;
 
-            lastTouchPosition.current = currentTouch;
+            lastTouchPosition.current = current;
 
             const sensitivity = 0.002;
-            yaw.current -= movementX * sensitivity;
-            pitch.current -= movementY * sensitivity;
+
+            yaw.current -= dx * sensitivity;
+            pitch.current -= dy * sensitivity;
+
             pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
 
             e.preventDefault();
@@ -169,41 +127,37 @@ export default function DesktopController({
 
     useFrame((_, delta) => {
         if (!originRef.current) return;
-
         if (isFocused) return;
 
-        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            yaw.current
-        );
-        const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            yaw.current
-        );
+        const keys = useKeyboardStore.getState().keys;
 
-        const velocity = new THREE.Vector3();
-        if (keys.current["KeyW"]) velocity.add(forward);
-        if (keys.current["KeyS"]) velocity.add(forward.clone().negate());
-        if (keys.current["KeyA"]) velocity.add(right.clone().negate());
-        if (keys.current["KeyD"]) velocity.add(right);
-        if (keys.current["KeyQ"]) velocity.y -= 1;
-        if (keys.current["KeyE"]) velocity.y += 1;
+        forward.current.set(0, 0, -1).applyAxisAngle(up.current, yaw.current);
+        right.current.set(1, 0, 0).applyAxisAngle(up.current, yaw.current);
 
-        if (velocity.length() > 0) {
-            velocity.normalize().multiplyScalar(speed * delta);
-            originRef.current.position.add(velocity);
+        velocity.current.set(0, 0, 0);
+
+        if (keys["KeyW"]) velocity.current.add(forward.current);
+        if (keys["KeyS"]) velocity.current.sub(forward.current);
+        if (keys["KeyA"]) velocity.current.sub(right.current);
+        if (keys["KeyD"]) velocity.current.add(right.current);
+        if (keys["KeyQ"]) velocity.current.y -= 1;
+        if (keys["KeyE"]) velocity.current.y += 1;
+
+        if (velocity.current.lengthSq() > 0) {
+            velocity.current.normalize().multiplyScalar(speed * delta);
+            originRef.current.position.add(velocity.current);
         }
 
-        if (!cameraRef?.current) return;
+        if (!cameraRef.current) return;
 
         cameraRef.current.position.copy(originRef.current.position);
 
+        cameraRef.current.rotation.order = "YXZ";
+
         if (!isInteracting) {
-            cameraRef.current.rotation.order = "YXZ";
             cameraRef.current.rotation.y = yaw.current;
             cameraRef.current.rotation.x = pitch.current;
         } else {
-            cameraRef.current.rotation.order = "YXZ";
             cameraRef.current.rotation.y = frozenRotation.current.y;
             cameraRef.current.rotation.x = frozenRotation.current.x;
             yaw.current = cameraRef.current.rotation.y;
@@ -214,17 +168,14 @@ export default function DesktopController({
     useEffect(() => {
         const handler = (e: any) => {
             const { dir, pressed } = e.detail;
+            const setKey = useKeyboardStore.getState().setKey;
 
-            const set = (code: string) => {
-                keys.current[code] = pressed;
-            };
-
-            if (dir === "forward") set("KeyW");
-            if (dir === "back") set("KeyS");
-            if (dir === "left") set("KeyA");
-            if (dir === "right") set("KeyD");
-            if (dir === "up") set("KeyE");
-            if (dir === "down") set("KeyQ");
+            if (dir === "forward") setKey("KeyW", pressed);
+            if (dir === "back") setKey("KeyS", pressed);
+            if (dir === "left") setKey("KeyA", pressed);
+            if (dir === "right") setKey("KeyD", pressed);
+            if (dir === "up") setKey("KeyE", pressed);
+            if (dir === "down") setKey("KeyQ", pressed);
         };
 
         window.addEventListener("mobile-move", handler);
