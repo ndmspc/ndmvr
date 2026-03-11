@@ -7,8 +7,8 @@ import DesktopController from "./DesktopController.tsx";
 export interface ControllersProps {
     originRef: React.RefObject<THREE.Group>;
     cameraRef: React.RefObject<THREE.Camera>;
-    setShowMenu: React.Dispatch<React.SetStateAction<boolean>>;
-    setShowHelp: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowMenu?: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowHelp?: React.Dispatch<React.SetStateAction<boolean>>;
     desktopSpeed?: number;
     vrSpeed?: number;
 }
@@ -28,8 +28,8 @@ export default function Controllers({
             <VRController
                 originRef={originRef}
                 speed={vrSpeed}
-                onToggleMenu={() => setShowMenu((p) => !p)}
-                onToggleHelp={() => setShowHelp((p) => !p)}
+                onToggleMenu={() => setShowMenu?.((p) => !p)}
+                onToggleHelp={() => setShowHelp?.((p) => !p)}
             />
         );
     } else {
@@ -37,8 +37,8 @@ export default function Controllers({
             <DesktopController
                 originRef={originRef}
                 cameraRef={cameraRef}
-                onToggleMenu={() => setShowMenu((p) => !p)}
-                onToggleHelp={() => setShowHelp((p) => !p)}
+                onToggleMenu={() => setShowMenu?.((p) => !p)}
+                onToggleHelp={() => setShowHelp?.((p) => !p)}
                 speed={desktopSpeed}
             />
         );

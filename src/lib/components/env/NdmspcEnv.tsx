@@ -155,8 +155,6 @@ export default function NdmspcEnv({
                 <NdmvrEnv
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
-                    menu={menu}
-                    help={help}
                     showUIExternal={showUI}
                     onUIStateChange={handleUIStateChange}
                 >
@@ -174,7 +172,7 @@ export default function NdmspcEnv({
                 }}
             />
             <FullscreenButton />
-            <UIToggleButton isActive={showUI} onToggle={handleUIToggle} />
+            <UIToggleButton />
             {vrMode && touch && (
                 <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />
             )}

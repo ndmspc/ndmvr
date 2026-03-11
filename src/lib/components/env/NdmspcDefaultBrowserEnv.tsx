@@ -212,8 +212,6 @@ export default function NdmspcDefaultBrowserEnv({
                 <NdmvrEnv
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
-                    menu={menu}
-                    help={help}
                     hierarchy={hierarchy}
                     rootNode={rootNode}
                     hierarchyDocRef={hiddenTreeDivRef}

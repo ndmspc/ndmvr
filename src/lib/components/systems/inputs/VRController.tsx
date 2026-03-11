@@ -4,6 +4,7 @@ import { useXR, useXRInputSourceState } from "@react-three/xr";
 import { useInputFocus } from "../../ui/focus/useInputFocus";
 import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
 import * as THREE from "three";
+import { useMenuStore } from "../../../stores/menu/store.ts";
 
 export interface VRControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -23,6 +24,7 @@ export default function VRController({
     onToggleHelp,
 }: VRControllerProps) {
     const session = useXR((s) => s.session);
+    const { toggleTab } = useMenuStore();
 
     const [controllersReady, setControllersReady] = useState({
         left: false,
@@ -154,7 +156,7 @@ export default function VRController({
             const yBtn = (leftGamepad as any)["y-button"];
             const yPressed = !!yBtn && yBtn.state === "pressed";
             if (yPressed && !lastY.current) {
-                onToggleHelp?.();
+                toggleTab?.("help");
             }
             lastY.current = yPressed;
 
@@ -201,7 +203,7 @@ export default function VRController({
             const bBtn = (rightGamepad as any)["b-button"];
             const bPressed = !!bBtn && bBtn.state === "pressed";
             if (bPressed && !lastB.current) {
-                onToggleMenu?.();
+                toggleTab?.(null);
             }
             lastB.current = bPressed;
 

@@ -1,17 +1,17 @@
-import {useThree} from "@react-three/fiber";
-import {useEffect, useCallback, useMemo, useRef, useState} from "react";
-import {filter} from "rxjs";
-import {Text} from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
+import { filter } from "rxjs";
+import { Text } from "@react-three/drei";
 import * as THREE from "three";
-import {useXR} from "@react-three/xr";
+import { useXR } from "@react-three/xr";
 import {
     configSubjectGet,
     HistogramJsrootClass,
     histogramSubjectGet,
     THnPainter,
 } from "@ndmspc/ndmvr-core";
-import {vector3ToArray} from "../../utils/helper-functions.ts";
-import {useSceneModeStore} from "../../stores/sceneMode/store.ts";
+import { vector3ToArray } from "../../utils/helper-functions.ts";
+import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
 
 export interface HistogramWrapperProps {
@@ -27,7 +27,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const squeezeHeld = useRef(false);
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
-
 
     const [nestedMesh, setNestedMesh] = useState(null);
     const instMesh = useMemo(() => {
@@ -48,10 +47,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             } catch (e) {
                 console.error(e);
             }
-        }
+        };
         return nestedMesh;
-    }, [nestedMesh])
-    const meshRef = useRef(null)
+    }, [nestedMesh]);
+    const meshRef = useRef(null);
 
     const [wireframeObj, setWireframeObj] = useState(null);
     const [painterLimits, setPainterLimits] = useState(null);
@@ -120,8 +119,12 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     // Track VR squeeze as modifier (like Shift on desktop)
     useEffect(() => {
         if (!session) return;
-        const onSqueezeStart = () => { squeezeHeld.current = true; };
-        const onSqueezeEnd = () => { squeezeHeld.current = false; };
+        const onSqueezeStart = () => {
+            squeezeHeld.current = true;
+        };
+        const onSqueezeEnd = () => {
+            squeezeHeld.current = false;
+        };
         session.addEventListener("squeezestart", onSqueezeStart);
         session.addEventListener("squeezeend", onSqueezeEnd);
         return () => {
@@ -252,14 +255,19 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     </Text>
                 }
 
-                {jsrootMesh && <primitive object={jsrootMesh}/>}
+                {jsrootMesh && <primitive object={jsrootMesh} />}
             </group>
-            {nestedMesh && <primitive key={nestedMesh.uuid} ref={meshRef} object={instMesh}
-                                      onClick={raycastHandler}
-                                      onDoubleClick={raycastHandler}
-                                      onPointerMove={raycastHandler}
-            />}
-            {wireframeObj && <primitive object={wireframeObj}/>}
+            {nestedMesh && (
+                <primitive
+                    key={nestedMesh.uuid}
+                    ref={meshRef}
+                    object={instMesh}
+                    onClick={raycastHandler}
+                    onDoubleClick={raycastHandler}
+                    onPointerMove={raycastHandler}
+                />
+            )}
+            {wireframeObj && <primitive object={wireframeObj} />}
             {painterLimits && modifyModeEnabled && (
                 <BoundingFrameBox
                     position={painterLimits.position}

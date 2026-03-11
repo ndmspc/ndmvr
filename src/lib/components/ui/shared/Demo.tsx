@@ -11,18 +11,11 @@ import histo1_25 from "../../../data/nested/test_1_25.json";
 import histo1_2_5 from "../../../data/nested/test_1_2_5.json";
 import histo5_2_1 from "../../../data/nested/test_5_2_1.json";
 import cernstaff_145_369 from "../../../data/nested/cernstaff_145_369.json";
-import * as THREE from "three";
 
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import FloatingContainer from "./FloatingContainer.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
 
-interface DemoProps {
-    originRef: React.RefObject<THREE.Group>;
-    offset?: { x: number; y: number; z: number };
-}
-
-export default function Demo({ originRef, offset = { x: 0, y: 1.2, z: -4 } }: DemoProps) {
+export default function Demo() {
     const [selectedHistogram, setSelectedHistogram] = useState(null);
 
     const [availableArrays, setAvailableArrays] = useState([]);
@@ -143,7 +136,7 @@ export default function Demo({ originRef, offset = { x: 0, y: 1.2, z: -4 } }: De
     };
 
     return (
-        <FloatingContainer originRef={originRef} offset={offset} classList={["menuContainer"]}>
+        <Container classList={["menuContainer"]}>
             <Text classList={["menuHeader"]}>Demo</Text>
             <WebsocketBanner />
             <DropdownProvider>
@@ -213,6 +206,9 @@ export default function Demo({ originRef, offset = { x: 0, y: 1.2, z: -4 } }: De
                     </Container>
                 </Container>
             </DropdownProvider>
-        </FloatingContainer>
+        </Container>
     );
 }
+
+Demo.menuName = "demo";
+Demo.menuLabel = "Demo";

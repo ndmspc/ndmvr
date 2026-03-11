@@ -1,10 +1,10 @@
 import "../../scripts/uikit-styles";
 import * as THREE from "three";
-import { createContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import { createXRStore, XR, XROrigin } from "@react-three/xr";
-import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
+import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import CameraSync from "../systems/CameraSync.tsx";
 import Menu from "../ui/shared/Menu.tsx";
@@ -12,19 +12,19 @@ import Controllers from "../systems/inputs/Controllers.tsx";
 import NdmvrContent from "../scene/NdmvrContent.tsx";
 import SceneDecorations from "../scene/SceneDecorations.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
-import { map, merge } from "rxjs";
 import HelperTips from "../ui/shared/HelperTips.tsx";
+import Demo from "../ui/shared/Demo.tsx";
+import { WsConnectionMenu, HttpConnectionMenu } from "../ui/shared/ConnectionMenu.tsx";
+import BinInfo from "../ui/shared/BinInfo.tsx";
+import DrawOptions from "../ui/shared/DrawOptions.tsx";
+import SettingsPanel from "../ui/shared/SettingsPanel.tsx";
 import FileBrowser from "../ui/shared/FileBrowser.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
-// eslint-disable-next-line react-refresh/only-export-components
-export const HistogramContext = createContext(null);
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
-    menu?: boolean;
-    help?: boolean;
     browser?: boolean;
     showUIExternal?: boolean;
     currentConfig?: NdmvrConfig;
@@ -38,86 +38,16 @@ export interface NdmvrEnvProps {
 
 export default function NdmvrEnv({
     children,
-    menu = false,
-    help = false,
     browser = false,
-    showUIExternal = false,
-    currentConfig = null,
     hierarchy = null,
     rootNode = null,
     hierarchyDocRef = null,
-    onConfigChange = null,
-    onUIStateChange = null,
     onSelectItem = null,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
-    const [showMenu, setShowMenu] = useState(false);
-    const [showHelp, setShowHelp] = useState(false);
 
     const [config, setConfig] = useState(null);
-    const [histogram, setHistogram] = useState(null);
-    const [isSceneReady, setIsSceneReady] = useState(false);
-
-    const prevShowUIExternalRef = useRef(showUIExternal);
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setIsSceneReady(true);
-        }, 100);
-
-        return () => clearTimeout(timeout);
-    }, []);
-
-    useEffect(() => {
-        if (!isSceneReady) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setShowMenu(menu);
-        setShowHelp(menu ? false : help);
-    }, [isSceneReady, menu, help]);
-
-    useEffect(() => {
-        const prevShowUI = prevShowUIExternalRef.current;
-        const currentShowUI = showUIExternal;
-
-        prevShowUIExternalRef.current = currentShowUI;
-
-        if (!currentShowUI && prevShowUI) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setShowMenu(false);
-            setShowHelp(false);
-            return;
-        }
-
-        if (currentShowUI && !prevShowUI) {
-            if (!showMenu && !showHelp) {
-                setShowMenu(true);
-            }
-        }
-    }, [showUIExternal, showMenu, showHelp]);
-
-    useEffect(() => {
-        const isUIVisible = showMenu || showHelp;
-        onUIStateChange?.(isUIVisible);
-    }, [showMenu, showHelp, onUIStateChange]);
-
-    useEffect(() => {
-        const pads = config?.environment?.histogramPads ?? [];
-
-        const streams = pads.map((pad) =>
-            histogramSubjectGet()
-                .getStream(pad.id)
-                .pipe(map((histo) => ({ id: pad.id, obj: histo })))
-        );
-
-        const histoSub = merge(...streams).subscribe(({ obj }) => {
-            console.log(obj);
-            setHistogram(obj);
-        });
-        return () => {
-            histoSub.unsubscribe();
-        };
-    }, [config]);
 
     useEffect(() => {
         const sub = configSubjectGet()
@@ -127,16 +57,6 @@ export default function NdmvrEnv({
     }, []);
 
     const { x = 0, y = 1.7, z = 10 } = config?.environment?.camera?.position ?? {};
-
-    const newSetShowMenu = (p) => {
-        setShowMenu(p);
-        if (p) setShowHelp(false);
-    };
-
-    const newSetShowHelp = (p) => {
-        setShowHelp(p);
-        if (p) setShowMenu(false);
-    };
 
     return (
         <div
@@ -171,37 +91,26 @@ export default function NdmvrEnv({
                         </group>
                     )}
 
-                    <SceneDecorations />
-                    <NdmvrContent />
-
-                    <HistogramContext.Provider value={histogram}>
-                        {showMenu && (
-                            <Menu
-                                originRef={xrOriginRef}
-                                currentConfig={currentConfig}
-                                onConfigChange={onConfigChange}
-                                onClose={() => setShowMenu(false)}
-                                help={help}
-                                openHelp={() => {
-                                    setShowMenu(false);
-                                    setShowHelp(true);
-                                }}
-                            />
-                        )}
-
-                        {showHelp && <HelperTips originRef={xrOriginRef} />}
-
+                    <NdmvrContent>
+                        <Menu defaultOpen={true} originRef={xrOriginRef}>
+                            <Demo />
+                            <HttpConnectionMenu />
+                            <WsConnectionMenu />
+                            <BinInfo />
+                            <DrawOptions />
+                            <SettingsPanel />
+                            {/* <HelperTips /> */}
+                        </Menu>
+                        <SceneDecorations />
                         {children}
+                    </NdmvrContent>
 
-                        <Controllers
-                            originRef={xrOriginRef}
-                            cameraRef={cameraRef}
-                            setShowMenu={newSetShowMenu}
-                            setShowHelp={newSetShowHelp}
-                            desktopSpeed={config?.environment?.desktopSpeed ?? 5}
-                            vrSpeed={config?.environment?.vrSpeed ?? 2}
-                        />
-                    </HistogramContext.Provider>
+                    <Controllers
+                        originRef={xrOriginRef}
+                        cameraRef={cameraRef}
+                        desktopSpeed={config?.environment?.desktopSpeed ?? 5}
+                        vrSpeed={config?.environment?.vrSpeed ?? 2}
+                    />
                     <XROrigin ref={xrOriginRef} position={[x, y, z]} />
                 </XR>
             </Canvas>

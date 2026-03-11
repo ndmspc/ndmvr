@@ -11,14 +11,13 @@ interface PositionAndRotation {
 }
 
 export interface HelperTipsProps {
-    originRef: React.RefObject<THREE.Group> | null;
+    originRef?: React.RefObject<THREE.Group> | null;
 }
 
-export default function HelperTips({ originRef }: HelperTipsProps) {
+export default function HelperTips({ originRef = null }: HelperTipsProps) {
     const xr = useXR();
     const isPresenting = !!xr.session;
     const groupRef = useRef(null);
-
     const desktopTips = useMemo(
         () => [
             {
@@ -145,3 +144,6 @@ export default function HelperTips({ originRef }: HelperTipsProps) {
         </group>
     );
 }
+
+HelperTips.menuName = "help";
+HelperTips.menuLabel = "Help";
