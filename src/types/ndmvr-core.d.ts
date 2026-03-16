@@ -97,6 +97,7 @@ declare module "@ndmspc/ndmvr-core" {
         instanceColors: Float32Array;
         colorArray: Float32Array;
         updateHistogram(histo: HistogramData): void;
+        async renderHistogram(startIndex: number, endIndex: number, layer: number): Promise<THREE.Object3D>;
         remove(): void;
         checkIntersectionBVH(ray: THREE.Ray): any[];
         intersectionHandler(intersection: any, triggerSource: string): void;

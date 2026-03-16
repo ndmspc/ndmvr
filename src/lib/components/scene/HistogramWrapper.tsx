@@ -18,8 +18,8 @@ export interface HistogramWrapperProps {
     id: string;
 }
 
-export default function HistogramWrapper({ id }: HistogramWrapperProps) {
-    const { scene, camera } = useThree();
+export default function HistogramWrapper({id}: HistogramWrapperProps) {
+    const { scene, camera, raycaster } = useThree();
     const jsrootHistogram = useRef(null);
     const nestedHistogram = useRef(null);
     const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
@@ -27,6 +27,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const squeezeHeld = useRef(false);
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
+
 
     const [nestedMesh, setNestedMesh] = useState(null);
     const instMesh = useMemo(() => {
@@ -142,6 +143,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         // Skip if a closer object (e.g. UI panel) was hit first
         if (event.intersections[0]?.object !== event.object) return;
 
+        console.log(`[HistogramWrapper] Raycatst event: ${event.type}, shift/squeeze: ${event.nativeEvent?.shiftKey || squeezeHeld.current}`);
+
         const isShift = event.nativeEvent?.shiftKey || squeezeHeld.current;
 
         if (event.type === "click") {
@@ -163,6 +166,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     }
 
     useEffect(() => {
+        console.log(`[HistogramWrapper] Subscribing to histogram ${id} updates`);
         const histoSub = histogramSubjectGet()
             .getStream(id)
             .pipe(filter((e) => (e as { id: string | number }).id === id))
@@ -206,26 +210,34 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                                     setJsrootError(e);
                                 });
                         }
-                    } else {
+                    }
+                    else {
                         if (jsrootHistogram.current) {
                             jsrootHistogram.current.remove?.();
                             jsrootHistogram.current = undefined;
                         }
                         clearJsrootMesh();
 
+
                         if (nestedHistogram.current) {
-                            nestedHistogram.current.updateHistogram(histo);
-                            // Update painter limits when histogram is updated
-                            setPainterLimits(nestedHistogram.current.limits);
-                            // nestedHistogram.current.remove();
-                            // nestedHistogram.current = undefined;
+                            nestedHistogram.current.updateHistogram(histo).then(() => {
+                                // Update painter limits when histogram is updated
+                                setPainterLimits(nestedHistogram.current.limits);
+                                // nestedHistogram.current.remove();
+                                // nestedHistogram.current = undefined;
+                                console.log("[HistogramWrapper] UPDATE: ", name, nestedHistogram.current);
+                            });
                         } else {
                             const painter = new THnPainter(histo, id, histo?.opts);
-                            nestedHistogram.current = painter;
 
-                            setNestedMesh(() => painter.mesh);
-                            setWireframeObj(() => painter.wireframe.wireframe);
-                            setPainterLimits(painter.limits);
+                            painter.renderHistogram(0, painter.totalInstances, 0).then(() => {
+                                nestedHistogram.current = painter;
+
+                                setNestedMesh(() => painter.mesh);
+                                setWireframeObj(() => painter.wireframe.wireframe);
+                                setPainterLimits(painter.limits);
+                                console.log("[HistogramWrapper] NEW:", name, painter);
+                            });
                         }
                     }
                 } catch (e) {
@@ -235,7 +247,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
         return () => {
             histoSub.unsubscribe();
-
             clearJsrootMesh();
             clearNestedMeshes();
         };
@@ -255,7 +266,23 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     </Text>
                 }
 
-                {jsrootMesh && <primitive object={jsrootMesh} />}
+                {jsrootMesh && (
+                    <primitive
+                        key={jsrootMesh.uuid}
+                        object={jsrootMesh}
+                        onPointerMove={() => {
+                            (raycaster as any)._triggerSource = "mousemove";
+                        }}
+                        onClick={(e) => {
+                            const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
+                            (raycaster as any)._triggerSource = isShift ? "shiftmouseclick" : "mouseclick";
+                        }}
+                        onDoubleClick={(e) => {
+                            const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
+                            (raycaster as any)._triggerSource = isShift ? "shiftmousedbclick" : "mousedbclick";
+                        }}
+                    />
+                )}
             </group>
             {nestedMesh && (
                 <primitive
