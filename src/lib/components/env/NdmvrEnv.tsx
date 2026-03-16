@@ -12,7 +12,6 @@ import Controllers from "../systems/inputs/Controllers.tsx";
 import NdmvrContent from "../scene/NdmvrContent.tsx";
 import SceneDecorations from "../scene/SceneDecorations.tsx";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
-import HelperTips from "../ui/shared/HelperTips.tsx";
 import Demo from "../ui/shared/Demo.tsx";
 import { WsConnectionMenu, HttpConnectionMenu } from "../ui/shared/ConnectionMenu.tsx";
 import BinInfo from "../ui/shared/BinInfo.tsx";
