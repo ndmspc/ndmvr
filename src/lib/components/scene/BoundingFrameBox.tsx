@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useThree, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { Line2 } from "three/examples/jsm/lines/Line2";
@@ -21,8 +21,9 @@ type Corner = {
 };
 
 interface BoundingFrameBoxProps {
-    position: THREE.Vector3;
-    scale: THREE.Vector3;
+    position: THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number];
+    scale: THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number];
+    shiftScaleStep?: { x: number; y: number; z: number };
     onChange?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
     onDragEnd?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
@@ -54,14 +55,55 @@ const NORMAL_LINE_WIDTH = 0.1;
 // Edge thickness when hovered, used for visual feedback
 const HOVER_LINE_WIDTH = 0.15;
 
+function toVector3(
+    value: THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number],
+    fallback: THREE.Vector3
+): THREE.Vector3 {
+    if (value instanceof THREE.Vector3) {
+        return value.clone();
+    }
+
+    if (Array.isArray(value) && value.length >= 3) {
+        const [x, y, z] = value;
+        if ([x, y, z].every((n) => typeof n === "number" && Number.isFinite(n))) {
+            return new THREE.Vector3(x, y, z);
+        }
+    }
+
+    if (
+        value &&
+        typeof value === "object" &&
+        "x" in value &&
+        "y" in value &&
+        "z" in value &&
+        typeof value.x === "number" &&
+        typeof value.y === "number" &&
+        typeof value.z === "number" &&
+        Number.isFinite(value.x) &&
+        Number.isFinite(value.y) &&
+        Number.isFinite(value.z)
+    ) {
+        return new THREE.Vector3(value.x, value.y, value.z);
+    }
+
+    return fallback.clone();
+}
+
 export default function BoundingFrameBox({
     position,
     scale,
+    shiftScaleStep,
     onChange,
     onDragEnd,
 }: BoundingFrameBoxProps) {
     const { camera } = useThree();
     const groupRef = useRef<THREE.Group>(null);
+
+    const normalizedScale = useMemo(() => toVector3(scale, new THREE.Vector3(2, 2, 2)), [scale]);
+    const normalizedPosition = useMemo(
+        () => toVector3(position, new THREE.Vector3(0, normalizedScale.y / 2, 0)),
+        [position, normalizedScale.y]
+    );
 
     const edges = useRef<Map<Line2, EdgeInfo>>(new Map());
     const corners = useRef<Map<THREE.Mesh, CornerInfo>>(new Map());
@@ -71,12 +113,20 @@ export default function BoundingFrameBox({
     const setInteracting = useUIInteraction((state) => state.setInteracting);
     const [interactionState, setInteractionState] = useState<"idle" | "drag">("idle");
 
-    const lastScaleRef = useRef<THREE.Vector3>(scale.clone());
-    const lastPositionRef = useRef<THREE.Vector3>(position.clone());
+    const lastScaleRef = useRef<THREE.Vector3>(normalizedScale.clone());
+    const lastPositionRef = useRef<THREE.Vector3>(normalizedPosition.clone());
 
     const dragRef = useRef<DragContext | null>(null);
     const dragPlaneRef = useRef<THREE.Plane | null>(null);
     const lastDragTimeRef = useRef<number>(0);
+
+    const [snapPressed, setSnapPressed] = useState(false);
+
+
+    const SCALE_STEP = shiftScaleStep?.x ? shiftScaleStep.x : 10; // Default snap step if not provided in config
+    const SCALE_STEP_X = shiftScaleStep?.x ? shiftScaleStep.x : SCALE_STEP;
+    const SCALE_STEP_Y = shiftScaleStep?.y ? shiftScaleStep.y : SCALE_STEP;
+    const SCALE_STEP_Z = shiftScaleStep?.z ? shiftScaleStep.z : SCALE_STEP;
 
     /* ---------- HOVER ---------- */
 
@@ -186,9 +236,19 @@ export default function BoundingFrameBox({
             }
         }
 
-        if (newScale.y !== lastScaleRef.current.y) {
-            newScale.y = Math.max(0.2, newScale.y);
+        if (snapPressed) {
+            console.log("Snapping to grid");
+            newScale.set(
+                Math.round(newScale.x / SCALE_STEP_X) * SCALE_STEP_X,
+                Math.round(newScale.y / SCALE_STEP_Y) * SCALE_STEP_Y,
+                Math.round(newScale.z / SCALE_STEP_Z) * SCALE_STEP_Z
+            );
         }
+
+        // Enforce minimum scale to prevent inversion or disappearing
+        if( newScale.x < 2) newScale.x = 2;
+        if( newScale.y < 2) newScale.y = 2;
+        if( newScale.z < 2) newScale.z = 2;
 
         // Store last scale for drag end callback
         lastScaleRef.current = newScale.clone();
@@ -237,7 +297,7 @@ export default function BoundingFrameBox({
         dragRef.current = {
             type: dragType,
             axes,
-            startScale: scale.clone(),
+            startScale: normalizedScale.clone(),
             startPosition: group.position.clone(),
             startPoint: e.point.clone(),
         };
@@ -311,9 +371,9 @@ export default function BoundingFrameBox({
         edges.current.clear();
         corners.current.clear();
 
-        const px = scale.x / 2;
-        const py = scale.y / 2;
-        const pz = scale.z / 2;
+        const px = normalizedScale.x / 2;
+        const py = normalizedScale.y / 2;
+        const pz = normalizedScale.z / 2;
 
         const vertices = [
             [-px, -py, -pz],
@@ -361,7 +421,7 @@ export default function BoundingFrameBox({
         });
 
         vertices.forEach(([x, y, z]) => {
-            const minScale = Math.min(scale.x, scale.y, scale.z);
+            const minScale = Math.min(normalizedScale.x, normalizedScale.y, normalizedScale.z);
             const sphereSize = Math.max(0.01, minScale * 0.025);
 
             const mesh = new THREE.Mesh(
@@ -382,8 +442,19 @@ export default function BoundingFrameBox({
             });
         });
 
-        group.position.set(position.x, position.y, position.z);
-    }, [position, scale]);
+        group.position.set(normalizedPosition.x, normalizedPosition.y, normalizedPosition.z);
+    }, [normalizedPosition, normalizedScale]);
+
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            setSnapPressed(!!e.detail?.pressed);
+        };
+
+        window.addEventListener("ndmvr-shiftstep-scale", handler);
+        return () =>
+            window.removeEventListener("ndmvr-shiftstep-scale", handler);
+    }, []);
 
     return (
         <group

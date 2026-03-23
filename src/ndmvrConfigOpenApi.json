@@ -1,6 +1,9 @@
 {
     "openapi": "3.1.1",
-    "info": { "title": "Configuration API", "version": "1.0.1" },
+    "info": {
+        "title": "Configuration API",
+        "version": "1.0.1"
+    },
     "components": {
         "schemas": {
             "Config": {
@@ -154,6 +157,38 @@
                                                 "type": "number",
                                                 "default": 5,
                                                 "title": "Pad Origin Z"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "shiftScale": {
+                                "type": "object",
+                                "title": "Shift Scale Snap",
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "default": true,
+                                        "title": "Enable Shift Scale"
+                                    },
+                                    "step": {
+                                        "type": "object",
+                                        "title": "Snap Step Size",
+                                        "properties": {
+                                            "x": {
+                                                "type": "number",
+                                                "default": 10,
+                                                "title": "Shift Scale Step X"
+                                            },
+                                            "y": {
+                                                "type": "number",
+                                                "default": 10,
+                                                "title": "Shift Scale Step Y"
+                                            },
+                                            "z": {
+                                                "type": "number",
+                                                "default": 10,
+                                                "title": "Shift Scale Step Z"
                                             }
                                         }
                                     }

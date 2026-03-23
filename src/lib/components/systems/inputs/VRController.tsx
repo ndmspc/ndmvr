@@ -50,6 +50,7 @@ export default function VRController({
 
     const isFocused = useInputFocus((state) => state.isFocused);
 
+    const lastSnap = useRef(false);
     const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
     const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
 
@@ -199,6 +200,25 @@ export default function VRController({
                     hasSnapped.current = false;
                 }
             }
+
+            const rightTrigger = rightGamepad
+                ? (rightGamepad as any)["xr-standard-trigger"]
+                : null;
+
+            const rightTriggerPressed =
+                !!rightTrigger &&
+                (rightTrigger.state === "pressed" ||
+                    (rightTrigger.button ?? 0) > TRIGGER_T);
+
+            const snapPressed = modifyModeEnabled && rightTriggerPressed;
+
+            if (snapPressed !== lastSnap.current) {
+                window.dispatchEvent(
+                    new CustomEvent("ndmvr-shiftstep-scale", { detail: { pressed: snapPressed } })
+                );
+                lastSnap.current = snapPressed;
+            }
+
 
             const bBtn = (rightGamepad as any)["b-button"];
             const bPressed = !!bBtn && bBtn.state === "pressed";
