@@ -23,10 +23,12 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
     const jsrootHistogram = useRef(null);
     const nestedHistogram = useRef(null);
     const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
+    const setModifyModeEnabled = useSceneModeStore((state) => state.setModifyModeEnabled);
     const session = useXR((s) => s.session);
     const squeezeHeld = useRef(false);
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
+    const [isJsrootRenderer, setIsJsrootRenderer] = useState(false);
 
     const [currentShiftStep, setCurrentShiftStep] = useState({x: 0, y: 0, z: 0});
     
@@ -58,6 +60,8 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
     const [wireframeObj, setWireframeObj] = useState(null);
     const [painterLimits, setPainterLimits] = useState(null);
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
+        if (isJsrootRenderer) return;
+
         setPainterLimits({
             position: position.clone(),
             scale: scale.clone(),
@@ -88,9 +92,17 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
 
 
     const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
+        if (isJsrootRenderer) return;
+
         console.log("Config changed from Wrapper:   ", position, scale);
         applyHistogramModification(position.clone(), scale.clone());
     };
+
+    useEffect(() => {
+        if (isJsrootRenderer && modifyModeEnabled) {
+            setModifyModeEnabled(false);
+        }
+    }, [isJsrootRenderer, modifyModeEnabled, setModifyModeEnabled]);
 
     const disposeThree = (obj) => {
         if (!obj) return;
@@ -181,7 +193,12 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
             .pipe(filter((e) => (e as { id: string | number }).id === id))
             .subscribe((histo) => {
                 try {
+                    const isJsroot = histo?.opts?.render === "jsroot";
+                    setIsJsrootRenderer(isJsroot);
+
                     if (histo?.opts?.render === "jsroot") {
+                        setModifyModeEnabled(false);
+
                         if (nestedHistogram.current) {
                             console.log("remove v jsroot");
                             nestedHistogram.current.remove?.();
@@ -195,6 +212,8 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
+                                    // JSROOT mode ignores modify scale and always renders with unit scale.
+                                    mesh?.scale?.set(1, 1, 1);
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
@@ -211,6 +230,8 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
+                                    // JSROOT mode ignores modify scale and always renders with unit scale.
+                                    mesh?.scale?.set(1, 1, 1);
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
@@ -304,7 +325,7 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                 />
             )}
             {wireframeObj && <primitive object={wireframeObj} />}
-            {painterLimits && modifyModeEnabled && (
+            {painterLimits && modifyModeEnabled && !isJsrootRenderer && (
                 <BoundingFrameBox
                     position={new THREE.Vector3(
                         painterLimits.position?.x ?? 0,
