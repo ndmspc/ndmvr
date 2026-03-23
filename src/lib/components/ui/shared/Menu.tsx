@@ -1,4 +1,4 @@
-import { useEffect, useMemo, Children, isValidElement, cloneElement } from "react";
+import { useEffect, useMemo, Children, isValidElement, cloneElement, use } from "react";
 import { Text } from "@react-three/uikit";
 import Container from "../interactions/Container";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
@@ -72,13 +72,25 @@ export default function Menu({
 
         if (keys["KeyM"] && (keys["ControlLeft"] || keys["ControlRight"])) {
             setModifyModeEnabled(!modifyModeEnabled);
-
             window.dispatchEvent(
-                new CustomEvent("ndmvr-modify-mode-toggle", {
-                    detail: { enabled: !modifyModeEnabled },
+                new CustomEvent("ndmvr-modify-mode-toggle", { detail: { enabled: !modifyModeEnabled } })
+            );
+        }
+
+        if (useSceneModeStore.getState().modifyModeEnabled && (keys["ShiftLeft"] || keys["ShiftRight"])) {
+            window.dispatchEvent(
+                new CustomEvent("ndmvr-shiftstep-scale", {
+                    detail: { pressed: true },
+                })
+            );
+        } else {
+            window.dispatchEvent(
+                new CustomEvent("ndmvr-shiftstep-scale", {
+                    detail: { pressed: false },
                 })
             );
         }
+
 
         if (keys["ShiftLeft"] || keys["ShiftRight"]) {
             window.dispatchEvent(
@@ -93,7 +105,7 @@ export default function Menu({
                 })
             );
         }
-    }, [keys, isFocused, modifyModeEnabled]);
+    }, [keys, isFocused]);
 
     if (!showMenu) return null;
     return (

@@ -28,6 +28,8 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
     const [jsrootMesh, setJsrootMesh] = useState(null);
     const [jsrootError, setJsrootError] = useState(null);
 
+    const [currentShiftStep, setCurrentShiftStep] = useState({x: 0, y: 0, z: 0});
+    
 
     const [nestedMesh, setNestedMesh] = useState(null);
     const instMesh = useMemo(() => {
@@ -68,6 +70,11 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
             if (!currentConfig) return;
 
             const newConfig = structuredClone(currentConfig);
+            setCurrentShiftStep({
+                x: newConfig.config?.environment?.shiftScale?.x ?? 10,
+                y: newConfig.config?.environment?.shiftScale?.y ?? 10,
+                z: newConfig.config?.environment?.shiftScale?.z ?? 10,
+            });
             const pad = newConfig.config?.environment?.histogramPads?.find((p) => p.id === id);
             if (!pad) return;
 
@@ -78,6 +85,7 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
         },
         [id]
     );
+
 
     const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
         console.log("Config changed from Wrapper:   ", position, scale);
@@ -111,6 +119,7 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
     };
 
     useEffect(() => {
+
         return () => {
             nestedHistogram.current?.remove();
             jsrootHistogram.current?.remove();
@@ -297,8 +306,17 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
             {wireframeObj && <primitive object={wireframeObj} />}
             {painterLimits && modifyModeEnabled && (
                 <BoundingFrameBox
-                    position={painterLimits.position}
-                    scale={new THREE.Vector3().copy(painterLimits.scale)}
+                    position={new THREE.Vector3(
+                        painterLimits.position?.x ?? 0,
+                        painterLimits.position?.y ?? 0,
+                        painterLimits.position?.z ?? 0
+                    )}
+                    scale={new THREE.Vector3(
+                        painterLimits.scale?.x ?? 2,
+                        painterLimits.scale?.y ?? 2,
+                        painterLimits.scale?.z ?? 2
+                    )}
+                    shiftScaleStep={currentShiftStep}
                     onChange={onBoundingBoxChange}
                     onDragEnd={onBoundingBoxDragEnd}
                 />
