@@ -1,6 +1,6 @@
 variables:
   PUBLIC_URL: "/ndmvr/"
-  IMAGE: node:22
+  IMAGE: node:24
 
 image: ${IMAGE}
 
@@ -60,7 +60,7 @@ publish:
   script:
     - "sed -i -e 's/^    \\\"version\\\".*/    \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
     - npm config set legacy-peer-deps=true
-    - npm install -g npm@latest
+    # - npm install -g npm@latest
     - CI=true npm install
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
     - CI=true npm run build
