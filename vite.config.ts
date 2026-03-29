@@ -16,24 +16,26 @@ export default defineConfig(({ mode }) => ({
         lib: {
             entry: resolve(__dirname, "src/lib/index.tsx"),
             name: "NDMVR R3F React Library Vite",
+            // Build only ESM to avoid generating a UMD bundle that requires
+            // providing global names for many subpath externals (react/jsx-runtime, etc.)
+            formats: ['es'],
             fileName: (format) => `ndmvr.${format}.js`,
         },
         rollupOptions: {
-            external: [
-                "react",
-                "react-dom",
-                "three",
-                "@ndmspc/ndmvr-core",
-                "@react-three/fiber",
-                "@react-three/drei",
-                "@react-three/xr",
-                "@pmndrs/uikit",
-                "@react-three/uikit",
-                "@react-three/uikit-default",
-                "@react-three/uikit-horizon",
-                "@react-three/uikit-lucide",
-                "jsroot",
-            ],
+            // Treat important peer and runtime deps (and their subpaths) as external so
+            // they are not bundled into the library. Use regexes to cover subpath imports
+            // like `react/jsx-runtime` or `react/cjs/*` which otherwise leak CJS shims.
+            external: (id) => {
+                return !!id && (
+                    /^react($|\/)/.test(id) ||
+                    /^react-dom($|\/)/.test(id) ||
+                    /^three($|\/)/.test(id) ||
+                    /^@ndmspc\/ndmvr-core($|\/)/.test(id) ||
+                    /^@react-three\//.test(id) ||
+                    /^@pmndrs\/uikit($|\/)/.test(id) ||
+                    /^jsroot($|\/)/.test(id)
+                );
+            },
             output: {
                 globals: {
                     react: "React",
@@ -48,8 +50,7 @@ export default defineConfig(({ mode }) => ({
                     "@react-three/uikit-default": "uikitDefault",
                     "@react-three/uikit-lucide": "uikitLucide",
                     "@react-three/uikit-horizon": "uikitHorizon",
-                },
-                inlineDynamicImports: true,
+                }
             },
         },
     },
