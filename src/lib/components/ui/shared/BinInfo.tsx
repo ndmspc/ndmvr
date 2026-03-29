@@ -7,6 +7,19 @@ import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json";
 import NotoBold from "../../../assets/fonts/NotoSans-Bold.json";
 
+function formatSmartNumber(
+    val: number | undefined | null,
+    precision: number
+): string {
+    if (val === undefined || val === null || Number.isNaN(val)) return "-";
+    const num = Number.parseFloat(String(val));
+    const abs = Math.abs(num);
+    if (num !== 0 && (abs >= 1e6 || (abs > 0 && abs < 1e-3))) {
+        return num.toExponential();
+    }
+    return num.toFixed(precision);
+}
+
 export interface BinInfoProps {
     precision?: number;
 }
@@ -73,9 +86,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
                     </Text>
                     <Text fontSize={12}>
                         {binInfo?.content !== undefined
-                            ? `${binInfo?.content.toFixed(
-                                  precision
-                              )} +/- ${binInfo?.error?.toFixed(precision)}`
+                            ? `${formatSmartNumber(binInfo.content, 3)} +/- ${formatSmartNumber(binInfo.error, 3)}`
                             : "-"}
                     </Text>
                 </Container>
