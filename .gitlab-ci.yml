@@ -13,6 +13,7 @@ test-prod:
   tags:
     - ndmspc-hosted
   script:
+    - npm config set legacy-peer-deps=true
     - CI=true npm install
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
     - CI=true npm run build
@@ -38,6 +39,7 @@ pages:
     GIT_DEPTH: 0
   script:
     - mkdocs build -d public/docs
+    - npm config set legacy-peer-deps=true
     - CI=true npm install
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
     - CI=true npm run build -- -c vite.config.app.js --mode pages --base=$PUBLIC_URL
@@ -45,8 +47,8 @@ pages:
   artifacts:
     paths:
       - public
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 publish:
   stage: deploy
