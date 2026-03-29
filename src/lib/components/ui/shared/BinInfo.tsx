@@ -53,6 +53,10 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
         );
     };
 
+    const contentText = binInfo?.content !== undefined
+        ? `${formatSmartNumber(binInfo.content, 3)} +/- ${formatSmartNumber(binInfo.error, 3)}`
+        : "-";
+
     return (
         <Container
             classList={["menuContainer"]}
@@ -85,9 +89,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
                         Content:
                     </Text>
                     <Text fontSize={12}>
-                        {binInfo?.content !== undefined
-                            ? `${formatSmartNumber(binInfo.content, 3)} +/- ${formatSmartNumber(binInfo.error, 3)}`
-                            : "-"}
+                        {contentText}
                     </Text>
                 </Container>
             </Container>
