@@ -15,7 +15,7 @@ function formatSmartNumber(
     const num = Number.parseFloat(String(val));
     const abs = Math.abs(num);
     if (num !== 0 && (abs >= 1e6 || (abs > 0 && abs < 1e-3))) {
-        return num.toExponential();
+        return num.toExponential(precision);
     }
     return num.toFixed(precision);
 }
