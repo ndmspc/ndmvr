@@ -46,7 +46,7 @@
         "react-dom": ">=19 <20"
     },
     "dependencies": {
-        "@ndmspc/ndmvr-core": "1.1.2-rc.4",
+        "@ndmspc/ndmvr-core": "1.1.2-rc.5",
         "@pmndrs/uikit": "^1.0.64",
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.5.0",
