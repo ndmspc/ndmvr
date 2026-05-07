@@ -1,18 +1,29 @@
 import { Container } from "../interactions/Container.tsx";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
-import { HierarchyPainter } from "jsroot";
+import RendererModeSwitch from "./RendererModeSwitch.tsx";
 
 interface FileBrowserProps {
     hierarchy: any;
     root: any;
     doc: React.MutableRefObject<HTMLDivElement>;
     onSelect?: (path: string) => void;
+    rendererMode?: "jsroot" | "ndmvr";
+    setRendererMode?: React.Dispatch<React.SetStateAction<"jsroot" | "ndmvr">>;
 }
 
-export default function FileBrowser({ hierarchy, root, doc, onSelect }: FileBrowserProps) {
-    // console.log(" FileBrowser Slelect: ", onSelect);
+export default function FileBrowser({
+hierarchy,
+root,
+doc,
+onSelect,
+rendererMode = "jsroot",
+setRendererMode,
 
+                                    }: FileBrowserProps) {
+
+    // console.log(" FileBrowser Slelect: ", onSelect);
+    const [selectedPath, setSelectedPath] = useState("");
     return (
         <Container
             classList={["menuContainer"]}
@@ -21,17 +32,23 @@ export default function FileBrowser({ hierarchy, root, doc, onSelect }: FileBrow
             height={400}
             overflow="scroll"
             display="flex"
-            flexDirection="row"
+            flexDirection="column"
             alignItems="flex-start"
             justifyContent="flex-start"
         >
+            <RendererModeSwitch
+                rendererMode={rendererMode}
+                setRendererMode={setRendererMode}
+            />
+
             <Container gap={8} display="flex" flexDirection="column">
                 {root && (
                     <TreeViewer
                         hierarchy={hierarchy}
                         root={root}
                         doc={doc}
-                        // expandable={true}
+                        selNodeHook={selectedPath}
+                        selSetNodeHook={setSelectedPath}
                         onSelect={(p) => onSelect?.(p)}
                     />
                 )}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 //
@@ -20,6 +20,8 @@ interface TreeViewerProps {
     doc: React.MutableRefObject<HTMLDivElement>;
     expandable?: boolean;
     onSelect?: (path_: string) => void;
+    selSetNodeHook: any;
+    selNodeHook: string;
 }
 //
 function Line({
@@ -61,6 +63,8 @@ export default function TreeViewer({
     doc,
     expandable = false,
     onSelect = null,
+    selSetNodeHook = null,
+    selNodeHook = "",
 }: TreeViewerProps) {
     const [show, setShow] = useState(false);
     // const [isExpanded, setExpand] = useState(false);
@@ -71,6 +75,12 @@ export default function TreeViewer({
     const rootAutoOpened = useRef(false);
 
     const norm = (s: string) => (s ?? "").trim().replace(/;\d+$/, "");
+
+    const isSelected = useMemo(() => {
+        if (expandable || path == "") return false;
+        if (!selNodeHook) return false;
+        return selNodeHook === path_;
+    }, [expandable, selNodeHook, path_]);
 
     useEffect(() => {
         const raw = root._childs;
@@ -155,6 +165,13 @@ export default function TreeViewer({
 
             // setExpand(true);
             setShow(true);
+
+            //set seleced node. for ui
+            if( selSetNodeHook!== null)
+                selSetNodeHook(path_);
+
+
+
         })();
     }, [root, hierarchy, path, path_, nodeName]);
 
@@ -201,27 +218,15 @@ export default function TreeViewer({
                         </Text>
                     </Container>
                 ) : (
-                    <Text
-                        onClick={() => {
-                            // console.log("Not expandable ", path_);
 
-                            // console.log(onSelect)
-                            onSelect?.(path_);
-
-                            // console.log(path_)
-                            // hierarchy.display(path_, "");
-
-                            // const painter = hierarchy;
-                            // const painterDisplay = async () => {
-                            //     console.log("painterDis: " + path_);
-                            //     // console.log(;
-                            //     await painter.display(path_, "");
-                            // };
-                            // painterDisplay();
-                        }}
-                    >
-                        {nodeName}
-                    </Text>
+                    <Text onClick={() => {
+                        onSelect?.(path_);
+                        selSetNodeHook(path_);
+                    }}
+                          minWidth={10}
+                          borderRadius={3}
+                          backgroundColor={isSelected ? "#00bfd3" : "transparent"}
+                    >{nodeName}</Text>
                 )}
 
                 {show && childs.length > 0 ? (
@@ -248,6 +253,8 @@ export default function TreeViewer({
                                     // expandable={canOpen.includes(child._name)}
                                     expandable={canOpen.includes(norm(child._name))}
                                     onSelect={onSelect}
+                                    selNodeHook={selNodeHook}
+                                    selSetNodeHook={selSetNodeHook}
                                 />
                             </Container>
                         ))}
@@ -259,3 +266,4 @@ export default function TreeViewer({
         </Container>
     );
 }
+

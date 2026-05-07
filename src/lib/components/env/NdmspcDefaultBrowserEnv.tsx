@@ -1,7 +1,7 @@
 import NdmvrEnv from "./NdmvrEnv.tsx";
 // import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
-import { HierarchyPainter, setDefaultDrawOpt, draw } from "jsroot";
+import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
@@ -10,6 +10,8 @@ import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";
 import { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
+import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
+import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 
 export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
@@ -26,6 +28,7 @@ export interface NdmspcDefaultBrowserEnvProps {
     title?: string | null;
     layout?: string | null;
     defaultDrawOpt?: Record<string, string> | null;
+    setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
 export default function NdmspcDefaultBrowserEnv({
@@ -35,16 +38,14 @@ export default function NdmspcDefaultBrowserEnv({
     menu = false,
     help = false,
     renderer = "jsroot",
-    vr = false,
-    // file = "/nested_objects.root",
-    // file = "/nested2.root",
-    file = "/hsimple.root",
-    // file = "/nested.root",
+    vr = true,
+    file = "https://root.cern/js/files/hsimple.root",
     item = null,
     opt = null,
     title = "Ndmspc Default Browser Environment",
     layout = "simple",
     defaultDrawOpt = { TH1: "hist", TH2: "col" },
+    setBrowser
 }: NdmspcDefaultBrowserEnvProps) {
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
@@ -58,6 +59,12 @@ export default function NdmspcDefaultBrowserEnv({
 
     const [hierarchy, setHierarchy] = useState<any>(null);
     const [rootNode, setRootNode] = useState<any>(null);
+
+    const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
+    const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
+    const drawnObjectsRef = useRef<Record<string, { obj: any; opt?: any }>>({});
+
+
 
     console.log(
         "NdmspcDefaultBrowserEnv render, config:",
@@ -77,6 +84,25 @@ export default function NdmspcDefaultBrowserEnv({
     );
 
     useEffect(() => {
+        if (!initializedRef.current) return;
+
+        rendererModeRef.current = rendererMode;
+
+
+        const entries = Object.entries(drawnObjectsRef.current);
+        console.log("effect: " + rendererMode);
+        for (const [padId, data] of entries) {
+            histogramSubjectGet().next({
+                id: padId,
+                // opts: { render: "jsroot" },
+                opts: { render: rendererMode },
+                obj: data.obj,
+            });
+        }
+
+    }, [rendererMode]);
+
+    useEffect(() => {
         if (config) {
             configSubjectGet().next(config);
         }
@@ -91,25 +117,40 @@ export default function NdmspcDefaultBrowserEnv({
     useEffect(() => {
         if (initializedRef.current) return;
         initializedRef.current = true;
+        let disposed = false;
 
         console.log("Read file: ", file);
         const painter = new HierarchyPainter("example", hiddenTreeDivRef.current);
         // const painter = new HierarchyPainter("example", "myTreeDiv");
 
-        painter.setDrawFunc((dom, obj, opt) => {
-            // console.log("call draw func");
-            // console.log("dom:", dom);
-            // console.log("obj:", obj);
-            // console.log("opt:", opt);
-            histogramSubjectGet().next({
-                id: `pad${padsCounter.current + 1}`,
-                opts: { render: renderer },
-                obj: obj,
+        const origDisplay = painter.display.bind(painter);
+
+        (painter as any).display = function (obj: any, opt?: any, dom?: any) {
+            const padId = `pad${padsCounter.current + 1}`;
+
+            this.getObject(obj).then((retValue: any) => {
+                if (disposed) return;
+                if (!retValue?.obj) return;
+
+                drawnObjectsRef.current[padId] = {
+                    obj: retValue.obj,
+                    opt,
+                };
+
+                histogramSubjectGet().next({
+                    id: padId,
+                    // opts: { render: "jsroot" },
+                    opts: { render: rendererModeRef.current },
+                    obj: retValue.obj,
+                });
             });
-            if (pads.current.length > 0)
+
+            if (pads.current.length > 0) {
                 padsCounter.current = (padsCounter.current + 1) % pads.current.length;
-            return draw(dom, obj, opt);
-        });
+            }
+
+            return origDisplay(obj, opt, dom);
+        };
 
         painterRef.current = painter;
         const initPainter = async () => {
@@ -132,7 +173,12 @@ export default function NdmspcDefaultBrowserEnv({
                 origin: { x: -5, y: 0.5, z: 1 },
             };
             // console.log("Try to open");
+
+            drawnObjectsRef.current = {};
+            padsCounter.current = 0;
+
             await painter.openRootFile(file).then((v) => {
+                if (disposed) return;
                 const ps = getPads(v.disp_kind);
                 pads.current = ps;
                 // console.log("File h: ", painter.h );
@@ -142,16 +188,28 @@ export default function NdmspcDefaultBrowserEnv({
                 setRootNode((painter as any).h);
             });
 
+            if (disposed) return;
+
+
+
             // if (item) {
             await painter.display(item, opt);
+            if (disposed) return;
             setItemState(item);
             setOptState(opt);
             // }
             // await h.expandItem('E;1//Event/Gen/Header');
-            console.log("HierarchyPainter h:", painter);
+            // console.log("HierarchyPainter h:", painter);
         };
         initPainter();
         console.log(title);
+
+        return () => {
+            disposed = true;
+            initializedRef.current = false;
+            drawnObjectsRef.current = {};
+            painterRef.current = null;
+        };
     }, []);
 
     useEffect(() => {
@@ -173,6 +231,7 @@ export default function NdmspcDefaultBrowserEnv({
         setItemState(path);
     };
 
+
     return (
         <div
             style={{
@@ -181,48 +240,70 @@ export default function NdmspcDefaultBrowserEnv({
                 position: "relative",
             }}
         >
+
+
             <div
-                id="myTreeDiv"
-                ref={hiddenTreeDivRef}
                 style={{
-                    width: "250px",
+                    display: !vrMode ? "flex" : "none",
+                    width: "100%",
                     height: "100%",
-                    float: "left",
-                    // display: "flex",
-                    display: !vrMode ? "flex" : "none",
                 }}
-            ></div>
-
-            <div
-                id="myMainDiv"
-                className="main-div"
-                style={{
-                    display: !vrMode ? "flex" : "none",
-                }}
-            ></div>
-
-            <div
-                className="main-div"
-                // style={{
-                //     // display: vrMode ? "flex" : "none",
-                //     width: 100%
-                // }}
-                style={{ width: "100%", height: "100%" }}
             >
-                <NdmvrEnv
-                    currentConfig={appConfig}
-                    onConfigChange={applyConfig}
-                    hierarchy={hierarchy}
-                    rootNode={rootNode}
-                    hierarchyDocRef={hiddenTreeDivRef}
-                    onSelectItem={handleSelect}
-                    browser={true}
-                >
-                    {children}
-                </NdmvrEnv>
+                <div
+                    id="myTreeDiv"
+                    ref={hiddenTreeDivRef}
+                    style={{
+                        width: "250px",
+                        height: "100%",
+                        float: "left",
+                        // display: "flex",
+                        // display: !vrMode ? "flex" : "none",
+                    }}
+                ></div>
+
+                <div
+                    id="myMainDiv"
+                    className="main-div"
+                    // style={{}}
+                ></div>
             </div>
 
-            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
-        </div>
-    );
-}
+            {/*<div*/}
+            {/*    style={{*/}
+            {/*        display: vrMode ? "flex" : "none",*/}
+            {/*    }}*/}
+            {/*>*/}
+
+                <div
+                    className="main-div"
+
+                    style={{
+                        width: "100%", height: "100%",
+                        display: vrMode ? "flex" : "none",
+                    }}
+                >
+                    <NdmvrEnv
+                        currentConfig={appConfig}
+                        onConfigChange={applyConfig}
+                        hierarchy={hierarchy}
+                        rootNode={rootNode}
+                        hierarchyDocRef={hiddenTreeDivRef}
+                        onSelectItem={handleSelect}
+                        setBrowser={setBrowser}
+                        browser={true}
+                        setRendererMode={setRendererMode}
+                        rendererMode={rendererMode}
+                    >
+                        {children}
+                    </NdmvrEnv>
+                </div>
+
+
+            <UIToggleButton />
+            <FullscreenButton />
+
+
+                <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+            </div>
+            );
+            }

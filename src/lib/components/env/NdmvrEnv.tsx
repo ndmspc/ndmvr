@@ -18,13 +18,15 @@ import BinInfo from "../ui/shared/BinInfo.tsx";
 import DrawOptions from "../ui/shared/DrawOptions.tsx";
 import SettingsPanel from "../ui/shared/SettingsPanel.tsx";
 import FileBrowser from "../ui/shared/FileBrowser.tsx";
+import CloseBrowserMenu from "../ui/shared/CloseBrowserMenuProps.tsx";
+import OpenBrowserMenu from "../ui/shared/OpenBrowserMenuProps.tsx";
+import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const store = createXRStore();
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
-    browser?: boolean;
     showUIExternal?: boolean;
     currentConfig?: NdmvrConfig;
     hierarchy?: any;
@@ -33,15 +35,22 @@ export interface NdmvrEnvProps {
     onConfigChange?: ((config: NdmvrConfig) => void) | null;
     onUIStateChange?: (isVisible: boolean) => void;
     onSelectItem?: (path: string) => void;
+    browser?: boolean;
+    setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
+    rendererMode?: "jsroot" | "ndmvr";
+    setRendererMode?: React.Dispatch<React.SetStateAction<"jsroot" | "ndmvr">>;
 }
 
 export default function NdmvrEnv({
     children,
-    browser = false,
     hierarchy = null,
     rootNode = null,
     hierarchyDocRef = null,
     onSelectItem = null,
+    browser = false,
+    setBrowser,
+    rendererMode,
+    setRendererMode,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
@@ -86,6 +95,8 @@ export default function NdmvrEnv({
                                 root={rootNode}
                                 doc={hierarchyDocRef}
                                 onSelect={(p) => onSelectItem?.(p)}
+                                rendererMode={rendererMode}
+                                setRendererMode={setRendererMode}
                             />
                         </group>
                     )}
@@ -95,6 +106,13 @@ export default function NdmvrEnv({
                             <Demo />
                             <HttpConnectionMenu />
                             <WsConnectionMenu />
+                            {setBrowser && browser ? (
+                                <CloseBrowserMenu setBrowser={setBrowser} />
+                            ) : setBrowser ? (
+                                <OpenBrowserMenu setBrowser={setBrowser} />
+                            ) : (
+                                null
+                            )}
                             <BinInfo />
                             <DrawOptions />
                             <SettingsPanel />
