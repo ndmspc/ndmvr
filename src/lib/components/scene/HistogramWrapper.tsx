@@ -194,10 +194,20 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         setPainterLimits(null);
     };
 
+    const safeRemoveHistogram = (histogram: any, label: string) => {
+        try {
+            histogram?.remove?.();
+        } catch (e) {
+            console.warn(`[HistogramWrapper] Failed to remove ${label}:`, e);
+        }
+    };
+
     useEffect(() => {
         return () => {
-            nestedHistogram.current?.remove?.();
-            jsrootHistogram.current?.remove?.();
+            safeRemoveHistogram(nestedHistogram.current, "nested histogram");
+            safeRemoveHistogram(jsrootHistogram.current, "JSRoot histogram");
+            nestedHistogram.current = undefined;
+            jsrootHistogram.current = undefined;
         };
     }, [scene]);
 
@@ -286,7 +296,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
                         if (nestedHistogram.current) {
                             console.log("remove v jsroot");
-                            nestedHistogram.current.remove?.();
+                            safeRemoveHistogram(nestedHistogram.current, "nested histogram");
                             nestedHistogram.current = undefined;
                         }
 
@@ -326,7 +336,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         }
                     } else {
                         if (jsrootHistogram.current) {
-                            jsrootHistogram.current.remove?.();
+                            safeRemoveHistogram(jsrootHistogram.current, "JSRoot histogram");
                             jsrootHistogram.current = undefined;
                         }
 

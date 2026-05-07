@@ -4,6 +4,7 @@ import Switch from "../ui/desktop/Switch.tsx";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
+import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
@@ -35,6 +36,7 @@ export interface NdmspcEnvProps {
     controlsHelp?: boolean;
     menu?: boolean;
     help?: boolean;
+    setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
 function isEmptyObject(obj: any): boolean {
@@ -52,6 +54,7 @@ export default function NdmspcEnv({
     onConfigChange = null,
     help = false,
     menu = false,
+    setBrowser,
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
@@ -157,6 +160,7 @@ export default function NdmspcEnv({
                     onConfigChange={applyConfig}
                     showUIExternal={showUI}
                     onUIStateChange={handleUIStateChange}
+                    setBrowser={setBrowser}
                 >
                     {children}
                 </NdmvrEnv>
