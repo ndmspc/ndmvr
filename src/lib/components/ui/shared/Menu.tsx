@@ -1,4 +1,4 @@
-import { useEffect, useMemo, Children, isValidElement, cloneElement, use } from "react";
+import { useEffect, useMemo, Children, isValidElement, cloneElement, useRef } from "react";
 import { Text } from "@react-three/uikit";
 import Container from "../interactions/Container";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
@@ -34,8 +34,10 @@ export default function Menu({
         useMenuStore();
     const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
     const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
+    const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
     const keys = useKeyboardStore((s) => s.keys);
     const isFocused = useInputFocus((state) => state.isFocused);
+    const binBoxTogglePressed = useRef(false);
 
     const menuItems = useMemo(() => {
         const items: { name: string; label: string }[] = [];
@@ -68,6 +70,15 @@ export default function Menu({
 
         if (keys["KeyR"]) {
             window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+        }
+
+        if (keys["KeyB"]) {
+            if (!binBoxTogglePressed.current) {
+                toggleBinBoxEnabled();
+                binBoxTogglePressed.current = true;
+            }
+        } else {
+            binBoxTogglePressed.current = false;
         }
 
         if (keys["KeyM"] && (keys["ControlLeft"] || keys["ControlRight"])) {
@@ -112,11 +123,14 @@ export default function Menu({
         <>
             {activeTab !== "help" && (
                 <FloatingContainer
+                    renderOrder={5000}
                     originRef={originRef}
                     offset={offset}
                     transformScaleX={scale}
                     transformScaleY={scale}
                     transformScaleZ={scale}
+                    depthTest={false}
+                    depthWrite={false}
                 >
                     {activeTab === null && (
                         <Container classList={["menuContainer"]}>

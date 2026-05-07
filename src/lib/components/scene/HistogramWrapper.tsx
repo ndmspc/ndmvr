@@ -9,63 +9,126 @@ import {
     HistogramJsrootClass,
     histogramSubjectGet,
     THnPainter,
+    binInfoSubjectGet,
 } from "@ndmspc/ndmvr-core";
 import { vector3ToArray } from "../../utils/helper-functions.ts";
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
+import BinBox from "./BinBox";
+import {
+    applyHistogramPadBounds,
+    clonePainterLimits,
+    getBoundingFramePosition,
+    getBoundingFrameScale,
+    getShiftScaleStep,
+    type PainterLimits,
+} from "./histogram-wrapper/bounding-box-helpers";
+import {
+    getFirstBlockingIntersection,
+    hasBlockingIntersectionForObject,
+} from "./histogram-wrapper/intersections";
+import { getHoveredBinFrameData, type HoveredBinLike } from "./histogram-wrapper/hovered-bin-frame";
 
 export interface HistogramWrapperProps {
     id: string;
 }
 
-export default function HistogramWrapper({id}: HistogramWrapperProps) {
+type SourceRaycaster = THREE.Raycaster & {
+    _triggerSource?: string;
+};
+
+function setRaycasterTriggerSource(raycaster: THREE.Raycaster, source: string) {
+    (raycaster as SourceRaycaster)._triggerSource = source;
+}
+
+export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const { scene, camera, raycaster } = useThree();
-    const jsrootHistogram = useRef(null);
-    const nestedHistogram = useRef(null);
+    const jsrootHistogram = useRef<any>(null);
+    const nestedHistogram = useRef<any>(null);
+
     const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
+    const binBoxEnabled = useSceneModeStore((state) => state.binBoxEnabled);
     const setModifyModeEnabled = useSceneModeStore((state) => state.setModifyModeEnabled);
+
     const session = useXR((s) => s.session);
     const squeezeHeld = useRef(false);
-    const [jsrootMesh, setJsrootMesh] = useState(null);
-    const [jsrootError, setJsrootError] = useState(null);
+
+    const [jsrootMesh, setJsrootMesh] = useState<any>(null);
+    const [jsrootError, setJsrootError] = useState<any>(null);
     const [isJsrootRenderer, setIsJsrootRenderer] = useState(false);
 
-    const [currentShiftStep, setCurrentShiftStep] = useState({x: 0, y: 0, z: 0});
-    
+    const [currentShiftStep, setCurrentShiftStep] = useState({ x: 0, y: 0, z: 0 });
 
-    const [nestedMesh, setNestedMesh] = useState(null);
+    const [nestedMesh, setNestedMesh] = useState<any>(null);
+    const [wireframeObj, setWireframeObj] = useState<any>(null);
+    const [painterLimits, setPainterLimits] = useState<PainterLimits | null>(null);
+
+    const meshRef = useRef<any>(null);
+    const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
+    // Keep the last bin payload so re-entering the same bin can show the frame again.
+    const [hoveredBinFrameVisible, setHoveredBinFrameVisible] = useState(false);
+
     const instMesh = useMemo(() => {
         if (nestedMesh === null) return null;
-        nestedMesh.raycast = function (raycaster, intersects) {
+
+        nestedMesh.raycast = function (
+            raycasterArg: THREE.Raycaster,
+            intersects: THREE.Intersection[]
+        ) {
             const painter = nestedHistogram.current;
             if (!painter) return;
+
             try {
-                const res = painter.checkIntersectionBVH(raycaster.ray);
-                const hit = res[0];
+                const res = painter.checkIntersectionBVH(raycasterArg.ray);
+                const hit = res?.[0];
+
                 if (hit) {
                     intersects.push({
                         ...hit,
                         point: hit.target,
                         object: this,
-                    });
+                    } as THREE.Intersection);
                 }
             } catch (e) {
                 console.error(e);
             }
         };
+
         return nestedMesh;
     }, [nestedMesh]);
-    const meshRef = useRef(null);
 
-    const [wireframeObj, setWireframeObj] = useState(null);
-    const [painterLimits, setPainterLimits] = useState(null);
+    useEffect(() => {
+        const sub = binInfoSubjectGet()
+            .getObservable()
+            .subscribe((next: HoveredBinLike | null) => {
+                if (!binBoxEnabled) {
+                    setHoveredBinFrameVisible(false);
+                    return;
+                }
+
+                if (next?.instanceId === null || next?.instanceId === undefined) {
+                    setHoveredBinFrameVisible(false);
+                    setHoveredBin(null);
+                    return;
+                }
+
+                setHoveredBinFrameVisible(true);
+                setHoveredBin(next);
+            });
+
+        return () => sub.unsubscribe();
+    }, [binBoxEnabled]);
+
+    const hoveredBinFrameData = useMemo(() => {
+        return getHoveredBinFrameData(hoveredBin, isJsrootRenderer);
+    }, [hoveredBin, isJsrootRenderer]);
+
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
         if (isJsrootRenderer) return;
 
-        setPainterLimits({
-            position: position.clone(),
-            scale: scale.clone(),
-        });
+        setPainterLimits(clonePainterLimits(position, scale));
     };
 
     const applyHistogramModification = useCallback(
@@ -74,27 +137,21 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
             if (!currentConfig) return;
 
             const newConfig = structuredClone(currentConfig);
-            setCurrentShiftStep({
-                x: newConfig.config?.environment?.shiftScale?.x ?? 10,
-                y: newConfig.config?.environment?.shiftScale?.y ?? 10,
-                z: newConfig.config?.environment?.shiftScale?.z ?? 10,
-            });
-            const pad = newConfig.config?.environment?.histogramPads?.find((p) => p.id === id);
-            if (!pad) return;
 
-            pad.position = { x: position.x, y: position.y, z: position.z };
-            pad.scale = { x: scale.x, y: scale.y, z: scale.z };
+            setCurrentShiftStep(getShiftScaleStep(newConfig));
+
+            const changed = applyHistogramPadBounds(newConfig, id, position, scale);
+            if (!changed) return;
 
             configSubjectGet().next(newConfig);
         },
         [id]
     );
 
-
     const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
         if (isJsrootRenderer) return;
 
-        console.log("Config changed from Wrapper:   ", position, scale);
+        console.log("Config changed from Wrapper:", position, scale);
         applyHistogramModification(position.clone(), scale.clone());
     };
 
@@ -104,15 +161,21 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
         }
     }, [isJsrootRenderer, modifyModeEnabled, setModifyModeEnabled]);
 
-    const disposeThree = (obj) => {
+    const disposeThree = (obj: any) => {
         if (!obj) return;
-        const disposeOne = (o) => {
-            if (o.geometry) o.geometry.dispose?.();
+
+        const disposeOne = (o: any) => {
+            o.geometry?.dispose?.();
+
             if (o.material) {
-                if (Array.isArray(o.material)) o.material.forEach((m) => m?.dispose?.());
-                else o.material.dispose?.();
+                if (Array.isArray(o.material)) {
+                    o.material.forEach((m: any) => m?.dispose?.());
+                } else {
+                    o.material.dispose?.();
+                }
             }
         };
+
         disposeOne(obj);
         obj.traverse?.(disposeOne);
     };
@@ -125,51 +188,56 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
     const clearNestedMeshes = () => {
         if (nestedMesh) disposeThree(nestedMesh);
         if (wireframeObj) disposeThree(wireframeObj);
+
         setNestedMesh(null);
         setWireframeObj(null);
         setPainterLimits(null);
     };
 
     useEffect(() => {
-
         return () => {
-            nestedHistogram.current?.remove();
-            jsrootHistogram.current?.remove();
+            nestedHistogram.current?.remove?.();
+            jsrootHistogram.current?.remove?.();
         };
     }, [scene]);
 
-    // Track VR squeeze as modifier (like Shift on desktop)
     useEffect(() => {
         if (!session) return;
+
         const onSqueezeStart = () => {
             squeezeHeld.current = true;
         };
+
         const onSqueezeEnd = () => {
             squeezeHeld.current = false;
         };
+
         session.addEventListener("squeezestart", onSqueezeStart);
         session.addEventListener("squeezeend", onSqueezeEnd);
+
         return () => {
             session.removeEventListener("squeezestart", onSqueezeStart);
             session.removeEventListener("squeezeend", onSqueezeEnd);
         };
     }, [session]);
 
-    const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    function raycastHandler(event) {
+    function raycastHandler(event: any) {
         const painter = nestedHistogram.current;
         if (!painter) return;
 
-        // Skip if a closer object (e.g. UI panel) was hit first
-        if (event.intersections[0]?.object !== event.object) return;
-
-        console.log(`[HistogramWrapper] Raycatst event: ${event.type}, shift/squeeze: ${event.nativeEvent?.shiftKey || squeezeHeld.current}`);
+        if (
+            event.type !== "pointermove" &&
+            event.type !== "pointerover" &&
+            getFirstBlockingIntersection(event.intersections)?.object !== event.object
+        ) {
+            return;
+        }
 
         const isShift = event.nativeEvent?.shiftKey || squeezeHeld.current;
 
         if (event.type === "click") {
             const source = isShift ? "shiftmouseclick" : "mouseclick";
+
             clickTimeout.current = setTimeout(() => {
                 clickTimeout.current = null;
                 painter.intersectionHandler(event, source);
@@ -179,24 +247,41 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                 clearTimeout(clickTimeout.current);
                 clickTimeout.current = null;
             }
+
             const source = isShift ? "shiftmousedbclick" : "mousedbclick";
             painter.intersectionHandler(event, source);
-        } else if (event.type === "pointermove") {
+        } else if (event.type === "pointermove" || event.type === "pointerover") {
+            if (!binBoxEnabled) {
+                setHoveredBinFrameVisible(false);
+                return;
+            }
+
             painter.intersectionHandler(event, "mousemove");
+            setHoveredBinFrameVisible(true);
         }
+    }
+
+    function clearHoveredBinFrame(event: any) {
+        if (hasBlockingIntersectionForObject(event.intersections, event.object)) {
+            return;
+        }
+
+        // Hide only the frame; keep hoveredBin cached for same-bin re-entry.
+        setHoveredBinFrameVisible(false);
     }
 
     useEffect(() => {
         console.log(`[HistogramWrapper] Subscribing to histogram ${id} updates`);
+
         const histoSub = histogramSubjectGet()
             .getStream(id)
             .pipe(filter((e) => (e as { id: string | number }).id === id))
-            .subscribe((histo) => {
+            .subscribe((histo: any) => {
                 try {
                     const isJsroot = histo?.opts?.render === "jsroot";
                     setIsJsrootRenderer(isJsroot);
 
-                    if (histo?.opts?.render === "jsroot") {
+                    if (isJsroot) {
                         setModifyModeEnabled(false);
 
                         if (nestedHistogram.current) {
@@ -204,6 +289,7 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                             nestedHistogram.current.remove?.();
                             nestedHistogram.current = undefined;
                         }
+
                         clearNestedMeshes();
                         setJsrootError(null);
 
@@ -212,12 +298,11 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
-                                    // JSROOT mode ignores modify scale and always renders with unit scale.
                                     mesh?.scale?.set(1, 1, 1);
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
-                                .catch((e) => {
+                                .catch((e: any) => {
                                     console.log(e);
                                     setJsrootError(e);
                                 });
@@ -230,32 +315,32 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                             jsrootHistogram.current.buildPromise
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
-                                    // JSROOT mode ignores modify scale and always renders with unit scale.
                                     mesh?.scale?.set(1, 1, 1);
                                     setJsrootMesh(mesh);
                                     setJsrootError(null);
                                 })
-                                .catch((e) => {
+                                .catch((e: any) => {
                                     console.log(e);
                                     setJsrootError(e);
                                 });
                         }
-                    }
-                    else {
+                    } else {
                         if (jsrootHistogram.current) {
                             jsrootHistogram.current.remove?.();
                             jsrootHistogram.current = undefined;
                         }
-                        clearJsrootMesh();
 
+                        clearJsrootMesh();
 
                         if (nestedHistogram.current) {
                             nestedHistogram.current.updateHistogram(histo).then(() => {
-                                // Update painter limits when histogram is updated
                                 setPainterLimits(nestedHistogram.current.limits);
-                                // nestedHistogram.current.remove();
-                                // nestedHistogram.current = undefined;
-                                console.log("[HistogramWrapper] UPDATE: ", name, nestedHistogram.current);
+                                setNestedMesh(() => nestedHistogram.current.mesh);
+                                setWireframeObj(
+                                    () => nestedHistogram.current.wireframe?.wireframe ?? null
+                                );
+
+                                console.log("[HistogramWrapper] UPDATE:", nestedHistogram.current);
                             });
                         } else {
                             const painter = new THnPainter(histo, id, histo?.opts);
@@ -264,9 +349,10 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                                 nestedHistogram.current = painter;
 
                                 setNestedMesh(() => painter.mesh);
-                                setWireframeObj(() => painter.wireframe.wireframe);
+                                setWireframeObj(() => painter.wireframe?.wireframe ?? null);
                                 setPainterLimits(painter.limits);
-                                console.log("[HistogramWrapper] NEW:", name, painter);
+
+                                console.log("[HistogramWrapper] NEW:", painter);
                             });
                         }
                     }
@@ -280,40 +366,45 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [id]);
+    }, [camera, id, setModifyModeEnabled]);
 
     return (
         <>
             <group>
-                {
-                    <Text
-                        position={vector3ToArray(jsrootError?.position)}
-                        fontSize={0.5}
-                        color="red"
-                        visible={jsrootError !== null}
-                    >
-                        Object cannot be rendered
-                    </Text>
-                }
+                <Text
+                    position={vector3ToArray(jsrootError?.position)}
+                    fontSize={0.5}
+                    color="red"
+                    visible={jsrootError !== null}
+                >
+                    Object cannot be rendered
+                </Text>
 
                 {jsrootMesh && (
                     <primitive
                         key={jsrootMesh.uuid}
                         object={jsrootMesh}
                         onPointerMove={() => {
-                            (raycaster as any)._triggerSource = "mousemove";
+                            setRaycasterTriggerSource(raycaster, "mousemove");
                         }}
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
-                            (raycaster as any)._triggerSource = isShift ? "shiftmouseclick" : "mouseclick";
+                            setRaycasterTriggerSource(
+                                raycaster,
+                                isShift ? "shiftmouseclick" : "mouseclick"
+                            );
                         }}
-                        onDoubleClick={(e) => {
+                        onDoubleClick={(e: any) => {
                             const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
-                            (raycaster as any)._triggerSource = isShift ? "shiftmousedbclick" : "mousedbclick";
+                            setRaycasterTriggerSource(
+                                raycaster,
+                                isShift ? "shiftmousedbclick" : "mousedbclick"
+                            );
                         }}
                     />
                 )}
             </group>
+
             {nestedMesh && (
                 <primitive
                     key={nestedMesh.uuid}
@@ -321,27 +412,39 @@ export default function HistogramWrapper({id}: HistogramWrapperProps) {
                     object={instMesh}
                     onClick={raycastHandler}
                     onDoubleClick={raycastHandler}
+                    onPointerOver={raycastHandler}
                     onPointerMove={raycastHandler}
+                    onPointerOut={clearHoveredBinFrame}
                 />
             )}
+
             {wireframeObj && <primitive object={wireframeObj} />}
+
             {painterLimits && modifyModeEnabled && !isJsrootRenderer && (
                 <BoundingFrameBox
-                    position={new THREE.Vector3(
-                        painterLimits.position?.x ?? 0,
-                        painterLimits.position?.y ?? 0,
-                        painterLimits.position?.z ?? 0
-                    )}
-                    scale={new THREE.Vector3(
-                        painterLimits.scale?.x ?? 2,
-                        painterLimits.scale?.y ?? 2,
-                        painterLimits.scale?.z ?? 2
-                    )}
+                    position={getBoundingFramePosition(painterLimits)}
+                    scale={getBoundingFrameScale(painterLimits)}
                     shiftScaleStep={currentShiftStep}
                     onChange={onBoundingBoxChange}
                     onDragEnd={onBoundingBoxDragEnd}
                 />
             )}
+
+            {binBoxEnabled &&
+                hoveredBinFrameVisible &&
+                hoveredBinFrameData &&
+                !modifyModeEnabled && (
+                    <BinBox
+                        position={hoveredBinFrameData.position}
+                        scale={hoveredBinFrameData.scale}
+                        axisRanges={hoveredBinFrameData.axisRanges}
+                        contentLabel={hoveredBinFrameData.contentLabel}
+                        color="#ffff00"
+                        showOnlyOnHover={false}
+                        labelFontSize={64}
+                        passThroughPointerEvents={true}
+                    />
+                )}
         </>
     );
 }
