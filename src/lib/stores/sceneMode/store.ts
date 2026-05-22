@@ -93,7 +93,7 @@ export const useSceneModeStore = create<SceneModeStore>((set, get) => ({
     vrEnabled: true,
     uiHover: false,
     activeMode: "default",
-    binBoxEnabled: true,
+    binBoxEnabled: false,
 
     modesConfig: defaultSceneModesConfig,
 
