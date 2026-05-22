@@ -32,8 +32,8 @@ export default function Menu({
 }: MenuProps) {
     const { showMenu, activeTab, setShowMenu, setActiveTab, setMenuExists, toggleTab } =
         useMenuStore();
-    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
-    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
+    const activeMode = useSceneModeStore((s) => s.activeMode);
+    const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
     const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
     const keys = useKeyboardStore((s) => s.keys);
     const isFocused = useInputFocus((state) => state.isFocused);
@@ -82,13 +82,13 @@ export default function Menu({
         }
 
         if (keys["KeyM"] && (keys["ControlLeft"] || keys["ControlRight"])) {
-            setModifyModeEnabled(!modifyModeEnabled);
+            setActiveMode(activeMode === "default" ? "modify" : "default");
             window.dispatchEvent(
-                new CustomEvent("ndmvr-modify-mode-toggle", { detail: { enabled: !modifyModeEnabled } })
+                new CustomEvent("ndmvr-mode-toggle", { detail: { enabled: activeMode === "default" ? "modify" : "default" } })
             );
         }
 
-        if (useSceneModeStore.getState().modifyModeEnabled && (keys["ShiftLeft"] || keys["ShiftRight"])) {
+        if (useSceneModeStore.getState().activeMode === "modify" && (keys["ShiftLeft"] || keys["ShiftRight"])) {
             window.dispatchEvent(
                 new CustomEvent("ndmvr-shiftstep-scale", {
                     detail: { pressed: true },

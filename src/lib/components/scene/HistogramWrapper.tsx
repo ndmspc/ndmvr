@@ -8,11 +8,12 @@ import {
     configSubjectGet,
     HistogramJsrootClass,
     histogramSubjectGet,
+    functionSubjectGet,
     THnPainter,
     binInfoSubjectGet,
 } from "@ndmspc/ndmvr-core";
 import { vector3ToArray } from "../../utils/helper-functions.ts";
-import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
+import { histogramEvents, useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
 import BinBox from "./BinBox";
 import {
@@ -46,9 +47,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const jsrootHistogram = useRef<any>(null);
     const nestedHistogram = useRef<any>(null);
 
-    const modifyModeEnabled = useSceneModeStore((state) => state.modifyModeEnabled);
+    const activeMode = useSceneModeStore((state) => state.activeMode);
+    const setActiveMode = useSceneModeStore((state) => state.setActiveMode);
+    const getActiveConfigHistogramEvents = useSceneModeStore((state) => state.modesConfig[state.activeMode]?.histogramEvents);
     const binBoxEnabled = useSceneModeStore((state) => state.binBoxEnabled);
-    const setModifyModeEnabled = useSceneModeStore((state) => state.setModifyModeEnabled);
 
     const session = useXR((s) => s.session);
     const squeezeHeld = useRef(false);
@@ -56,8 +58,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const [jsrootMesh, setJsrootMesh] = useState<any>(null);
     const [jsrootError, setJsrootError] = useState<any>(null);
     const [isJsrootRenderer, setIsJsrootRenderer] = useState(false);
-
     const [currentShiftStep, setCurrentShiftStep] = useState({ x: 0, y: 0, z: 0 });
+
 
     const [nestedMesh, setNestedMesh] = useState<any>(null);
     const [wireframeObj, setWireframeObj] = useState<any>(null);
@@ -134,6 +136,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const applyHistogramModification = useCallback(
         (position: THREE.Vector3, scale: THREE.Vector3) => {
             const currentConfig = configSubjectGet().getValue();
+
+            console.log("Applying histogram modification: ", currentConfig);
+
             if (!currentConfig) return;
 
             const newConfig = structuredClone(currentConfig);
@@ -148,6 +153,48 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         [id]
     );
 
+    useEffect(() => {
+        if (!nestedMesh || !nestedHistogram.current) return;
+
+        const target = {
+            entity: "nested-histogram",
+            id: id,
+        };
+
+        if (!activeMode) {
+            console.log("[Mode toggled] No active mode, skipping function addition");
+            return;
+        }
+
+        const modeConfig = getActiveConfigHistogramEvents;
+        if (!modeConfig) {
+            console.log("[Mode toggled] Invalid mode config, skipping function addition");
+            return;
+        }
+
+        console.log("[Mode toggled] Current mode:", activeMode);
+        console.log("[Mode toggled] Removing functions for histogram:", id);
+        functionSubjectGet().removeFunctions(histogramEvents.map((event) => ({ event, target })));
+
+        const functionsToAdd = histogramEvents.flatMap((event) => {
+            const eventConfig = modeConfig[event];
+            if (eventConfig === null || eventConfig === undefined) return [];
+            if (eventConfig === "default") return [{ event, target }];
+
+            const handlers = Array.isArray(eventConfig) ? eventConfig : [eventConfig];
+            return handlers.map((handler) => ({
+                event,
+                target,
+                function: handler,
+            }));
+        });
+
+        if (functionsToAdd.length > 0) {
+            console.log("[Mode toggled] Adding functions for histogram:", id, "Functions:", functionsToAdd);
+            functionSubjectGet().addFunctions(functionsToAdd);
+        }
+    }, [activeMode, getActiveConfigHistogramEvents, id, nestedMesh]);
+
     const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
         if (isJsrootRenderer) return;
 
@@ -156,10 +203,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     };
 
     useEffect(() => {
-        if (isJsrootRenderer && modifyModeEnabled) {
-            setModifyModeEnabled(false);
+        if (isJsrootRenderer && activeMode === "modify") {
+            setActiveMode("default");
         }
-    }, [isJsrootRenderer, modifyModeEnabled, setModifyModeEnabled]);
+    }, [isJsrootRenderer, activeMode, setActiveMode]);
 
     const disposeThree = (obj: any) => {
         if (!obj) return;
@@ -292,7 +339,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     setIsJsrootRenderer(isJsroot);
 
                     if (isJsroot) {
-                        setModifyModeEnabled(false);
+                        if (activeMode === "modify") {
+                            setActiveMode("default");
+                        }
 
                         if (nestedHistogram.current) {
                             console.log("remove v jsroot");
@@ -376,7 +425,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [camera, id, setModifyModeEnabled]);
+    }, [camera, id, setActiveMode]);
 
     return (
         <>
@@ -430,7 +479,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
             {wireframeObj && <primitive object={wireframeObj} />}
 
-            {painterLimits && modifyModeEnabled && !isJsrootRenderer && (
+            {painterLimits && activeMode === "modify" && !isJsrootRenderer && (
                 <BoundingFrameBox
                     position={getBoundingFramePosition(painterLimits)}
                     scale={getBoundingFrameScale(painterLimits)}
@@ -443,7 +492,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             {binBoxEnabled &&
                 hoveredBinFrameVisible &&
                 hoveredBinFrameData &&
-                !modifyModeEnabled && (
+                activeMode !== "modify" && (
                     <BinBox
                         position={hoveredBinFrameData.position}
                         scale={hoveredBinFrameData.scale}

@@ -58,6 +58,7 @@
         "ajv": "^8.18.0",
         "d3-selection": "^3.0.0",
         "jsroot": "^7.10.3",
+        "lucide-react": "^1.14.0",
         "rxjs": "^7.8.2",
         "styled-components": "^6.3.11",
         "three": "^0.183.2",
