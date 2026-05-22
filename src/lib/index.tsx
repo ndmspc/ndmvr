@@ -74,6 +74,15 @@ export type { HistogramContext } from "./components/scene/NdmvrContent.tsx";
 export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
 export type { CanvasComponentProps, CanvasLocation } from "./components/scene/CanvasComponent.tsx";
 export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";
+export type {
+    HistogramEventName,
+    HistogramEventFunction,
+    HistogramEventFunctionConfig,
+    ModeToolIcon,
+    ModeToolIconProps,
+    SceneModeConfig,
+    SceneModesConfig,
+} from "./stores/sceneMode/store.ts";
 export type { CameraSyncProps } from "./components/systems/CameraSync.tsx";
 export type { ControllersProps } from "./components/systems/inputs/Controllers.tsx";
 export type { DesktopControllerProps } from "./components/systems/inputs/DesktopController.tsx";

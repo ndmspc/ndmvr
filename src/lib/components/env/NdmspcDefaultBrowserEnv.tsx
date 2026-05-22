@@ -1,6 +1,7 @@
 import NdmvrEnv from "./NdmvrEnv.tsx";
 // import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
+import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -274,36 +275,29 @@ export default function NdmspcDefaultBrowserEnv({
             {/*    }}*/}
             {/*>*/}
 
-                <div
-                    className="main-div"
-
-                    style={{
-                        width: "100%", height: "100%",
-                        display: vrMode ? "flex" : "none",
-                    }}
+            <div
+                className="main-div"
+                // style={{
+                //     // display: vrMode ? "flex" : "none",
+                //     width: 100%
+                // }}
+                style={{ width: "100%", height: "100%" }}
+            >
+                <NdmvrEnv
+                    currentConfig={appConfig}
+                    onConfigChange={applyConfig}
+                    hierarchy={hierarchy}
+                    rootNode={rootNode}
+                    hierarchyDocRef={hiddenTreeDivRef}
+                    onSelectItem={handleSelect}
+                    browser={true}
                 >
-                    <NdmvrEnv
-                        currentConfig={appConfig}
-                        onConfigChange={applyConfig}
-                        hierarchy={hierarchy}
-                        rootNode={rootNode}
-                        hierarchyDocRef={hiddenTreeDivRef}
-                        onSelectItem={handleSelect}
-                        setBrowser={setBrowser}
-                        browser={true}
-                        setRendererMode={setRendererMode}
-                        rendererMode={rendererMode}
-                    >
-                        {children}
-                    </NdmvrEnv>
-                </div>
-
-
-            <UIToggleButton />
-            <FullscreenButton />
-
-
-                <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+                    {children}
+                </NdmvrEnv>
             </div>
-            );
-            }
+
+            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+            {vrMode && <ModeToolsPanel />}
+        </div>
+    );
+}

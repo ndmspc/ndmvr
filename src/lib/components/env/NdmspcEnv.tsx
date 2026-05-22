@@ -10,6 +10,7 @@ import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
+import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 import app from "../../../App.tsx";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
 
@@ -177,6 +178,7 @@ export default function NdmspcEnv({
             />
             <FullscreenButton />
             <UIToggleButton />
+            {vrMode && <ModeToolsPanel />}
             {vrMode && touch && (
                 <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />
             )}

@@ -51,8 +51,8 @@ export default function VRController({
     const isFocused = useInputFocus((state) => state.isFocused);
 
     const lastSnap = useRef(false);
-    const modifyModeEnabled = useSceneModeStore((s) => s.modifyModeEnabled);
-    const setModifyModeEnabled = useSceneModeStore((s) => s.setModifyModeEnabled);
+    const activeMode = useSceneModeStore((s) => s.activeMode);
+    const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -165,10 +165,10 @@ export default function VRController({
             const APressed = !!A && (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
             if (APressed && !lastA.current) {
                 // Toggle Modify Mode with left grip
-                setModifyModeEnabled(!modifyModeEnabled);
+                setActiveMode(activeMode === "default" ? "modify" : "default");
                 window.dispatchEvent(
-                    new CustomEvent("ndmvr-modify-mode-toggle", {
-                        detail: { enabled: !modifyModeEnabled },
+                    new CustomEvent("ndmvr-mode-toggle", {
+                        detail: { enabled: activeMode === "default" ? "modify" : "default" },
                     })
                 );
             }
@@ -210,7 +210,7 @@ export default function VRController({
                 (rightTrigger.state === "pressed" ||
                     (rightTrigger.button ?? 0) > TRIGGER_T);
 
-            const snapPressed = modifyModeEnabled && rightTriggerPressed;
+            const snapPressed = activeMode === "modify" && rightTriggerPressed;
 
             if (snapPressed !== lastSnap.current) {
                 window.dispatchEvent(

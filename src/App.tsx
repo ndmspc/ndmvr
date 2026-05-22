@@ -6,8 +6,52 @@ import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
 import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
 import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
+import type { SceneModesConfig } from "./lib/index.tsx";
+import { useSceneModeStore } from "./lib/stores/sceneMode/store.ts";
+
+const modesConfig: SceneModesConfig = {
+    default: {
+        title: "Default mode",
+        ariaLabel: "Enable default mode",
+        icon: "",
+        histogramEvents: {
+            mouseclick: "default",
+            mousedbclick: "default",
+            shiftmouseclick: "default",
+            shiftmousedbclick: "default",
+            mousemove: "default",
+        },
+    },
+
+    modify: {
+        title: "Modify mode",
+        ariaLabel: "Enable modify mode",
+        icon: "Hammer",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+    },
+
+    // inspect: {
+    //     title: "Inspect mode",
+    //     ariaLabel: "Enable inspect mode",
+    //     icon: "Eye",
+    //     histogramEvents: {
+    //         mouseclick: (d) => console.log("Inspect mode: mouseclick : ", d),
+    //         mousemove: "default",
+    //     },
+    // },
+};
+
 function App() {
     const [configState, setConfigState] = useState<NdmspcConfig>({ type: "" });
+
+    const setModesConfig = useSceneModeStore((state) => state.setModesConfig);
+
     // const effectRan = useRef(false);
     //
     // const effectRan = useRef(false);
@@ -70,6 +114,10 @@ function App() {
             }
         }
     }
+
+    useEffect(() => {
+        modesConfig && setModesConfig(modesConfig);
+    }, [modesConfig]);
 
     useEffect(() => {
         brokerManagerGet().createWs("ws://localhost:8080/ws/root.websocket", false, 60);
