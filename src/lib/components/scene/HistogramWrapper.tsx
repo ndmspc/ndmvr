@@ -308,13 +308,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             const source = isShift ? "shiftmousedbclick" : "mousedbclick";
             painter.intersectionHandler(event, source);
         } else if (event.type === "pointermove" || event.type === "pointerover") {
-            if (!binBoxEnabled) {
-                setHoveredBinFrameVisible(false);
-                return;
-            }
-
+            setHoveredBinFrameVisible(binBoxEnabled);
             painter.intersectionHandler(event, "mousemove");
-            setHoveredBinFrameVisible(true);
         }
     }
 
