@@ -41,6 +41,7 @@ export default function VRController({
 
     const lastA = useRef(false);
     const lastB = useRef(false);
+    const lastBinBoxToggle = useRef(false);
     const lastX = useRef(false);
     const lastY = useRef(false);
     const lastRightSqueeze = useRef(false);
@@ -53,6 +54,7 @@ export default function VRController({
     const lastSnap = useRef(false);
     const activeMode = useSceneModeStore((s) => s.activeMode);
     const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
+    const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -222,9 +224,14 @@ export default function VRController({
 
             const bBtn = (rightGamepad as any)["b-button"];
             const bPressed = !!bBtn && bBtn.state === "pressed";
-            if (bPressed && !lastB.current) {
+            const binBoxTogglePressed = rightSqueezePressed && bPressed;
+
+            if (binBoxTogglePressed && !lastBinBoxToggle.current) {
+                toggleBinBoxEnabled();
+            } else if (bPressed && !rightSqueezePressed && !lastB.current) {
                 toggleTab?.(null);
             }
+            lastBinBoxToggle.current = binBoxTogglePressed;
             lastB.current = bPressed;
 
             const aBtn = (rightGamepad as any)["a-button"];
