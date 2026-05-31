@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { NdmspcConfig } from "../../../interfaces/NdmspcConfig";
+import { store } from "../../env/xrStore";
 
 interface MenuMetadata {
     menuName: string;
@@ -12,10 +13,27 @@ interface CloseBrowserMenuProps {
 
 function CloseBrowserMenu({ setBrowser }: CloseBrowserMenuProps) {
     useEffect(() => {
-        setBrowser((prev) => ({
-            ...(prev ?? {}),
-            type: "object",
-        }));
+        let cancelled = false;
+
+        const closeBrowser = () => {
+            if (cancelled) return;
+
+            setBrowser((prev) => ({
+                ...(prev ?? {}),
+                type: "object",
+            }));
+        };
+
+        const session = store.getState().session;
+        if (session) {
+            session.end().then(closeBrowser).catch(closeBrowser);
+        } else {
+            closeBrowser();
+        }
+
+        return () => {
+            cancelled = true;
+        };
     }, [setBrowser]);
 
     return null;

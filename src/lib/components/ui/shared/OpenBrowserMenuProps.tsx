@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { NdmspcConfig } from "../../../interfaces/NdmspcConfig";
+import { store } from "../../env/xrStore";
 
 interface MenuMetadata {
     menuName: string;
@@ -12,10 +13,27 @@ interface OpenBrowserMenuProps {
 
 function OpenBrowserMenu({ setBrowser }: OpenBrowserMenuProps) {
     useEffect(() => {
-        setBrowser((prev) => ({
-            ...(prev ?? {}),
-            type: "browser",
-        }));
+        let cancelled = false;
+
+        const openBrowser = () => {
+            if (cancelled) return;
+
+            setBrowser((prev) => ({
+                ...(prev ?? {}),
+                type: "browser",
+            }));
+        };
+
+        const session = store.getState().session;
+        if (session) {
+            session.end().then(openBrowser).catch(openBrowser);
+        } else {
+            openBrowser();
+        }
+
+        return () => {
+            cancelled = true;
+        };
     }, [setBrowser]);
 
     return null;

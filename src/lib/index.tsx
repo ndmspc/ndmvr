@@ -93,4 +93,4 @@ export type { NdmspcConfig } from "./interfaces/NdmspcConfig.ts";
 export type { NdmvrConfig } from "./interfaces/NdmvrConfig.ts";
 
 // Re-export the XR store for consumers
-export { store } from "./components/env/NdmvrEnv.tsx";
+export { store } from "./components/env/xrStore.ts";
