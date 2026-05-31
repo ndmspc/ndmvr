@@ -163,18 +163,6 @@ export default function VRController({
             }
             lastY.current = yPressed;
 
-            const A = (rightGamepad as any)["a-button"];
-            const APressed = !!A && (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
-            if (APressed && !lastA.current) {
-                // Toggle Modify Mode with left grip
-                setActiveMode(activeMode === "default" ? "modify" : "default");
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-mode-toggle", {
-                        detail: { enabled: activeMode === "default" ? "modify" : "default" },
-                    })
-                );
-            }
-            lastA.current = APressed;
         }
 
         if (rightGamepad) {
@@ -221,6 +209,23 @@ export default function VRController({
                 lastSnap.current = snapPressed;
             }
 
+            const aBtn = (rightGamepad as any)["a-button"];
+            const aPressed = !!aBtn && aBtn.state === "pressed";
+
+            if (aPressed && !lastA.current) {
+                if (rightSqueezePressed) {
+                    const nextMode = activeMode === "default" ? "modify" : "default";
+                    setActiveMode(nextMode);
+                    window.dispatchEvent(
+                        new CustomEvent("ndmvr-mode-toggle", {
+                            detail: { enabled: nextMode },
+                        })
+                    );
+                } else {
+                    window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
+                }
+            }
+            lastA.current = aPressed;
 
             const bBtn = (rightGamepad as any)["b-button"];
             const bPressed = !!bBtn && bBtn.state === "pressed";
@@ -233,13 +238,6 @@ export default function VRController({
             }
             lastBinBoxToggle.current = binBoxTogglePressed;
             lastB.current = bPressed;
-
-            const aBtn = (rightGamepad as any)["a-button"];
-            const aPressed = !!aBtn && aBtn.state === "pressed";
-            if (aPressed && !lastA.current) {
-                window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
-            }
-            lastA.current = aPressed;
         }
 
         if (leftGamepad && rightGamepad) {

@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import { createXRStore, XR, XROrigin } from "@react-three/xr";
+import { XR, XROrigin } from "@react-three/xr";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import CameraSync from "../systems/CameraSync.tsx";
@@ -21,9 +21,9 @@ import FileBrowser from "../ui/shared/FileBrowser.tsx";
 import CloseBrowserMenu from "../ui/shared/CloseBrowserMenuProps.tsx";
 import OpenBrowserMenu from "../ui/shared/OpenBrowserMenuProps.tsx";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
+import { store } from "./xrStore";
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const store = createXRStore();
+export { store };
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
@@ -82,8 +82,8 @@ export default function NdmvrEnv({
                     gl.toneMappingExposure = 1;
                 }}
             >
-                <color attach="background" args={["#ececec"]} />
-                <PerspectiveCamera ref={cameraRef} makeDefault position={[x, y, z]} fov={90} />
+                <color attach="background" args={["#c7e8f6"]} />
+                <PerspectiveCamera ref={cameraRef} makeDefault position={[x, y, z]} fov={75} />
 
                 <XR store={store}>
                     <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />

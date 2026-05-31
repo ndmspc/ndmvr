@@ -3,7 +3,9 @@ import { Text } from "@react-three/uikit";
 import Container from "../interactions/Container";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import * as THREE from "three";
+import { useXR } from "@react-three/xr";
 
+import DesktopMenuOverlay from "./DesktopMenuOverlay.tsx";
 import FloatingContainer from "./FloatingContainer.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
 import { useMenuStore } from "../../../stores/menu/store.ts";
@@ -12,6 +14,15 @@ import { useInputFocus } from "../focus/useInputFocus.ts";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
 
 const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
+
+type MenuChildType = {
+    menuName?: string;
+    menuLabel?: string;
+};
+
+function getMenuChildType(child: React.ReactElement<unknown>): MenuChildType {
+    return child.type as unknown as MenuChildType;
+}
 
 export interface MenuProps {
     children?: React.ReactNode;
@@ -36,16 +47,18 @@ export default function Menu({
     const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
     const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
     const keys = useKeyboardStore((s) => s.keys);
+    const session = useXR((s) => s.session);
     const isFocused = useInputFocus((state) => state.isFocused);
     const binBoxTogglePressed = useRef(false);
+    const isXR = session !== null && session !== undefined;
 
     const menuItems = useMemo(() => {
         const items: { name: string; label: string }[] = [];
         Children.forEach(children, (child) => {
             if (!isValidElement(child)) return;
-            const type = child.type as any;
+            const type = getMenuChildType(child);
             if (type?.menuName) {
-                items.push({ name: type.menuName, label: type.menuLabel });
+                items.push({ name: type.menuName, label: type.menuLabel ?? type.menuName });
             }
         });
         return items;
@@ -119,53 +132,67 @@ export default function Menu({
     }, [keys, isFocused]);
 
     if (!showMenu) return null;
+
+    const activeTabContent =
+        activeTab !== null &&
+        Children.map(children, (child) => {
+            if (!isValidElement(child)) return null;
+            const type = getMenuChildType(child);
+            if (type?.menuName === activeTab) return child;
+            return null;
+        });
+
+    const menuContent = (
+        <>
+            {activeTab === null && (
+                <Container classList={["menuContainer"]}>
+                    <Text classList={["menuHeader"]}>Menu</Text>
+
+                    <Container flexDirection="column" gap={8}>
+                        <WebsocketBanner showTransient={true} />
+                        <Container classList={["menuBlock"]}>
+                            <RadioGroup onValueChange={setActiveTab}>
+                                {menuItems.map((item) => (
+                                    <RadioGroupItem key={item.name} value={item.name}>
+                                        <Label>
+                                            <Text>{item.label}</Text>
+                                        </Label>
+                                    </RadioGroupItem>
+                                ))}
+                            </RadioGroup>
+                        </Container>
+                    </Container>
+                </Container>
+            )}
+            {activeTabContent}
+        </>
+    );
+
     return (
         <>
             {activeTab !== "help" && (
-                <FloatingContainer
-                    renderOrder={5000}
-                    originRef={originRef}
-                    offset={offset}
-                    transformScaleX={scale}
-                    transformScaleY={scale}
-                    transformScaleZ={scale}
-                    depthTest={false}
-                    depthWrite={false}
-                >
-                    {activeTab === null && (
-                        <Container classList={["menuContainer"]}>
-                            <Text classList={["menuHeader"]}>Menu</Text>
-
-                            <Container flexDirection="column" gap={8}>
-                                <WebsocketBanner showTransient={true} />
-                                <Container classList={["menuBlock"]}>
-                                    <RadioGroup onValueChange={setActiveTab}>
-                                        {menuItems.map((item) => (
-                                            <RadioGroupItem key={item.name} value={item.name}>
-                                                <Label>
-                                                    <Text>{item.label}</Text>
-                                                </Label>
-                                            </RadioGroupItem>
-                                        ))}
-                                    </RadioGroup>
-                                </Container>
-                            </Container>
-                        </Container>
-                    )}
-                    {activeTab !== null &&
-                        Children.map(children, (child) => {
-                            if (!isValidElement(child)) return null;
-                            const type = child.type as any;
-                            if (type?.menuName === activeTab) return child;
-                            return null;
-                        })}
-                </FloatingContainer>
+                isXR ? (
+                    <FloatingContainer
+                        renderOrder={5000}
+                        originRef={originRef}
+                        offset={offset}
+                        transformScaleX={scale}
+                        transformScaleY={scale}
+                        transformScaleZ={scale}
+                        depthTest={false}
+                        depthWrite={false}
+                    >
+                        {menuContent}
+                    </FloatingContainer>
+                ) : (
+                    <DesktopMenuOverlay>{menuContent}</DesktopMenuOverlay>
+                )
             )}
 
             {activeTab === "help" &&
                 Children.map(children, (child) => {
                     if (!isValidElement(child)) return null;
-                    const type = child.type as any;
+                    const type = getMenuChildType(child);
                     if (type?.menuName === "help")
                         return cloneElement(
                             child as React.ReactElement<{

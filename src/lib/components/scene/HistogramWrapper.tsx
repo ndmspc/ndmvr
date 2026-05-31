@@ -38,8 +38,79 @@ type SourceRaycaster = THREE.Raycaster & {
     _triggerSource?: string;
 };
 
+type HistogramIntersection = THREE.Intersection & {
+    index?: unknown;
+    range?: unknown;
+    target?: THREE.Vector3;
+    triggerSource?: string;
+};
+
+type SyncablePainter = any & {
+    _ndmvrMeshSyncInstalled?: boolean;
+};
+
+const CLICK_DELAY_MS = 300;
+const XR_SYNTHETIC_CLICK_SUPPRESSION_MS = CLICK_DELAY_MS;
+
 function setRaycasterTriggerSource(raycaster: THREE.Raycaster, source: string) {
     (raycaster as SourceRaycaster)._triggerSource = source;
+}
+
+function hasHistogramIntersectionPayload(value: unknown): value is HistogramIntersection {
+    const intersection = value as HistogramIntersection | undefined;
+    return Array.isArray(intersection?.index) && Array.isArray(intersection?.range);
+}
+
+function getHistogramIntersection(event: any, painter: any, triggerSource: string) {
+    const intersections = Array.isArray(event?.intersections) ? event.intersections : [];
+    const eventObject = event?.object;
+
+    const matchingHit = intersections.find((intersection: HistogramIntersection) => {
+        return intersection?.object === eventObject && hasHistogramIntersectionPayload(intersection);
+    });
+    const hit =
+        matchingHit ??
+        intersections.find(hasHistogramIntersectionPayload) ??
+        (hasHistogramIntersectionPayload(event?.intersection) ? event.intersection : null) ??
+        (hasHistogramIntersectionPayload(event) ? event : null);
+
+    if (hit) {
+        return {
+            ...hit,
+            object: hit.object ?? eventObject,
+            point: hit.point ?? hit.target,
+            triggerSource,
+        };
+    }
+
+    const ray = event?.ray ?? event?.raycaster?.ray;
+    const bvhHit = ray ? painter.checkIntersectionBVH?.(ray)?.[0] : null;
+
+    if (!hasHistogramIntersectionPayload(bvhHit)) return null;
+
+    return {
+        ...bvhHit,
+        object: bvhHit.object ?? eventObject,
+        point: bvhHit.point ?? bvhHit.target,
+        triggerSource,
+    };
+}
+
+function isXRTriggerRelease(event: unknown, isXR: boolean) {
+    const pointerEvent = event as { type?: unknown; nativeEvent?: { type?: unknown } } | undefined;
+    if (!isXR || pointerEvent?.type !== "pointerup") return false;
+
+    const nativeType = pointerEvent.nativeEvent?.type;
+    return typeof nativeType === "string" && nativeType.startsWith("select");
+}
+
+function clearNestedHistogramFunctions(id: string) {
+    functionSubjectGet().removeFunctions({
+        target: {
+            entity: "nested-histogram",
+            id,
+        },
+    });
 }
 
 export default function HistogramWrapper({ id }: HistogramWrapperProps) {
@@ -67,10 +138,40 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
     const meshRef = useRef<any>(null);
     const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastXRTriggerRelease = useRef(0);
 
     const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
     // Keep the last bin payload so re-entering the same bin can show the frame again.
     const [hoveredBinFrameVisible, setHoveredBinFrameVisible] = useState(false);
+
+    const syncNestedPainterObjects = useCallback((painter: any) => {
+        const mesh = painter?.mesh ?? null;
+        const wireframe = painter?.wireframe?.wireframe ?? null;
+
+        mesh?.parent?.remove(mesh);
+        wireframe?.parent?.remove(wireframe);
+
+        setPainterLimits(painter?.limits ?? null);
+        setNestedMesh(() => mesh);
+        setWireframeObj(() => wireframe);
+    }, []);
+
+    const installNestedPainterMeshSync = useCallback(
+        (painter: SyncablePainter | null | undefined) => {
+            if (!painter || painter._ndmvrMeshSyncInstalled) return;
+
+            const originalPushVisibleInstances = painter.pushVisibleInstances?.bind(painter);
+            if (typeof originalPushVisibleInstances !== "function") return;
+
+            painter.pushVisibleInstances = (...args: any[]) => {
+                const result = originalPushVisibleInstances(...args);
+                syncNestedPainterObjects(painter);
+                return result;
+            };
+            painter._ndmvrMeshSyncInstalled = true;
+        },
+        [syncNestedPainterObjects]
+    );
 
     const instMesh = useMemo(() => {
         if (nestedMesh === null) return null;
@@ -174,7 +275,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
         console.log("[Mode toggled] Current mode:", activeMode);
         console.log("[Mode toggled] Removing functions for histogram:", id);
-        functionSubjectGet().removeFunctions(histogramEvents.map((event) => ({ event, target })));
+        clearNestedHistogramFunctions(id);
 
         const functionsToAdd = histogramEvents.flatMap((event) => {
             const eventConfig = modeConfig[event];
@@ -278,38 +379,80 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         };
     }, [session]);
 
+    function clearPendingClick() {
+        if (!clickTimeout.current) return;
+
+        clearTimeout(clickTimeout.current);
+        clickTimeout.current = null;
+    }
+
+    function scheduleSingleClick(painter: any, hit: HistogramIntersection, source: string) {
+        clearPendingClick();
+
+        clickTimeout.current = setTimeout(() => {
+            clickTimeout.current = null;
+            painter.intersectionHandler(hit, source);
+        }, CLICK_DELAY_MS);
+    }
+
     function raycastHandler(event: any) {
         const painter = nestedHistogram.current;
         if (!painter) return;
 
+        const isXR = session !== null && session !== undefined;
+        const isXRClick = isXRTriggerRelease(event, isXR);
+        const blockingIntersection = getFirstBlockingIntersection(event.intersections);
+
         if (
             event.type !== "pointermove" &&
             event.type !== "pointerover" &&
-            getFirstBlockingIntersection(event.intersections)?.object !== event.object
+            blockingIntersection?.object &&
+            blockingIntersection.object !== event.object
         ) {
             return;
         }
 
         const isShift = event.nativeEvent?.shiftKey || squeezeHeld.current;
 
-        if (event.type === "click") {
-            const source = isShift ? "shiftmouseclick" : "mouseclick";
+        if (isXRClick) {
+            lastXRTriggerRelease.current = performance.now();
+        } else if (
+            isXR &&
+            event.type === "click" &&
+            lastXRTriggerRelease.current > 0 &&
+            performance.now() - lastXRTriggerRelease.current < XR_SYNTHETIC_CLICK_SUPPRESSION_MS
+        ) {
+            return;
+        }
 
-            clickTimeout.current = setTimeout(() => {
-                clickTimeout.current = null;
-                painter.intersectionHandler(event, source);
-            }, 250);
-        } else if (event.type === "dblclick") {
-            if (clickTimeout.current) {
-                clearTimeout(clickTimeout.current);
-                clickTimeout.current = null;
+        if (event.type === "click" || isXRClick) {
+            const clickCount = Number(event.nativeEvent?.detail ?? 1);
+            if (!isXRClick && clickCount > 1) {
+                clearPendingClick();
+                return;
             }
 
+            const source = isShift ? "shiftmouseclick" : "mouseclick";
+            const hit = getHistogramIntersection(event, painter, source);
+            if (!hit) return;
+
+            scheduleSingleClick(painter, hit, source);
+        } else if (event.type === "dblclick") {
+            clearPendingClick();
+
             const source = isShift ? "shiftmousedbclick" : "mousedbclick";
-            painter.intersectionHandler(event, source);
+            const hit = getHistogramIntersection(event, painter, source);
+            if (!hit) return;
+            painter.intersectionHandler(hit, source);
         } else if (event.type === "pointermove" || event.type === "pointerover") {
+            const hit = getHistogramIntersection(event, painter, "mousemove");
+            if (!hit) {
+                setHoveredBinFrameVisible(false);
+                return;
+            }
+
             setHoveredBinFrameVisible(binBoxEnabled);
-            painter.intersectionHandler(event, "mousemove");
+            painter.intersectionHandler(hit, "mousemove");
         }
     }
 
@@ -337,6 +480,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         if (activeMode === "modify") {
                             setActiveMode("default");
                         }
+
+                        clearNestedHistogramFunctions(id);
 
                         if (nestedHistogram.current) {
                             console.log("remove v jsroot");
@@ -387,24 +532,19 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         clearJsrootMesh();
 
                         if (nestedHistogram.current) {
+                            installNestedPainterMeshSync(nestedHistogram.current);
                             nestedHistogram.current.updateHistogram(histo).then(() => {
-                                setPainterLimits(nestedHistogram.current.limits);
-                                setNestedMesh(() => nestedHistogram.current.mesh);
-                                setWireframeObj(
-                                    () => nestedHistogram.current.wireframe?.wireframe ?? null
-                                );
+                                syncNestedPainterObjects(nestedHistogram.current);
 
                                 console.log("[HistogramWrapper] UPDATE:", nestedHistogram.current);
                             });
                         } else {
                             const painter = new THnPainter(histo, id, histo?.opts);
+                            nestedHistogram.current = painter;
+                            installNestedPainterMeshSync(painter);
 
                             painter.renderHistogram(0, painter.totalInstances, 0).then(() => {
-                                nestedHistogram.current = painter;
-
-                                setNestedMesh(() => painter.mesh);
-                                setWireframeObj(() => painter.wireframe?.wireframe ?? null);
-                                setPainterLimits(painter.limits);
+                                syncNestedPainterObjects(painter);
 
                                 console.log("[HistogramWrapper] NEW:", painter);
                             });
@@ -417,10 +557,11 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
         return () => {
             histoSub.unsubscribe();
+            clearNestedHistogramFunctions(id);
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [camera, id, setActiveMode]);
+    }, [camera, id, installNestedPainterMeshSync, setActiveMode, syncNestedPainterObjects]);
 
     return (
         <>
@@ -466,6 +607,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     object={instMesh}
                     onClick={raycastHandler}
                     onDoubleClick={raycastHandler}
+                    onPointerUp={raycastHandler}
                     onPointerOver={raycastHandler}
                     onPointerMove={raycastHandler}
                     onPointerOut={clearHoveredBinFrame}

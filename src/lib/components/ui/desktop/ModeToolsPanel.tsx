@@ -1,12 +1,11 @@
 import styled from "styled-components";
-import { Hammer, MousePointer2 } from "lucide-react";
+import { MousePointer2 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import {
     type ModeToolIcon,
     type ModeToolIconProps,
     useSceneModeStore,
 } from "../../../stores/sceneMode/store";
-import { useEffect } from "react";
 
 const Panel = styled.div`
     position: absolute;
@@ -94,6 +93,7 @@ export default function ModeToolsPanel() {
         <Panel onMouseEnter={() => setUIHover(true)} onMouseLeave={() => setUIHover(false)}>
             {Object.keys(modesConfig).map((mode) => (
                 <ToolButton
+                    key={mode}
                     type="button"
                     title={modesConfig[mode]?.title ?? `${mode} mode`}
                     aria-label={modesConfig[mode]?.ariaLabel ?? `${mode} mode`}
