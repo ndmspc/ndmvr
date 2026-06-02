@@ -312,6 +312,8 @@ export default function NdmspcDefaultBrowserEnv({
         />
     ) : null;
 
+    const fileBrowserReady = Boolean(hierarchy && rootNode);
+
     return (
         <div
             style={{
@@ -371,7 +373,7 @@ export default function NdmspcDefaultBrowserEnv({
                         hierarchyDocRef={hiddenTreeDivRef}
                         onSelectItem={handleSelect}
                         setBrowser={setBrowser}
-                        browser={true}
+                        browser={fileBrowserReady}
                         setRendererMode={setRendererMode}
                         rendererMode={rendererMode}
                         menuDefaultOpen={false}
