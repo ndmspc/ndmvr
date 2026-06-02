@@ -1,6 +1,7 @@
 import NdmvrEnv from "./NdmvrEnv.tsx";
 // import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
+import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,6 +14,94 @@ import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import BrowserRootFileMenu from "../ui/shared/BrowserRootFileMenu.tsx";
+
+type HistogramPadConfig = { id?: string };
+
+type EnvironmentWithPads = Record<string, unknown> & {
+    histogramPads?: HistogramPadConfig[];
+};
+
+type ConfigRootWithPads = Record<string, unknown> & {
+    environment?: EnvironmentWithPads;
+};
+
+type ConfigWithPads = Record<string, unknown> & {
+    config?: {
+        environment?: EnvironmentWithPads;
+    };
+    environment?: EnvironmentWithPads;
+};
+
+type BrowserPainter = {
+    display: (obj: unknown, opt?: unknown, dom?: unknown) => unknown;
+    getObject: (obj: unknown) => Promise<{ obj?: unknown }>;
+    openRootFile: (file: string | null) => Promise<{ disp_kind: string }>;
+    setDisplay: (layout: string | null, elementId: string) => void;
+    checkResize: () => void;
+    h?: unknown;
+    no_select: boolean;
+    show_overflow: boolean;
+};
+
+type DrawnObject = {
+    obj: unknown;
+    opt?: unknown;
+};
+
+function getExistingPadIds(configValue: ConfigWithPads | null | undefined): Set<string> {
+    const pads =
+        configValue?.config?.environment?.histogramPads ??
+        configValue?.environment?.histogramPads ??
+        [];
+
+    return new Set(
+        pads
+            .map((pad) => pad?.id)
+            .filter((id: string | undefined): id is string => Boolean(id))
+    );
+}
+
+function removeDuplicateHistogramPads(
+    configValue: ConfigWithPads | null | undefined
+): ConfigWithPads | null | undefined {
+    if (!configValue) return configValue;
+
+    const rootConfig = configValue.config as ConfigRootWithPads | undefined;
+    const environment = rootConfig?.environment ?? configValue.environment;
+    const pads = environment?.histogramPads;
+
+    if (!Array.isArray(pads)) return configValue;
+
+    const seen = new Set<string>();
+    const uniquePads = pads.filter((pad) => {
+        if (!pad.id) return true;
+        if (seen.has(pad.id)) return false;
+        seen.add(pad.id);
+        return true;
+    });
+
+    if (uniquePads.length === pads.length) return configValue;
+
+    const nextEnvironment = {
+        ...environment,
+        histogramPads: uniquePads,
+    };
+
+    if (rootConfig?.environment) {
+        return {
+            ...configValue,
+            config: {
+                ...rootConfig,
+                environment: nextEnvironment,
+            },
+        };
+    }
+
+    return {
+        ...configValue,
+        environment: nextEnvironment,
+    };
+}
 
 export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
@@ -36,8 +125,6 @@ export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
     onConfigChange = null,
-    menu = false,
-    help = false,
     renderer = "jsroot",
     vr = true,
     file = null,
@@ -51,19 +138,19 @@ export default function NdmspcDefaultBrowserEnv({
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
     const [appConfig, setAppConfig] = useState(null);
-    const painterRef = useRef(null);
-    const pads = useRef([]);
+    const painterRef = useRef<BrowserPainter | null>(null);
+    const pads = useRef<string[]>([]);
     const padsCounter = useRef(0);
     const [itemState, setItemState] = useState(item);
     const [optState, setOptState] = useState(opt);
     const hiddenTreeDivRef = useRef<HTMLDivElement>(document.createElement("div"));
 
-    const [hierarchy, setHierarchy] = useState<any>(null);
-    const [rootNode, setRootNode] = useState<any>(null);
+    const [hierarchy, setHierarchy] = useState<BrowserPainter | null>(null);
+    const [rootNode, setRootNode] = useState<unknown>(null);
 
     const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
     const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
-    const drawnObjectsRef = useRef<Record<string, { obj: any; opt?: any }>>({});
+    const drawnObjectsRef = useRef<Record<string, DrawnObject>>({});
 
     const [fileInputValue, setFileInputValue] = useState(file ?? "https://root.cern/js/files/hsimple.root");
     const [activeFile, setActiveFile] = useState<string | null>(file);
@@ -114,7 +201,6 @@ export default function NdmspcDefaultBrowserEnv({
         if (config) {
             configSubjectGet().next(config);
         }
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAppConfig(configSubjectGet().getValue());
     }, [config]);
 
@@ -131,23 +217,24 @@ export default function NdmspcDefaultBrowserEnv({
         setFileStatus("loading");
         console.log("Read file:", activeFile);
 
-        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current);
+        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current) as BrowserPainter;
         const origDisplay = painter.display.bind(painter);
 
-        (painter as any).display = function (obj: any, displayOpt?: any, dom?: any) {
+        painter.display = function (this: BrowserPainter, obj: unknown, opt?: unknown, dom?: unknown) {
             const padId = `pad${padsCounter.current + 1}`;
 
-            this.getObject(obj).then((retValue: any) => {
+            this.getObject(obj).then((retValue) => {
                 if (disposed) return;
                 if (!retValue?.obj) return;
 
                 drawnObjectsRef.current[padId] = {
                     obj: retValue.obj,
-                    opt: displayOpt,
+                    opt,
                 };
 
                 histogramSubjectGet().next({
                     id: padId,
+                    // opts: { render: "jsroot" },
                     opts: { render: rendererModeRef.current },
                     obj: retValue.obj,
                 });
@@ -157,7 +244,7 @@ export default function NdmspcDefaultBrowserEnv({
                 padsCounter.current = (padsCounter.current + 1) % pads.current.length;
             }
 
-            return origDisplay(obj, displayOpt, dom);
+            return origDisplay(obj, opt, dom);
         };
 
         painterRef.current = painter;
@@ -186,18 +273,28 @@ export default function NdmspcDefaultBrowserEnv({
                 drawnObjectsRef.current = {};
                 padsCounter.current = 0;
 
-                await painter.openRootFile(activeFile).then((v) => {
-                    if (disposed) return;
-                    const ps = getPads(v.disp_kind);
-                    pads.current = ps;
-                    // console.log("File h: ", painter.h );
-                    console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
-                    configSubjectGet().appendPads(ps, v.disp_kind, defaultPad);
-                    setHierarchy(painter);
-                    setRootNode((painter as any).h);
-                });
-
+            await painter.openRootFile(activeFile).then((v) => {
                 if (disposed) return;
+                const ps = getPads(v.disp_kind);
+                pads.current = ps;
+                // console.log("File h: ", painter.h );
+                console.log("HierarchyPainter opened file, disp_kind:", v.disp_kind, ps);
+                const currentConfig = configSubjectGet().getValue();
+                const dedupedConfig = removeDuplicateHistogramPads(currentConfig);
+                if (dedupedConfig && dedupedConfig !== currentConfig) {
+                    configSubjectGet().next(dedupedConfig);
+                }
+
+                const existingPadIds = getExistingPadIds(dedupedConfig);
+                const padsToAppend = ps.filter((padId) => !existingPadIds.has(padId));
+                if (padsToAppend.length > 0) {
+                    configSubjectGet().appendPads(padsToAppend, v.disp_kind, defaultPad);
+                }
+                setHierarchy(painter);
+                setRootNode(painter.h);
+            });
+
+            if (disposed) return;
 
 
                 if (item) {
@@ -228,10 +325,8 @@ export default function NdmspcDefaultBrowserEnv({
                 setActiveFile(null);
             }
         };
-
-
-            initPainter();
-            console.log(title);
+        initPainter();
+        console.log(title);
 
             return () => {
                 disposed = true;

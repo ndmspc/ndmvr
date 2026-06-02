@@ -1,6 +1,7 @@
 import { resolve, dirname } from "path";
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import dts from "vite-plugin-dts";
 import { fileURLToPath } from "url";
 
@@ -55,18 +56,20 @@ export default defineConfig(({ mode }) => ({
         },
     },
     plugins: [
-        react({
-            babel: {
-                plugins: ["babel-plugin-react-compiler"],
-            },
+        react(),
+        babel({
+            presets: [reactCompilerPreset()],
         }),
         dts({
-            include: ["src/lib"],
+            include: ["src/lib", "src/types"],
             insertTypesEntry: true,
-            rollupTypes: true,
+            bundleTypes: true,
         }),
     ],
+    resolve: {
+        dedupe: ["three"],
+    },
     optimizeDeps: {
-        exclude: ["gl > gl"],
+        exclude: ["gl > gl", "@resvg/resvg-js"],
     },
 }));

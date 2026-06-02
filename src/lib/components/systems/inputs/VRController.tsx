@@ -41,6 +41,7 @@ export default function VRController({
 
     const lastA = useRef(false);
     const lastB = useRef(false);
+    const lastBinBoxToggle = useRef(false);
     const lastX = useRef(false);
     const lastY = useRef(false);
     const lastRightSqueeze = useRef(false);
@@ -53,6 +54,7 @@ export default function VRController({
     const lastSnap = useRef(false);
     const activeMode = useSceneModeStore((s) => s.activeMode);
     const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
+    const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
 
     const DEADZONE = 0.15;
     const TRIGGER_T = 0.2;
@@ -161,18 +163,6 @@ export default function VRController({
             }
             lastY.current = yPressed;
 
-            const A = (rightGamepad as any)["a-button"];
-            const APressed = !!A && (A.state === "pressed" || (A.button ?? 0) > SQUEEZE_T);
-            if (APressed && !lastA.current) {
-                // Toggle Modify Mode with left grip
-                setActiveMode(activeMode === "default" ? "modify" : "default");
-                window.dispatchEvent(
-                    new CustomEvent("ndmvr-mode-toggle", {
-                        detail: { enabled: activeMode === "default" ? "modify" : "default" },
-                    })
-                );
-            }
-            lastA.current = APressed;
         }
 
         if (rightGamepad) {
@@ -219,20 +209,35 @@ export default function VRController({
                 lastSnap.current = snapPressed;
             }
 
+            const aBtn = (rightGamepad as any)["a-button"];
+            const aPressed = !!aBtn && aBtn.state === "pressed";
+
+            if (aPressed && !lastA.current) {
+                if (rightSqueezePressed) {
+                    const nextMode = activeMode === "default" ? "modify" : "default";
+                    setActiveMode(nextMode);
+                    window.dispatchEvent(
+                        new CustomEvent("ndmvr-mode-toggle", {
+                            detail: { enabled: nextMode },
+                        })
+                    );
+                } else {
+                    window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
+                }
+            }
+            lastA.current = aPressed;
 
             const bBtn = (rightGamepad as any)["b-button"];
             const bPressed = !!bBtn && bBtn.state === "pressed";
-            if (bPressed && !lastB.current) {
+            const binBoxTogglePressed = rightSqueezePressed && bPressed;
+
+            if (binBoxTogglePressed && !lastBinBoxToggle.current) {
+                toggleBinBoxEnabled();
+            } else if (bPressed && !rightSqueezePressed && !lastB.current) {
                 toggleTab?.(null);
             }
+            lastBinBoxToggle.current = binBoxTogglePressed;
             lastB.current = bPressed;
-
-            const aBtn = (rightGamepad as any)["a-button"];
-            const aPressed = !!aBtn && aBtn.state === "pressed";
-            if (aPressed && !lastA.current) {
-                window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
-            }
-            lastA.current = aPressed;
         }
 
         if (leftGamepad && rightGamepad) {

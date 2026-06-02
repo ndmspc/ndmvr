@@ -1,24 +1,40 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 
 export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000,
-    target: "esnext", // smaller output, modern browsers
-    minify: false, // faster minification
-    sourcemap: true, // disable source maps in production
-  },
-  plugins: [
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler", {}]],
+    target: "esnext",
+    minify: false,
+    sourcemap: true,
+
+    rolldownOptions: {
+      external: (id) => {
+        return (
+          id === "@resvg/resvg-js" ||
+          id.startsWith("@resvg/resvg-js/")
+        );
       },
+    },
+  },
+
+  plugins: [
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
   ],
+
   server: {
     host: true,
   },
+
+  resolve: {
+    dedupe: ["three"],
+  },
+
   optimizeDeps: {
-    exclude: ["gl > gl"],
+    exclude: ["gl > gl", "@resvg/resvg-js"],
   },
 });
