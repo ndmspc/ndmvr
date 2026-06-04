@@ -41,6 +41,7 @@ interface CornerInfo {
 interface DragContext {
     type: "edge" | "corner";
     axes: Axis[];
+    lockedAxis?: Axis;
     startScale: THREE.Vector3;
     startPosition: THREE.Vector3;
     startPoint: THREE.Vector3;
@@ -54,6 +55,26 @@ const NORMAL_LINE_WIDTH = 0.1;
 
 // Edge thickness when hovered, used for visual feedback
 const HOVER_LINE_WIDTH = 0.15;
+
+function getAxisVector(axis: Axis): THREE.Vector3 {
+    if (axis === "X") return new THREE.Vector3(1, 0, 0);
+    if (axis === "Y") return new THREE.Vector3(0, 1, 0);
+    return new THREE.Vector3(0, 0, 1);
+}
+
+function getLockedDragAxis(camera: THREE.Camera, axes: Axis[]): Axis {
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldDirection(cameraDirection);
+
+    return axes.reduce((bestAxis, axis) => {
+        const bestAlignment = Math.abs(cameraDirection.dot(getAxisVector(bestAxis)));
+        const currentAlignment = Math.abs(cameraDirection.dot(getAxisVector(axis)));
+
+        // Prefer the axis that is less aligned with the camera direction,
+        // because it is more readable and stable on screen during dragging.
+        return currentAlignment < bestAlignment ? axis : bestAxis;
+    });
+}
 
 function toVector3(
     value: THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number],
@@ -209,29 +230,13 @@ export default function BoundingFrameBox({
         /* ---------- EDGE ---------- */
         if (dragCtx.type === "edge") {
             const local = intersection.clone().sub(dragCtx.startPosition);
+            const lockedAxis = dragCtx.lockedAxis ?? dragCtx.axes[0];
 
-            // Calculate contributions along each axis based on drag direction
-            const contributions: Partial<Record<Axis, number>> = {};
-            dragCtx.axes.forEach((axis) => {
-                if (axis === "Y") {
-                    contributions.Y = intersection.y; // from ground
-                } else {
-                    const idx = axis === "X" ? 0 : 2; // X/Z
-                    contributions[axis] = local.getComponent(idx);
-                }
-            });
-
-            // Dominant axis determines the primary direction of scaling
-            const dominant = dragCtx.axes.reduce((a, b) =>
-                Math.abs(contributions[a]!) > Math.abs(contributions[b]!) ? a : b
-            );
-
-            // New scale based on dominant axis
-            if (dominant === "Y") {
-                newScale.y = Math.max(0.1, contributions.Y!);
+            if (lockedAxis === "Y") {
+                newScale.y = Math.max(0.1, intersection.y);
             } else {
-                const idx = dominant === "X" ? 0 : 2;
-                const halfSize = Math.abs(contributions[dominant]!);
+                const idx = lockedAxis === "X" ? 0 : 2;
+                const halfSize = Math.abs(local.getComponent(idx));
                 newScale.setComponent(idx, Math.max(0.2, halfSize * 2));
             }
         }
@@ -272,6 +277,7 @@ export default function BoundingFrameBox({
 
         let dragType: "edge" | "corner" = "edge";
         let axes: Axis[] = [];
+        let lockedAxis: Axis | undefined;
 
         if (edges.current.has(hovered as Line2)) {
             const edgeInfo = edges.current.get(hovered as Line2)!;
@@ -280,6 +286,7 @@ export default function BoundingFrameBox({
             if (edge.axis === "X") axes = ["X", "Z"];
             if (edge.axis === "Y") axes = ["Y", "X"];
             if (edge.axis === "Z") axes = ["Z", "Y"];
+            lockedAxis = getLockedDragAxis(camera, axes);
         }
 
         if (corners.current.has(hovered as THREE.Mesh)) {
@@ -297,6 +304,7 @@ export default function BoundingFrameBox({
         dragRef.current = {
             type: dragType,
             axes,
+            lockedAxis,
             startScale: normalizedScale.clone(),
             startPosition: group.position.clone(),
             startPoint: e.point.clone(),
