@@ -20,6 +20,7 @@ import SettingsPanel from "../ui/shared/SettingsPanel.tsx";
 import FileBrowser from "../ui/shared/FileBrowser.tsx";
 import CloseBrowserMenu from "../ui/shared/CloseBrowserMenuProps.tsx";
 import OpenBrowserMenu from "../ui/shared/OpenBrowserMenuProps.tsx";
+import FloatingContainer from "../ui/shared/FloatingContainer.tsx";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { store } from "./xrStore";
 
@@ -39,6 +40,8 @@ export interface NdmvrEnvProps {
     setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
     rendererMode?: "jsroot" | "ndmvr";
     setRendererMode?: React.Dispatch<React.SetStateAction<"jsroot" | "ndmvr">>;
+    menuDefaultOpen?: boolean;
+    browserInputMenu?: React.ReactNode;
 }
 
 export default function NdmvrEnv({
@@ -51,6 +54,8 @@ export default function NdmvrEnv({
     setBrowser,
     rendererMode,
     setRendererMode,
+    menuDefaultOpen = true,
+    browserInputMenu = null,
 }: NdmvrEnvProps) {
     const xrOriginRef = useRef(null);
     const cameraRef = useRef(null);
@@ -102,7 +107,7 @@ export default function NdmvrEnv({
                     )}
 
                     <NdmvrContent>
-                        <Menu defaultOpen={true} originRef={xrOriginRef}>
+                        <Menu defaultOpen={menuDefaultOpen} originRef={xrOriginRef}>
                             <Demo />
                             <HttpConnectionMenu />
                             <WsConnectionMenu />
@@ -118,6 +123,18 @@ export default function NdmvrEnv({
                             <SettingsPanel />
                             {/* <HelperTips /> */}
                         </Menu>
+
+                        {browserInputMenu && (
+                            <FloatingContainer
+                                originRef={xrOriginRef}
+                                offset={{ x: 0, y: 1.2, z: -4 }}
+                                faceUser={true}
+                                classList={["menuContainer"]}
+                            >
+                                {browserInputMenu}
+                            </FloatingContainer>
+                        )}
+
                         <SceneDecorations />
                         {children}
                     </NdmvrContent>

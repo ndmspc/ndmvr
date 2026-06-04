@@ -11,6 +11,9 @@ import { getPads } from "../../utils/helper-functions.ts";
 import "./NdmspcDefaultBrowserEnv.css";
 import { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
+import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
+import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
+import BrowserRootFileMenu from "../ui/shared/BrowserRootFileMenu.tsx";
 
 type HistogramPadConfig = { id?: string };
 
@@ -124,7 +127,7 @@ export default function NdmspcDefaultBrowserEnv({
     onConfigChange = null,
     renderer = "jsroot",
     vr = true,
-    file = "https://root.cern/js/files/hsimple.root",
+    file = null,
     item = null,
     opt = null,
     title = "Ndmspc Default Browser Environment",
@@ -148,6 +151,13 @@ export default function NdmspcDefaultBrowserEnv({
     const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
     const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
     const drawnObjectsRef = useRef<Record<string, DrawnObject>>({});
+
+    const [fileInputValue, setFileInputValue] = useState(file ?? "https://root.cern/js/files/hsimple.root");
+    const [activeFile, setActiveFile] = useState<string | null>(file);
+
+    const [fileStatus, setFileStatus] = useState<"idle" | "loading" | "success" | "error">(
+        file ? "loading" : "idle"
+    );
 
 
 
@@ -175,7 +185,7 @@ export default function NdmspcDefaultBrowserEnv({
 
 
         const entries = Object.entries(drawnObjectsRef.current);
-        console.log("effect: " + rendererMode);
+        // console.log("effect: " + rendererMode);
         for (const [padId, data] of entries) {
             histogramSubjectGet().next({
                 id: padId,
@@ -199,14 +209,15 @@ export default function NdmspcDefaultBrowserEnv({
     }, [vrMode]);
 
     useEffect(() => {
+        if (!activeFile) return;
         if (initializedRef.current) return;
         initializedRef.current = true;
         let disposed = false;
 
-        console.log("Read file: ", file);
-        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current) as BrowserPainter;
-        // const painter = new HierarchyPainter("example", "myTreeDiv");
+        setFileStatus("loading");
+        console.log("Read file:", activeFile);
 
+        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current) as BrowserPainter;
         const origDisplay = painter.display.bind(painter);
 
         painter.display = function (this: BrowserPainter, obj: unknown, opt?: unknown, dom?: unknown) {
@@ -238,30 +249,31 @@ export default function NdmspcDefaultBrowserEnv({
 
         painterRef.current = painter;
         const initPainter = async () => {
-            for (const key in defaultDrawOpt) {
-                setDefaultDrawOpt(key, defaultDrawOpt[key]);
-            }
-            painter.setDisplay(layout, "myMainDiv");
+            try {
+                for (const key in defaultDrawOpt) {
+                    setDefaultDrawOpt(key, defaultDrawOpt[key]);
+                }
+                painter.setDisplay(layout, "myMainDiv");
 
-            painter.no_select = true;
-            // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
-            painter.show_overflow = true;
-            // configure 'simple' layout for drawings     _____DONE______
-            // one also can specify "grid2x2" or "flex"   _____FIX COUNTER FOR GRID, FLEX WILL NEED TO BE DYNAMIC?_____
-            // h.prepareGuiDiv('simpleGUI', 'flex');
-            // open file and display element
-            // await h.createBrowser('fix');
-            const defaultPad = {
-                scale: { x: 10, y: 5, z: 10 },
-                padding: { x: 0, y: 0, z: 0 },
-                origin: { x: -5, y: 0.5, z: 1 },
-            };
-            // console.log("Try to open");
+                painter.no_select = true;
+                // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
+                painter.show_overflow = true;
+                // configure 'simple' layout for drawings     _____DONE______
+                // one also can specify "grid2x2" or "flex"   _____FIX COUNTER FOR GRID, FLEX WILL NEED TO BE DYNAMIC?_____
+                // h.prepareGuiDiv('simpleGUI', 'flex');
+                // open file and display element
+                // await h.createBrowser('fix');
+                const defaultPad = {
+                    scale: {x: 10, y: 5, z: 10},
+                    padding: {x: 0, y: 0, z: 0},
+                    origin: {x: -5, y: 0.5, z: 1},
+                };
+                // console.log("Try to open");
 
-            drawnObjectsRef.current = {};
-            padsCounter.current = 0;
+                drawnObjectsRef.current = {};
+                padsCounter.current = 0;
 
-            await painter.openRootFile(file).then((v) => {
+            await painter.openRootFile(activeFile).then((v) => {
                 if (disposed) return;
                 const ps = getPads(v.disp_kind);
                 pads.current = ps;
@@ -285,26 +297,44 @@ export default function NdmspcDefaultBrowserEnv({
             if (disposed) return;
 
 
+                if (item) {
+                    await painter.display(item, opt);
+                    if (disposed) return;
+                    setItemState(item);
+                    setOptState(opt);
+                }
+                // await h.expandItem('E;1//Event/Gen/Header');
+                // console.log("HierarchyPainter h:", painter);
+            }catch (err) {
+                if (disposed) return;
 
-            // if (item) {
-            await painter.display(item, opt);
-            if (disposed) return;
-            setItemState(item);
-            setOptState(opt);
-            // }
-            // await h.expandItem('E;1//Event/Gen/Header');
-            // console.log("HierarchyPainter h:", painter);
+                console.error("Failed to open ROOT file:", err);
+
+                setFileStatus("error");
+
+                setHierarchy(null);
+                setRootNode(null);
+
+                drawnObjectsRef.current = {};
+                pads.current = [];
+                padsCounter.current = 0;
+
+                painterRef.current = null;
+                initializedRef.current = false;
+
+                setActiveFile(null);
+            }
         };
         initPainter();
         console.log(title);
 
-        return () => {
-            disposed = true;
-            initializedRef.current = false;
-            drawnObjectsRef.current = {};
-            painterRef.current = null;
-        };
-    }, []);
+            return () => {
+                disposed = true;
+                initializedRef.current = false;
+                drawnObjectsRef.current = {};
+                painterRef.current = null;
+            };
+    }, [activeFile]);
 
     useEffect(() => {
         if (!initializedRef.current) return;
@@ -325,6 +355,59 @@ export default function NdmspcDefaultBrowserEnv({
         setItemState(path);
     };
 
+    const resetBrowserState = useCallback(() => {
+        setHierarchy(null);
+        setRootNode(null);
+
+        drawnObjectsRef.current = {};
+        pads.current = [];
+        padsCounter.current = 0;
+
+        setItemState(item);
+        setOptState(opt);
+    }, [item, opt]);
+
+    const handleOpenRootFile = useCallback(() => {
+        const nextFile = fileInputValue.trim();
+
+        if (!nextFile) {
+            setFileStatus("error");
+            console.log("ROOT file path is empty")
+            return;
+        }
+
+        if (fileStatus == "loading") {
+            return;
+        }
+
+        if (activeFile == nextFile && initializedRef.current) {
+            return;
+        }
+
+        setFileStatus("loading");
+
+        resetBrowserState();
+
+        setActiveFile(nextFile);
+    }, [activeFile, fileInputValue, fileStatus, resetBrowserState]);
+
+    const showRootFileMenu = !activeFile && fileStatus !== "loading";
+
+    const rootFileMenu = showRootFileMenu ? (
+        <BrowserRootFileMenu
+            value={fileInputValue}
+            placeholder={"http://"}
+            status={fileStatus}
+            // error={fileError}
+            onChange={(value) => {
+                setFileInputValue(value);
+                setFileStatus("idle");
+            }}
+            onSubmit={handleOpenRootFile}
+        />
+    ) : null;
+
+    const fileBrowserReady = Boolean(hierarchy && rootNode);
 
     return (
         <div
@@ -368,32 +451,39 @@ export default function NdmspcDefaultBrowserEnv({
             {/*    }}*/}
             {/*>*/}
 
-            <div
-                className="main-div"
-                // style={{
-                //     // display: vrMode ? "flex" : "none",
-                //     width: 100%
-                // }}
-                style={{ width: "100%", height: "100%" }}
-            >
-                <NdmvrEnv
-                    currentConfig={appConfig}
-                    onConfigChange={applyConfig}
-                    hierarchy={hierarchy}
-                    rootNode={rootNode}
-                    hierarchyDocRef={hiddenTreeDivRef}
-                    onSelectItem={handleSelect}
-                    browser={true}
-                    setBrowser={setBrowser}
-                    rendererMode={rendererMode}
-                    setRendererMode={setRendererMode}
-                >
-                    {children}
-                </NdmvrEnv>
-            </div>
+                <div
+                    className="main-div"
 
-            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
-            {vrMode && <ModeToolsPanel />}
-        </div>
-    );
-}
+                    style={{
+                        width: "100%", height: "100%",
+                        display: vrMode ? "flex" : "none",
+                    }}
+                >
+
+                    <NdmvrEnv
+                        currentConfig={appConfig}
+                        onConfigChange={applyConfig}
+                        hierarchy={hierarchy}
+                        rootNode={rootNode}
+                        hierarchyDocRef={hiddenTreeDivRef}
+                        onSelectItem={handleSelect}
+                        setBrowser={setBrowser}
+                        browser={fileBrowserReady}
+                        setRendererMode={setRendererMode}
+                        rendererMode={rendererMode}
+                        menuDefaultOpen={false}
+                        browserInputMenu={rootFileMenu}
+                    >
+                        {children}
+                    </NdmvrEnv>
+                </div>
+
+
+            <UIToggleButton />
+            <FullscreenButton />
+
+
+                <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+            </div>
+            );
+            }
