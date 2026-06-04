@@ -17,11 +17,16 @@ import { histogramEvents, useSceneModeStore } from "../../stores/sceneMode/store
 import BoundingFrameBox from "./BoundingFrameBox";
 import BinBox from "./BinBox";
 import {
+    applyObjectBoundsTransform,
     applyHistogramPadBounds,
     clonePainterLimits,
     getBoundingFramePosition,
     getBoundingFrameScale,
+    getHistogramPadBounds,
+    getObjectBounds,
+    getObjectPainterLimits,
     getShiftScaleStep,
+    type ObjectBounds,
     type PainterLimits,
 } from "./histogram-wrapper/bounding-box-helpers";
 import {
@@ -116,6 +121,8 @@ function clearNestedHistogramFunctions(id: string) {
 export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const { scene, camera, raycaster } = useThree();
     const jsrootHistogram = useRef<any>(null);
+    // JSROOT needs the untransformed mesh bounds so drag-end scaling can be applied correctly.
+    const jsrootBaseBounds = useRef<ObjectBounds | null>(null);
     const nestedHistogram = useRef<any>(null);
 
     const activeMode = useSceneModeStore((state) => state.activeMode);
@@ -143,6 +150,13 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
     // Keep the last bin payload so re-entering the same bin can show the frame again.
     const [hoveredBinFrameVisible, setHoveredBinFrameVisible] = useState(false);
+
+    const applyJsrootMeshBounds = useCallback(
+        (mesh: THREE.Object3D | null | undefined, position: THREE.Vector3, scale: THREE.Vector3) => {
+            applyObjectBoundsTransform(mesh, jsrootBaseBounds.current, position, scale);
+        },
+        []
+    );
 
     const syncNestedPainterObjects = useCallback((painter: any) => {
         const mesh = painter?.mesh ?? null;
@@ -229,8 +243,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     }, [hoveredBin, isJsrootRenderer]);
 
     const onBoundingBoxChange = (position: THREE.Vector3, scale: THREE.Vector3) => {
-        if (isJsrootRenderer) return;
-
         setPainterLimits(clonePainterLimits(position, scale));
     };
 
@@ -297,17 +309,14 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     }, [activeMode, getActiveConfigHistogramEvents, id, nestedMesh]);
 
     const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
-        if (isJsrootRenderer) return;
+        if (isJsrootRenderer) {
+            applyJsrootMeshBounds(jsrootMesh, position, scale);
+            setPainterLimits(clonePainterLimits(position, scale));
+        }
 
         console.log("Config changed from Wrapper:", position, scale);
         applyHistogramModification(position.clone(), scale.clone());
     };
-
-    useEffect(() => {
-        if (isJsrootRenderer && activeMode === "modify") {
-            setActiveMode("default");
-        }
-    }, [isJsrootRenderer, activeMode, setActiveMode]);
 
     const disposeThree = (obj: any) => {
         if (!obj) return;
@@ -331,6 +340,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const clearJsrootMesh = () => {
         if (jsrootMesh) disposeThree(jsrootMesh);
         setJsrootMesh(null);
+        jsrootBaseBounds.current = null;
+        setPainterLimits(null);
     };
 
     const clearNestedMeshes = () => {
@@ -477,10 +488,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                     setIsJsrootRenderer(isJsroot);
 
                     if (isJsroot) {
-                        if (activeMode === "modify") {
-                            setActiveMode("default");
-                        }
-
                         clearNestedHistogramFunctions(id);
 
                         if (nestedHistogram.current) {
@@ -498,11 +505,31 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
                                     mesh?.scale?.set(1, 1, 1);
+                                    mesh?.position?.set(0, 0, 0);
+
+                                    jsrootBaseBounds.current = getObjectBounds(mesh);
+
+                                    const configuredBounds = getHistogramPadBounds(
+                                        configSubjectGet().getValue(),
+                                        id
+                                    );
+                                    if (configuredBounds) {
+                                        applyJsrootMeshBounds(
+                                            mesh,
+                                            getBoundingFramePosition(configuredBounds),
+                                            getBoundingFrameScale(configuredBounds)
+                                        );
+                                    }
+
                                     setJsrootMesh(mesh);
+                                    setPainterLimits(
+                                        configuredBounds ?? getObjectPainterLimits(mesh)
+                                    );
                                     setJsrootError(null);
                                 })
                                 .catch((e: any) => {
                                     console.log(e);
+                                    setPainterLimits(null);
                                     setJsrootError(e);
                                 });
                         } else {
@@ -515,11 +542,31 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                                 .then(() => {
                                     const mesh = jsrootHistogram.current.getHistogramMesh();
                                     mesh?.scale?.set(1, 1, 1);
+                                    mesh?.position?.set(0, 0, 0);
+
+                                    jsrootBaseBounds.current = getObjectBounds(mesh);
+
+                                    const configuredBounds = getHistogramPadBounds(
+                                        configSubjectGet().getValue(),
+                                        id
+                                    );
+                                    if (configuredBounds) {
+                                        applyJsrootMeshBounds(
+                                            mesh,
+                                            getBoundingFramePosition(configuredBounds),
+                                            getBoundingFrameScale(configuredBounds)
+                                        );
+                                    }
+
                                     setJsrootMesh(mesh);
+                                    setPainterLimits(
+                                        configuredBounds ?? getObjectPainterLimits(mesh)
+                                    );
                                     setJsrootError(null);
                                 })
                                 .catch((e: any) => {
                                     console.log(e);
+                                    setPainterLimits(null);
                                     setJsrootError(e);
                                 });
                         }
@@ -561,7 +608,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [camera, id, installNestedPainterMeshSync, setActiveMode, syncNestedPainterObjects]);
+    }, [applyJsrootMeshBounds, camera, id, installNestedPainterMeshSync, syncNestedPainterObjects]);
 
     return (
         <>
@@ -616,7 +663,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
             {wireframeObj && <primitive object={wireframeObj} />}
 
-            {painterLimits && activeMode === "modify" && !isJsrootRenderer && (
+            {painterLimits && activeMode === "modify" && (
                 <BoundingFrameBox
                     position={getBoundingFramePosition(painterLimits)}
                     scale={getBoundingFrameScale(painterLimits)}
