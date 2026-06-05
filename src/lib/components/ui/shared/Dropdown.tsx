@@ -42,7 +42,7 @@ export default function Dropdown({
     width = 350,
     placeholder = "Select option",
     defaultValue = null,
-    maxVisibleItems = 3,
+    maxVisibleItems = 5,
 }: DropdownProps) {
     const id = useId();
     const context = useContext(DropdownContext);
