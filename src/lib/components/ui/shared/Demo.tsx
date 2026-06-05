@@ -147,7 +147,6 @@ export default function Demo() {
                         onSelect={(value) => {
                             handleHistogramSelect(value);
                         }}
-                        maxVisibleItems={5}
                         width={300}
                     />
 
