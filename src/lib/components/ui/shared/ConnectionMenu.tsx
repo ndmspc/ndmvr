@@ -105,7 +105,7 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
     };
 
     const [inputValues, setInputValues] = useState({
-        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/ndmvr-core/demo/test_125.json",
+        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/hp_2026/rsn.json",
         ws: "ws://localhost:8080/ws/root.websocket",
     });
 

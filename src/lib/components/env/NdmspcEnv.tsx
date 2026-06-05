@@ -12,6 +12,7 @@ import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 import app from "../../../App.tsx";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
+import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 
 export function shouldUseMobileControls() {
     if (typeof window === "undefined") return false;
@@ -177,6 +178,7 @@ export default function NdmspcEnv({
             />
             <FullscreenButton />
             <UIToggleButton />
+            {vrMode && <ModeToolsPanel />}
             {vrMode && touch && (
                 <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />
             )}

@@ -484,6 +484,7 @@ export default function NdmspcDefaultBrowserEnv({
 
 
                 <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+                {vrMode && <ModeToolsPanel />}
             </div>
             );
             }
