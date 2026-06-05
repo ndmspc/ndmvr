@@ -14,10 +14,10 @@ function formatSmartNumber(
     if (val === undefined || val === null || Number.isNaN(val)) return "-";
     const num = Number.parseFloat(String(val));
     const abs = Math.abs(num);
-    if (num !== 0 && (abs >= 1e6 || (abs > 0 && abs < 1e-3))) {
+    // if (num !== 0 && (abs >= 1e3 || (abs > 0 && abs < 1e-3))) {
         return num.toExponential(precision);
-    }
-    return num.toFixed(precision);
+    // }
+    // return num.toFixed(precision);
 }
 
 export interface BinInfoProps {
@@ -54,7 +54,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
     };
 
     const contentText = binInfo?.content !== undefined
-        ? `${formatSmartNumber(binInfo.content, 3)} +/- ${formatSmartNumber(binInfo.error, 3)}`
+        ? `${formatSmartNumber(binInfo.content, 5)} +/- ${formatSmartNumber(binInfo.error, 5)}`
         : "-";
 
     return (
@@ -71,7 +71,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
 
             <Container
                 classList={["section", "sectionInner"]}
-                minWidth={200}
+                minWidth={250}
                 flexDirection="column"
                 padding={10}
                 borderRadius={8}
