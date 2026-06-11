@@ -80,6 +80,8 @@ export default function ModeToolsPanel() {
     const activeMode = useSceneModeStore((state) => state.activeMode);
     const setActiveMode = useSceneModeStore((state) => state.setActiveMode);
     const modesConfig = useSceneModeStore((state) => state.modesConfig);
+    const getOnClickEvent = useSceneModeStore((state) => state.getOnClickEvent);
+    const getOnHoverEvent = useSceneModeStore((state) => state.getOnHoverEvent);
     const setUIHover = useSceneModeStore((state) => state.setUIHover);
 
     const setMode = (mode: string) => {
@@ -99,7 +101,13 @@ export default function ModeToolsPanel() {
                     aria-label={modesConfig[mode]?.ariaLabel ?? `${mode} mode`}
                     aria-pressed={activeMode === mode}
                     $active={activeMode === mode}
-                    onClick={() => setMode(mode)}
+                    onClick={() => { 
+                        setMode(mode);
+                        getOnClickEvent(mode, modesConfig).forEach((handler) => handler());
+                    }}
+                    onMouseEnter={() => {
+                        getOnHoverEvent(mode, modesConfig).forEach((handler) => handler());
+                    }}
                 >
                     <Icon aria-hidden="true">
                         {renderIcon(modesConfig[mode]?.icon, MousePointer2)}

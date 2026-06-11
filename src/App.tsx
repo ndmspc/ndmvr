@@ -21,6 +21,11 @@ const modesConfig: SceneModesConfig = {
             shiftmousedbclick: "default",
             mousemove: "default",
         },
+        baseEvents: {
+            onClick: "default",
+            onEnter: null,
+            onExit: null,
+        }
     },
 
     modify: {
@@ -34,6 +39,12 @@ const modesConfig: SceneModesConfig = {
             shiftmousedbclick: null,
             mousemove: null,
         },
+        baseEvents: {
+            onEnter: () => console.log("Entered modify mode"),
+            onClick: () => console.log("Clicked in modify mode"),
+            onHover: () => console.log("Hovered over modify mode"),
+            onExit: "default",
+        }
     },
 
     // inspect: {
