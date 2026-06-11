@@ -7,194 +7,195 @@ import { parse as jsrootParse } from "jsroot";
 import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
 import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
 import type { SceneModesConfig } from "./lib/index.tsx";
-import { useSceneModeStore } from "./lib/stores/sceneMode/store.ts";
+import { useSceneModeStore, defaultSceneModesConfig } from "./lib/stores/sceneMode/store.ts";
 
-const modesConfig: SceneModesConfig = {
-    default: {
-        title: "Default mode",
-        ariaLabel: "Enable default mode",
-        icon: "",
-        histogramEvents: {
-            mouseclick: "default",
-            mousedbclick: "default",
-            shiftmouseclick: "default",
-            shiftmousedbclick: "default",
-            mousemove: "default",
-        },
-        baseEvents: {
-            onClick: "default",
-            onEnter: null,
-            onExit: null,
-        }
-    },
+// Defaults in defaultSceneModesConfig (user can override them by passing custom config by using setModesConfig from useSceneModeStore)
+// const modesConfig: SceneModesConfig = {
+//     default: {
+//         title: "Default mode",
+//         ariaLabel: "Enable default mode",
+//         icon: "",
+//         histogramEvents: {
+//             mouseclick: "default",
+//             mousedbclick: "default",
+//             shiftmouseclick: "default",
+//             shiftmousedbclick: "default",
+//             mousemove: "default",
+//         },
+//         baseEvents: {
+//             onClick: "default",
+//             onEnter: null,
+//             onExit: null,
+//         }
+//     },
 
-    modify: {
-        title: "Modify mode",
-        ariaLabel: "Enable modify mode",
-        icon: "Hammer",
-        histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
-        },
-        baseEvents: {
-            onEnter: () => console.log("Entered modify mode"),
-            onClick: () => console.log("Clicked in modify mode"),
-            onHover: () => console.log("Hovered over modify mode"),
-            onExit: "default",
-        }
-    },
+//     modify: {
+//         title: "Modify mode",
+//         ariaLabel: "Enable modify mode",
+//         icon: "Hammer",
+//         histogramEvents: {
+//             mouseclick: null,
+//             mousedbclick: null,
+//             shiftmouseclick: null,
+//             shiftmousedbclick: null,
+//             mousemove: null,
+//         },
+//         baseEvents: {
+//             onEnter: () => console.log("Entered modify mode"),
+//             onClick: () => console.log("Clicked in modify mode"),
+//             onHover: () => console.log("Hovered over modify mode"),
+//             onExit: "default",
+//         }
+//     },
 
-    scaleBy: {
-        title: "Scale By mode",
-        ariaLabel: "Enable scale by mode",
-        icon: "Scale3D",
-        histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
-        },
-        baseEvents: {
-            onEnter: null,
-            onClick: () => {
-                // console.log("Clicked in outline mode");
-                const cfg = configSubjectGet().getValue();
-                // console.log("Current state: ", cfg);
-                if (!cfg?.config?.histogram?.scale?.scaleBy) return;
-                if (cfg.config.histogram.scale.scaleBy === "value") {
-                    cfg.config.histogram.scale.scaleBy = "error";
-                } else {
-                    cfg.config.histogram.scale.scaleBy = "value";
-                }
-                console.log("Updated config: cfg=", cfg);
-                configSubjectGet().next(cfg);
-            },
-            onHover: null,
-            onExit: null,
-        }
-    },
+//     scaleBy: {
+//         title: "Scale By mode",
+//         ariaLabel: "Enable scale by mode",
+//         icon: "Scale3D",
+//         histogramEvents: {
+//             mouseclick: null,
+//             mousedbclick: null,
+//             shiftmouseclick: null,
+//             shiftmousedbclick: null,
+//             mousemove: null,
+//         },
+//         baseEvents: {
+//             onEnter: null,
+//             onClick: () => {
+//                 // console.log("Clicked in outline mode");
+//                 const cfg = configSubjectGet().getValue();
+//                 // console.log("Current state: ", cfg);
+//                 if (!cfg?.config?.histogram?.scale?.scaleBy) return;
+//                 if (cfg.config.histogram.scale.scaleBy === "value") {
+//                     cfg.config.histogram.scale.scaleBy = "error";
+//                 } else {
+//                     cfg.config.histogram.scale.scaleBy = "value";
+//                 }
+//                 console.log("Updated config: cfg=", cfg);
+//                 configSubjectGet().next(cfg);
+//             },
+//             onHover: null,
+//             onExit: null,
+//         }
+//     },
 
-    colorBy: {
-        title: "Color By mode",
-        ariaLabel: "Enable color by mode",
-        icon: "Palette",
-        histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
-        },
+//     colorBy: {
+//         title: "Color By mode",
+//         ariaLabel: "Enable color by mode",
+//         icon: "Palette",
+//         histogramEvents: {
+//             mouseclick: null,
+//             mousedbclick: null,
+//             shiftmouseclick: null,
+//             shiftmousedbclick: null,
+//             mousemove: null,
+//         },
 
-        baseEvents: {
-            onEnter: null,
-            onClick: () => {
-                // console.log("Clicked in outline mode");
-                const cfg = configSubjectGet().getValue();
-                // console.log("Current state: ", cfg);
-                if (!cfg?.config?.histogram?.color?.colorBy) return;
-                if (cfg.config.histogram.color.colorBy === "error") {
-                    cfg.config.histogram.color.colorBy = "value";
-                } else {
-                    cfg.config.histogram.color.colorBy = "error";
-                }
-                console.log("Updated config: cfg=", cfg);
-                configSubjectGet().next(cfg);
-            },
-            onHover: null,
-            onExit: null,
-        }
-    },
+//         baseEvents: {
+//             onEnter: null,
+//             onClick: () => {
+//                 // console.log("Clicked in outline mode");
+//                 const cfg = configSubjectGet().getValue();
+//                 // console.log("Current state: ", cfg);
+//                 if (!cfg?.config?.histogram?.color?.colorBy) return;
+//                 if (cfg.config.histogram.color.colorBy === "error") {
+//                     cfg.config.histogram.color.colorBy = "value";
+//                 } else {
+//                     cfg.config.histogram.color.colorBy = "error";
+//                 }
+//                 console.log("Updated config: cfg=", cfg);
+//                 configSubjectGet().next(cfg);
+//             },
+//             onHover: null,
+//             onExit: null,
+//         }
+//     },
 
-    layers: {
-        title: "Layers mode",
-        ariaLabel: "Enable layers mode",
-        icon: "Layers",
-        histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
-        },
-        baseEvents: {
-            onEnter: null,
-            onClick: () => {
-                console.log("Clicked in layers mode");
-                const state = stateSubjectGet("pad1").getValue();
-                console.log("Current state: ", state);
+//     layers: {
+//         title: "Layers mode",
+//         ariaLabel: "Enable layers mode",
+//         icon: "Layers",
+//         histogramEvents: {
+//             mouseclick: null,
+//             mousedbclick: null,
+//             shiftmouseclick: null,
+//             shiftmousedbclick: null,
+//             mousemove: null,
+//         },
+//         baseEvents: {
+//             onEnter: null,
+//             onClick: () => {
+//                 console.log("Clicked in layers mode");
+//                 const state = stateSubjectGet("pad1").getValue();
+//                 console.log("Current state: ", state);
 
-                if (state?.currentLayer) {
-                    state.currentLayer = state.currentLayer + 1;
-                    if (state.currentLayer > state.availableAxes.length - state.sets.length) {
-                        state.currentLayer = 1;
-                    }
-                } else {
-                    state.currentLayer = 2;
-                }
-                window.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: state.currentLayer.toString(),
-                        code: "Numpad" + state.currentLayer.toString(),
-                        bubbles: true,
-                        cancelable: true
-                    }));
+//                 if (state?.currentLayer) {
+//                     state.currentLayer = state.currentLayer + 1;
+//                     if (state.currentLayer > state.availableAxes.length - state.sets.length) {
+//                         state.currentLayer = 1;
+//                     }
+//                 } else {
+//                     state.currentLayer = 2;
+//                 }
+//                 window.dispatchEvent(
+//                     new KeyboardEvent("keydown", {
+//                         key: state.currentLayer.toString(),
+//                         code: "Numpad" + state.currentLayer.toString(),
+//                         bubbles: true,
+//                         cancelable: true
+//                     }));
 
-                stateSubjectGet("pad1").next(state);
-            },
-            onHover: null,
-            onExit: null,
-        }
-    },
+//                 stateSubjectGet("pad1").next(state);
+//             },
+//             onHover: null,
+//             onExit: null,
+//         }
+//     },
 
-    outline: {
-        title: "Outline mode",
-        ariaLabel: "Enable outline mode",
-        icon: "SquareDashed",
-        histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
-        },
-        baseEvents: {
-            onEnter: null,
-            onClick: () => {
-                // console.log("Clicked in outline mode");
-                const cfg = configSubjectGet().getValue();
-                const state = stateSubjectGet("pad1").getValue();
-                console.log("Current config: ", cfg);
-                if (!cfg?.config?.histogram?.wireframe) return;
-                cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
-                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
-                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length + 1) {
-                    cfg.config.histogram.wireframe.display.start = 0;
-                }
-                console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
-                configSubjectGet().next(cfg);
-            },
-            onHover: null,
-            onExit: null,
-        }
-    },
+//     outline: {
+//         title: "Outline mode",
+//         ariaLabel: "Enable outline mode",
+//         icon: "SquareDashed",
+//         histogramEvents: {
+//             mouseclick: null,
+//             mousedbclick: null,
+//             shiftmouseclick: null,
+//             shiftmousedbclick: null,
+//             mousemove: null,
+//         },
+//         baseEvents: {
+//             onEnter: null,
+//             onClick: () => {
+//                 // console.log("Clicked in outline mode");
+//                 const cfg = configSubjectGet().getValue();
+//                 const state = stateSubjectGet("pad1").getValue();
+//                 console.log("Current config: ", cfg);
+//                 if (!cfg?.config?.histogram?.wireframe) return;
+//                 cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
+//                 if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
+//                     cfg.config.histogram.wireframe.display.start >= state.availableAxes.length + 1) {
+//                     cfg.config.histogram.wireframe.display.start = 0;
+//                 }
+//                 console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
+//                 configSubjectGet().next(cfg);
+//             },
+//             onHover: null,
+//             onExit: null,
+//         }
+//     },
 
 
 
-    // inspect: {
-    //     title: "Inspect mode",
-    //     ariaLabel: "Enable inspect mode",
-    //     icon: "Eye",
-    //     histogramEvents: {
-    //         mouseclick: (d) => console.log("Inspect mode: mouseclick : ", d),
-    //         mousemove: "default",
-    //     },
-    // },
-};
+//     // inspect: {
+//     //     title: "Inspect mode",
+//     //     ariaLabel: "Enable inspect mode",
+//     //     icon: "Eye",
+//     //     histogramEvents: {
+//     //         mouseclick: (d) => console.log("Inspect mode: mouseclick : ", d),
+//     //         mousemove: "default",
+//     //     },
+//     // },
+// };
 
 function App() {
     const [configState, setConfigState] = useState<NdmspcConfig>({ type: "" });
@@ -265,8 +266,8 @@ function App() {
     }
 
     useEffect(() => {
-        modesConfig && setModesConfig(modesConfig);
-    }, [modesConfig]);
+        defaultSceneModesConfig && setModesConfig(defaultSceneModesConfig);
+    }, [defaultSceneModesConfig]);
 
     useEffect(() => {
         brokerManagerGet().createWs("ws://localhost:8080/ws/root.websocket", false, 60);

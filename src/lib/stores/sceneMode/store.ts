@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ComponentType } from "react";
+import { configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 
 export type HistogramEventName =
     | "mouseclick"
@@ -24,11 +25,11 @@ export type HistogramEventFunctionConfig =
     | "default"
     | null;
 
-export type BaseEventFunctionConfig = 
-    | BaseEventFunction 
+export type BaseEventFunctionConfig =
+    | BaseEventFunction
     | BaseEventFunction[]
-    | "default" 
-    | null;    
+    | "default"
+    | null;
 
 export const histogramEvents: HistogramEventName[] = [
     "mouseclick",
@@ -89,7 +90,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
     default: {
         title: "Default mode",
         ariaLabel: "Enable default mode",
-        icon: "MousePointer2",
+        icon: "",
         histogramEvents: {
             mouseclick: "default",
             mousedbclick: "default",
@@ -98,12 +99,13 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             mousemove: "default",
         },
         baseEvents: {
-            onEnter: () => console.log("Entered default mode"),
-            onClick: () => console.log("Clicked in default mode"),
-            onHover: () => console.log("Hovered over default mode"),
-            onExit: () => console.log("Exited default mode"),
-        },
+            onClick: "default",
+            onEnter: "default",
+            onHover: "default",
+            onExit: "default",
+        }
     },
+
     modify: {
         title: "Modify mode",
         ariaLabel: "Enable modify mode",
@@ -116,12 +118,149 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             mousemove: null,
         },
         baseEvents: {
-            onEnter: () => console.log("Entered modify mode"),
-            onClick: () => console.log("Clicked in modify mode"),
-            onHover: () => console.log("Hovered over modify mode"),
-            onExit: () => console.log("Exited modify mode"),
-        },
+            onClick: "default",
+            onEnter: "default",
+            onHover: "default",
+            onExit: "default",
+        }
     },
+
+    scaleBy: {
+        title: "Scale By mode",
+        ariaLabel: "Enable scale by mode",
+        icon: "Scale3D",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: "default",
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                // console.log("Current state: ", cfg);
+                if (!cfg?.config?.histogram?.scale?.scaleBy) return;
+                if (cfg.config.histogram.scale.scaleBy === "value") {
+                    cfg.config.histogram.scale.scaleBy = "error";
+                } else {
+                    cfg.config.histogram.scale.scaleBy = "value";
+                }
+                console.log("Updated config: cfg=", cfg);
+                configSubjectGet().next(cfg);
+            },
+            onHover: "default",
+            onExit: "default",
+        }
+    },
+
+    colorBy: {
+        title: "Color By mode",
+        ariaLabel: "Enable color by mode",
+        icon: "Palette",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+
+        baseEvents: {
+            onEnter: "default",
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                // console.log("Current state: ", cfg);
+                if (!cfg?.config?.histogram?.color?.colorBy) return;
+                if (cfg.config.histogram.color.colorBy === "error") {
+                    cfg.config.histogram.color.colorBy = "value";
+                } else {
+                    cfg.config.histogram.color.colorBy = "error";
+                }
+                console.log("Updated config: cfg=", cfg);
+                configSubjectGet().next(cfg);
+            },
+            onHover: "default",
+            onExit: "default",
+        }
+    },
+
+    layers: {
+        title: "Layers mode",
+        ariaLabel: "Enable layers mode",
+        icon: "Layers",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: "default",
+            onClick: () => {
+                console.log("Clicked in layers mode");
+                const state = stateSubjectGet("pad1").getValue();
+                console.log("Current state: ", state);
+
+                if (state?.currentLayer) {
+                    state.currentLayer = state.currentLayer + 1;
+                    if (state.currentLayer > state.availableAxes.length - state.sets.length) {
+                        state.currentLayer = 1;
+                    }
+                } else {
+                    state.currentLayer = 2;
+                }
+                window.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        key: state.currentLayer.toString(),
+                        code: "Numpad" + state.currentLayer.toString(),
+                        bubbles: true,
+                        cancelable: true
+                    }));
+
+                stateSubjectGet("pad1").next(state);
+            },
+            onHover: "default",
+            onExit: "default",
+        }
+    },
+
+    outline: {
+        title: "Outline mode",
+        ariaLabel: "Enable outline mode",
+        icon: "SquareDashed",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: "default",
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                const state = stateSubjectGet("pad1").getValue();
+                console.log("Current config: ", cfg);
+                if (!cfg?.config?.histogram?.wireframe) return;
+                cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
+                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
+                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length + 1) {
+                    cfg.config.histogram.wireframe.display.start = 0;
+                }
+                console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
+                configSubjectGet().next(cfg);
+            },
+            onHover: "default",
+            onExit: "default",
+        }
+    },
+
 };
 
 interface SceneModeStore {
