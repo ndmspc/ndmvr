@@ -10,7 +10,7 @@ import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
-import app from "../../../App.tsx";
+// import app from "../../../App.tsx";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
 import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 
@@ -65,8 +65,8 @@ export default function NdmspcEnv({
     const [showUI, setShowUI] = useState(menu || help);
     const { setUIHover, setVrEnabled } = useSceneModeStore();
 
-    console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
-    console.log("[NEW] onConfigChange:", onConfigChange);
+    // console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
+    // console.log("[NEW] onConfigChange:", onConfigChange);
 
     const handleUIToggle = () => {
         setShowUI((prev) => !prev);
