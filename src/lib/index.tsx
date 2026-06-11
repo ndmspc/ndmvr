@@ -22,6 +22,8 @@ import NdmspcNavigator from "./components/app/NdmspcNavigator.tsx";
 import useNdmspcConfig from "./hooks/useNdmspcConfig.tsx";
 import useNdmspcWebsocket from "./hooks/useNdmspcWebsocket.tsx";
 
+import { useSceneModeStore } from "./stores/sceneMode/store.ts";
+
 import {
     histogramSubjectGet,
     brokerManagerGet,
@@ -31,6 +33,7 @@ import {
     functionSubjectGet,
     stateSubjectGet,
 } from "@ndmspc/ndmvr-core";
+
 
 export {
     NdmspcNavigator,
@@ -65,6 +68,7 @@ export {
     stateSubjectGet,
     useNdmspcConfig,
     useNdmspcWebsocket,
+    useSceneModeStore
 };
 
 // Export types for component props
