@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 // import NdmspcEnv from "./lib/components/env/NdmspcEnv.tsx";
 // import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
-import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
+import { brokerManagerGet, histogramSubjectGet, configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
 import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
 import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
@@ -46,6 +46,142 @@ const modesConfig: SceneModesConfig = {
             onExit: "default",
         }
     },
+
+    scaleBy: {
+        title: "Scale By mode",
+        ariaLabel: "Enable scale by mode",
+        icon: "Scale3D",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: null,
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                // console.log("Current state: ", cfg);
+                if (!cfg?.config?.histogram?.scale?.scaleBy) return;
+                if (cfg.config.histogram.scale.scaleBy === "value") {
+                    cfg.config.histogram.scale.scaleBy = "error";
+                } else {
+                    cfg.config.histogram.scale.scaleBy = "value";
+                }
+                console.log("Updated config: cfg=", cfg);
+                configSubjectGet().next(cfg);
+            },
+            onHover: null,
+            onExit: null,
+        }
+    },
+
+    colorBy: {
+        title: "Color By mode",
+        ariaLabel: "Enable color by mode",
+        icon: "Palette",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+
+        baseEvents: {
+            onEnter: null,
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                // console.log("Current state: ", cfg);
+                if (!cfg?.config?.histogram?.color?.colorBy) return;
+                if (cfg.config.histogram.color.colorBy === "error") {
+                    cfg.config.histogram.color.colorBy = "value";
+                } else {
+                    cfg.config.histogram.color.colorBy = "error";
+                }
+                console.log("Updated config: cfg=", cfg);
+                configSubjectGet().next(cfg);
+            },
+            onHover: null,
+            onExit: null,
+        }
+    },
+
+    layers: {
+        title: "Layers mode",
+        ariaLabel: "Enable layers mode",
+        icon: "Layers",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: null,
+            onClick: () => {
+                console.log("Clicked in layers mode");
+                const state = stateSubjectGet("pad1").getValue();
+                console.log("Current state: ", state);
+
+                if (state?.currentLayer) {
+                    state.currentLayer = state.currentLayer + 1;
+                    if (state.currentLayer > state.availableAxes.length) {
+                        state.currentLayer = 1;
+                    }
+                } else {
+                    state.currentLayer = 2;
+                }
+                window.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        key: state.currentLayer.toString(),
+                        code: "Numpad" + state.currentLayer.toString(),
+                        bubbles: true,
+                        cancelable: true
+                    }));
+
+                stateSubjectGet("pad1").next(state);
+            },
+            onHover: null,
+            onExit: null,
+        }
+    },
+
+    outline: {
+        title: "Outline mode",
+        ariaLabel: "Enable outline mode",
+        icon: "SquareDashed",
+        histogramEvents: {
+            mouseclick: null,
+            mousedbclick: null,
+            shiftmouseclick: null,
+            shiftmousedbclick: null,
+            mousemove: null,
+        },
+        baseEvents: {
+            onEnter: null,
+            onClick: () => {
+                // console.log("Clicked in outline mode");
+                const cfg = configSubjectGet().getValue();
+                console.log("Current config: ", cfg);
+                if (!cfg?.config?.histogram?.wireframe) return;
+                cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
+                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end) {
+                    cfg.config.histogram.wireframe.display.start = 0;
+                }
+                console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
+                configSubjectGet().next(cfg);
+            },
+            onHover: null,
+            onExit: null,
+        }
+    },
+
+
 
     // inspect: {
     //     title: "Inspect mode",
@@ -190,7 +326,7 @@ function App() {
                 <NdmspcNavigator
                     menu={true}
                     help={false}
-                    // ndmspcConfig={{type:"browser"}}
+                // ndmspcConfig={{type:"browser"}}
                 >
                     <IframeCernboxService onConfigLoad={onConfigLoad} />
                 </NdmspcNavigator>
