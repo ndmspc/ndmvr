@@ -130,7 +130,7 @@ const modesConfig: SceneModesConfig = {
 
                 if (state?.currentLayer) {
                     state.currentLayer = state.currentLayer + 1;
-                    if (state.currentLayer > state.availableAxes.length) {
+                    if (state.currentLayer > state.availableAxes.length - state.sets.length) {
                         state.currentLayer = 1;
                     }
                 } else {
@@ -167,10 +167,12 @@ const modesConfig: SceneModesConfig = {
             onClick: () => {
                 // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
+                const state = stateSubjectGet("pad1").getValue();
                 console.log("Current config: ", cfg);
                 if (!cfg?.config?.histogram?.wireframe) return;
                 cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
-                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end) {
+                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
+                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length + 1) {
                     cfg.config.histogram.wireframe.display.start = 0;
                 }
                 console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
