@@ -22,7 +22,7 @@ import NdmspcNavigator from "./components/app/NdmspcNavigator.tsx";
 import useNdmspcConfig from "./hooks/useNdmspcConfig.tsx";
 import useNdmspcWebsocket from "./hooks/useNdmspcWebsocket.tsx";
 
-import { useSceneModeStore } from "./stores/sceneMode/store.ts";
+import { useSceneModeStore, defaultSceneModesConfig } from "./stores/sceneMode/store.ts";
 
 import {
     histogramSubjectGet,
@@ -68,7 +68,8 @@ export {
     stateSubjectGet,
     useNdmspcConfig,
     useNdmspcWebsocket,
-    useSceneModeStore
+    useSceneModeStore,
+    defaultSceneModesConfig
 };
 
 // Export types for component props
