@@ -16,7 +16,7 @@ const useNdmspcConfig = (config: NdmspcConfig) => {
                         const obj = jsrootParse(data);
                         console.log("Fetched object:", obj);
                         histogramSubjectGet().next({
-                            id: `histogram1`,
+                            id: `pad1`,
                             opts: { render: "" },
                             obj: obj,
                         });

@@ -22,7 +22,7 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
                             obj.arr[i]._typename.startsWith("TH2")
                         ) {
                             histogramSubjectGet().next({
-                                id: `histogram${i + 1}`,
+                                id: `pad${i + 1}`,
                                 opts: { render: "nested" },
                                 obj: obj.arr[i],
                             });
@@ -31,7 +31,7 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
                             r = "nested";
 
                             histogramSubjectGet().next({
-                                id: `histogram${i + 1}`,
+                                id: `pad${i + 1}`,
                                 opts: { render: r },
                                 obj: obj.arr[i],
                             });
@@ -39,7 +39,7 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
                     }
                 } else if (obj._typename) {
                     histogramSubjectGet().next({
-                        id: `histogram1`,
+                        id: `pad1`,
                         opts: { render: "" },
                         obj: obj,
                     });
