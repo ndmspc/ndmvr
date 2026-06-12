@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 // import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
 import { brokerManagerGet, histogramSubjectGet, configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
-import { NdmspcConfig, IframeCernboxService, NdmspcNavigator } from "./lib/index.tsx";
+import { NdmspcConfig, IframeCernboxService, NdmspcNavigator, useSceneModeStore, defaultSceneModesConfig } from "./lib/index.tsx";
 import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
 import type { SceneModesConfig } from "./lib/index.tsx";
-import { useSceneModeStore, defaultSceneModesConfig } from "./lib/stores/sceneMode/store.ts";
 
 // Defaults in defaultSceneModesConfig (user can override them by passing custom config by using setModesConfig from useSceneModeStore)
 // const modesConfig: SceneModesConfig = {
@@ -285,13 +284,13 @@ function App() {
                             obj.arr[i]._typename.startsWith("TH2")
                         ) {
                             histogramSubjectGet().next({
-                                id: `histogram${i + 1}`,
+                                id: `pad${i + 1}`,
                                 opts: { render: "ndmvr" },
                                 obj: obj.arr[i],
                             });
                         } else {
                             histogramSubjectGet().next({
-                                id: `histogram${i + 1}`,
+                                id: `pad${i + 1}`,
                                 opts: { render: "ndmvr" },
                                 obj: obj.arr[i],
                             });
@@ -299,7 +298,7 @@ function App() {
                     }
                 } else if (obj._typename) {
                     histogramSubjectGet().next({
-                        id: `histogram1`,
+                        id: `pad1`,
                         opts: { render: "ndmvr" },
                         obj: obj,
                     });
