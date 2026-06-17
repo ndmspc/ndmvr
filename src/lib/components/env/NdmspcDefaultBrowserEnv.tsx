@@ -1,7 +1,6 @@
 import NdmvrEnv from "./NdmvrEnv.tsx";
 // import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
-import ModeToolsPanel from "../ui/desktop/ModeToolsPanel.tsx";
 import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -484,7 +483,6 @@ export default function NdmspcDefaultBrowserEnv({
 
 
                 <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
-                {vrMode && <ModeToolsPanel />}
             </div>
             );
             }
