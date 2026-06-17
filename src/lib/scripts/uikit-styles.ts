@@ -164,3 +164,63 @@ StyleSheet["VRButton"] = {
     color: "#f1f5f9",
     borderRadius: 16,
 };
+
+StyleSheet["ModeToolsPanelWrapper"] = {
+    positionType: "absolute",
+    positionLeft: 0,
+    positionRight: 0,
+    width: "100%",
+    positionBottom: 10,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+    zIndex: 12,
+};
+
+StyleSheet["ModeToolsPanel"] = {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.22)",
+    borderRadius: 16,
+    backgroundColor: "rgba(20, 24, 31, 0.32)",
+    receiveShadow: true,
+};
+
+StyleSheet["NotificationBubble"] = {
+    width: "auto",
+    maxWidth: 320,
+    paddingX: 12,
+    paddingY: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.22)",
+    borderRadius: 14,
+    backgroundColor: "rgba(10, 14, 20, 0.86)",
+    color: "rgba(255, 255, 255, 0.95)",
+    fontSize: 13,
+    lineHeight: 1.35,
+    textAlign: "center",
+    whiteSpace: "pre-line",
+    wordBreak: "break-word",
+};
+
+StyleSheet["ToolButton"] = {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+    borderWidth: 1,
+    borderRadius: 14,
+    cursor: "pointer",
+};
+
+StyleSheet["ToolButtonIcon"] = {
+    width: 20,
+    height: 20,
+    color: "rgba(255, 255, 255, 0.74)",
+};
+

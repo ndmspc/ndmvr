@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 
 export type HistogramEventName =
@@ -46,6 +46,11 @@ export type ModeToolIconProps = {
 };
 
 export type ModeToolIcon = ComponentType<ModeToolIconProps> | string;
+
+export type ModeToolsNotification = {
+    content: ReactNode;
+    lifetimeMs: number;
+} | null;
 
 export interface SceneModeConfig {
     title?: string;
@@ -128,7 +133,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
     scaleBy: {
         title: "Scale By mode",
         ariaLabel: "Enable scale by mode",
-        icon: "Scale3D",
+        icon: "Scale3d",
         histogramEvents: {
             mouseclick: null,
             mousedbclick: null,
@@ -139,6 +144,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
+                useSceneModeStore.getState().showModeToolsNotification("Scale By mode activated", 2000);
                 // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
                 // console.log("Current state: ", cfg);
@@ -268,6 +274,7 @@ interface SceneModeStore {
     uiHover: boolean;
     activeMode: string;
     binBoxEnabled: boolean;
+    modeToolsNotification: ModeToolsNotification;
 
     modesConfig: SceneModesConfig;
 
@@ -279,15 +286,23 @@ interface SceneModeStore {
     toggleBinBoxEnabled: () => void;
     setUIHover: (state: boolean) => void;
     setVrEnabled: (state: boolean) => void;
+    showModeToolsNotification: (
+        content: ReactNode,
+        lifetimeMs?: number
+    ) => void;
+    clearModeToolsNotification: () => void;
 
     shouldDisableRaycaster: () => boolean;
 }
+
+let modeToolsNotificationTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useSceneModeStore = create<SceneModeStore>((set, get) => ({
     vrEnabled: true,
     uiHover: false,
     activeMode: "default",
     binBoxEnabled: false,
+    modeToolsNotification: null,
 
     modesConfig: defaultSceneModesConfig,
 
@@ -327,6 +342,36 @@ export const useSceneModeStore = create<SceneModeStore>((set, get) => ({
     setUIHover: (state) => set({ uiHover: state }),
 
     setVrEnabled: (state) => set({ vrEnabled: state }),
+
+    showModeToolsNotification: (content, lifetimeMs = 2500) => {
+        if (modeToolsNotificationTimer) {
+            clearTimeout(modeToolsNotificationTimer);
+            modeToolsNotificationTimer = null;
+        }
+
+        set({
+            modeToolsNotification: {
+                content,
+                lifetimeMs,
+            },
+        });
+
+        if (lifetimeMs <= 0) return;
+
+        modeToolsNotificationTimer = setTimeout(() => {
+            set({ modeToolsNotification: null });
+            modeToolsNotificationTimer = null;
+        }, lifetimeMs);
+    },
+
+    clearModeToolsNotification: () => {
+        if (modeToolsNotificationTimer) {
+            clearTimeout(modeToolsNotificationTimer);
+            modeToolsNotificationTimer = null;
+        }
+
+        set({ modeToolsNotification: null });
+    },
 
     shouldDisableRaycaster() {
         return get().uiHover === true || get().vrEnabled === false;
