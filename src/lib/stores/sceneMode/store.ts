@@ -104,9 +104,13 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             mousemove: "default",
         },
         baseEvents: {
-            onClick: "default",
             onEnter: "default",
-            onHover: "default",
+            onClick: () => {
+                useSceneModeStore.getState().showModeToolsNotification("Normal mode activated", 2000);
+            },
+            onHover: () => {
+                useSceneModeStore.getState().clearModeToolsNotification();
+            },
             onExit: "default",
         }
     },
@@ -123,9 +127,13 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             mousemove: null,
         },
         baseEvents: {
-            onClick: "default",
             onEnter: "default",
-            onHover: "default",
+            onClick: () => {
+                useSceneModeStore.getState().showModeToolsNotification("Modify mode activated", 2000);
+            },
+            onHover: () => {
+                useSceneModeStore.getState().clearModeToolsNotification();
+            },
             onExit: "default",
         }
     },
@@ -135,29 +143,36 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         ariaLabel: "Enable scale by mode",
         icon: "Scale3d",
         histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
+            mouseclick: "default",
+            mousedbclick: "default",
+            shiftmouseclick: "default",
+            shiftmousedbclick: "default",
+            mousemove: "default",
         },
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                useSceneModeStore.getState().showModeToolsNotification("Scale By mode activated", 2000);
+
                 // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
                 // console.log("Current state: ", cfg);
                 if (!cfg?.config?.histogram?.scale?.scaleBy) return;
                 if (cfg.config.histogram.scale.scaleBy === "value") {
                     cfg.config.histogram.scale.scaleBy = "error";
+                    useSceneModeStore.getState().showModeToolsNotification("Scale By error activated", 2000);
                 } else {
                     cfg.config.histogram.scale.scaleBy = "value";
+                    useSceneModeStore.getState().showModeToolsNotification("Scale By value activated", 2000);
                 }
                 console.log("Updated config: cfg=", cfg);
                 configSubjectGet().next(cfg);
             },
-            onHover: "default",
+            onHover: () => {
+                const cfg = configSubjectGet().getValue();
+                if (!cfg?.config?.histogram?.scale?.scaleBy) return;
+                const scaleBy = cfg.config.histogram.scale.scaleBy;
+                useSceneModeStore.getState().showModeToolsNotification(`Scale By ${scaleBy}`, 2000);
+            },
             onExit: "default",
         }
     },
@@ -167,11 +182,11 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         ariaLabel: "Enable color by mode",
         icon: "Palette",
         histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
+            mouseclick: "default",
+            mousedbclick: "default",
+            shiftmouseclick: "default",
+            shiftmousedbclick: "default",
+            mousemove: "default",
         },
 
         baseEvents: {
@@ -183,13 +198,20 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                 if (!cfg?.config?.histogram?.color?.colorBy) return;
                 if (cfg.config.histogram.color.colorBy === "error") {
                     cfg.config.histogram.color.colorBy = "value";
+                    useSceneModeStore.getState().showModeToolsNotification("Color By value activated", 2000);
                 } else {
                     cfg.config.histogram.color.colorBy = "error";
+                    useSceneModeStore.getState().showModeToolsNotification("Color By error activated", 2000);
                 }
-                console.log("Updated config: cfg=", cfg);
+                // console.log("Updated config: cfg=", cfg);
                 configSubjectGet().next(cfg);
             },
-            onHover: "default",
+            onHover: () => {
+                const cfg = configSubjectGet().getValue();
+                if (!cfg?.config?.histogram?.color?.colorBy) return;
+                const colorBy = cfg.config.histogram.color.colorBy;
+                useSceneModeStore.getState().showModeToolsNotification(`Color By ${colorBy}`, 2000);
+            },
             onExit: "default",
         }
     },
@@ -199,18 +221,18 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         ariaLabel: "Enable layers mode",
         icon: "Layers",
         histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
+            mouseclick: "default",
+            mousedbclick: "default",
+            shiftmouseclick: "default",
+            shiftmousedbclick: "default",
+            mousemove: "default",
         },
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                console.log("Clicked in layers mode");
+                // console.log("Clicked in layers mode");
                 const state = stateSubjectGet("pad1").getValue();
-                console.log("Current state: ", state);
+                // console.log("Current state: ", state);
 
                 if (state?.currentLayer) {
                     state.currentLayer = state.currentLayer + 1;
@@ -228,9 +250,17 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                         cancelable: true
                     }));
 
+                useSceneModeStore.getState().showModeToolsNotification(`Layer ${state.currentLayer-1} shown`, 2000);
                 stateSubjectGet("pad1").next(state);
             },
-            onHover: "default",
+            onHover: () => {
+                const state = stateSubjectGet("pad1").getValue();
+                if (!state?.currentLayer) {
+                     state.currentLayer = 1;
+                    stateSubjectGet("pad1").next(state);
+                }
+                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${state.currentLayer-1}`, 2000);
+            },
             onExit: "default",
         }
     },
@@ -240,11 +270,11 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         ariaLabel: "Enable outline mode",
         icon: "SquareDashed",
         histogramEvents: {
-            mouseclick: null,
-            mousedbclick: null,
-            shiftmouseclick: null,
-            shiftmousedbclick: null,
-            mousemove: null,
+            mouseclick: "default",
+            mousedbclick: "default",
+            shiftmouseclick: "default",
+            shiftmousedbclick: "default",
+            mousemove: "default",
         },
         baseEvents: {
             onEnter: "default",
@@ -252,17 +282,25 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                 // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
                 const state = stateSubjectGet("pad1").getValue();
-                console.log("Current config: ", cfg);
+                // console.log("Current config: ", cfg);
                 if (!cfg?.config?.histogram?.wireframe) return;
                 cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
+                if (state?.availableAxes) cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
                 if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
-                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length + 1) {
+                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length) {
                     cfg.config.histogram.wireframe.display.start = 0;
+                    cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
                 }
-                console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
+
+                // console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
+                useSceneModeStore.getState().showModeToolsNotification(`Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`, 2000);
                 configSubjectGet().next(cfg);
             },
-            onHover: "default",
+            onHover: () => {
+                const cfg = configSubjectGet().getValue();
+                if (!cfg?.config?.histogram?.wireframe) return;
+                useSceneModeStore.getState().showModeToolsNotification(`Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`, 2000);
+            },
             onExit: "default",
         }
     },
