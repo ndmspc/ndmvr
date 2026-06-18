@@ -250,16 +250,16 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                         cancelable: true
                     }));
 
-                useSceneModeStore.getState().showModeToolsNotification(`Layer ${state.currentLayer-1} shown`, 2000);
+                useSceneModeStore.getState().showModeToolsNotification(`Layer ${state.currentLayer - 1} shown`, 2000);
                 stateSubjectGet("pad1").next(state);
             },
             onHover: () => {
                 const state = stateSubjectGet("pad1").getValue();
                 if (!state?.currentLayer) {
-                     state.currentLayer = 1;
+                    state.currentLayer = 1;
                     stateSubjectGet("pad1").next(state);
                 }
-                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${state.currentLayer-1}`, 2000);
+                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${state.currentLayer - 1}`, 2000);
             },
             onExit: "default",
         }
@@ -286,8 +286,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                 if (!cfg?.config?.histogram?.wireframe) return;
                 cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
                 if (state?.availableAxes) cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
-                if (cfg.config.histogram.wireframe.display.start >= cfg.config.histogram.wireframe.display.end ||
-                    cfg.config.histogram.wireframe.display.start >= state.availableAxes.length) {
+                if (cfg.config.histogram.wireframe.display.start > cfg.config.histogram.wireframe.display.end) {
                     cfg.config.histogram.wireframe.display.start = 0;
                     cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
                 }
