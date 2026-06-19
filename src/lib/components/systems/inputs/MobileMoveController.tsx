@@ -1,9 +1,8 @@
 import { useState } from "react";
 import styled from "styled-components";
-// @ts-expect-error
 import arrowUp from "../../../assets/icons/arrow.svg";
-// @ts-expect-error
 import arrowBig from "../../../assets/icons/arrow_big.svg";
+import gamepadIcon from "../../../assets/icons/gamepad.svg";
 
 type Dir = "forward" | "back" | "left" | "right" | "up" | "down";
 
@@ -11,7 +10,11 @@ interface ButtonProps {
     $active?: boolean;
 }
 
-const ControllerWrapper = styled.div`
+interface ControllerProps {
+    $visible: boolean;
+}
+
+const ControllerWrapper = styled.div<ControllerProps>`
     position: absolute;
     left: 20px;
     bottom: 20px;
@@ -21,12 +24,21 @@ const ControllerWrapper = styled.div`
     grid-template-rows: 64px 64px 64px;
     gap: 8px;
 
-    z-index: 0;
+
+    z-index: 100;
     user-select: none;
     touch-action: none;
+    pointer-events: none;
+
+    transform: translateX(${(p) => (p.$visible ? "0" : "-120%")});
+    opacity: ${(p) => (p.$visible ? "1" : "0")};
+
+    transition:
+        transform 0.3s ease,
+        opacity 0.2s ease;
 `;
 
-const RightControllerWrapper = styled.div`
+const RightControllerWrapper = styled.div<ControllerProps>`
     position: absolute;
     right: 20px;
     bottom: 140px;
@@ -35,9 +47,54 @@ const RightControllerWrapper = styled.div`
     flex-direction: column;
     gap: 12px;
 
-    z-index: 20;
+    z-index: 100;
     user-select: none;
     touch-action: none;
+    pointer-events: none;
+
+    transform: translateX(${(p) => (p.$visible ? "0" : "-120vw")});
+    opacity: ${(p) => (p.$visible ? "1" : "0")};
+
+    transition:
+        transform 0.3s ease,
+        opacity 0.2s ease;
+`;
+
+const HideButton = styled.button<ControllerProps>`
+    position: absolute;
+    left: ${(p) => (p.$visible ? "20px" : "0")};
+    bottom: 244px;
+
+    width: ${(p) => (p.$visible ? "105px" : "48px")};
+    height: 44px;
+    padding: ${(p) => (p.$visible ? "0 12px" : "0")};
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    z-index: 101;
+    pointer-events: auto;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: ${(p) => (p.$visible ? "12px" : "0 12px 12px 0")};
+
+    color: white;
+    background: rgba(0, 0, 0, 0.45);
+
+    font-size: ${(p) => (p.$visible ? "15px" : "20px")};
+
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+
+    transition:
+        left 0.3s ease,
+        width 0.3s ease,
+        padding 0.3s ease,
+        border-radius 0.3s ease;
 `;
 
 const MoveButton = styled.button<ButtonProps>`
@@ -47,6 +104,8 @@ const MoveButton = styled.button<ButtonProps>`
 
     width: 64px;
     height: 64px;
+
+    pointer-events: auto;
 
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 12px;
@@ -81,15 +140,24 @@ const ArrowIconBig = styled.img<{ $rotate?: number }>`
     filter: brightness(0) invert(1);
 `;
 
+const GamepadIcon = styled.img`
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    filter: brightness(0) invert(1);
+`;
+
 interface MobileMoveControllerProps {
     onMoveStart: (dir: Dir) => void;
     onMoveEnd: (dir: Dir) => void;
 }
 
 export default function MobileMoveController({
-    onMoveStart,
-    onMoveEnd,
-}: MobileMoveControllerProps) {
+                                                 onMoveStart,
+                                                 onMoveEnd,
+                                             }: MobileMoveControllerProps) {
+    const [controlsVisible, setControlsVisible] = useState(true);
+
     const [active, setActive] = useState<Record<Dir, boolean>>({
         forward: false,
         back: false,
@@ -109,6 +177,27 @@ export default function MobileMoveController({
         onMoveEnd(dir);
     };
 
+    const hideControls = () => {
+        if (controlsVisible) {
+            Object.entries(active).forEach(([dir, isActive]) => {
+                if (isActive) {
+                    onMoveEnd(dir as Dir);
+                }
+            });
+
+            setActive({
+                forward: false,
+                back: false,
+                left: false,
+                right: false,
+                up: false,
+                down: false,
+            });
+        }
+
+        setControlsVisible((p) => !p);
+    };
+
     const holdHandlers = (dir: Dir) => ({
         onPointerDown: () => press(dir),
         onPointerUp: () => release(dir),
@@ -118,7 +207,15 @@ export default function MobileMoveController({
 
     return (
         <>
-            <ControllerWrapper>
+            <HideButton
+                $visible={controlsVisible}
+                onClick={hideControls}
+            >
+                <GamepadIcon src={gamepadIcon} />
+                {controlsVisible && "Hide"}
+            </HideButton>
+
+            <ControllerWrapper $visible={controlsVisible}>
                 <div />
                 <MoveButton $active={active.forward} {...holdHandlers("forward")}>
                     <ArrowIcon src={arrowUp} $rotate={0} />
@@ -142,7 +239,7 @@ export default function MobileMoveController({
                 <div />
             </ControllerWrapper>
 
-            <RightControllerWrapper>
+            <RightControllerWrapper $visible={controlsVisible}>
                 <MoveButton $active={active.up} {...holdHandlers("up")}>
                     <ArrowIconBig src={arrowBig} $rotate={0} />
                 </MoveButton>
