@@ -1,7 +1,5 @@
 import styled from "styled-components";
-// @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
 import showMenuIcon from "../../../assets/icons/show_menu.svg";
-// @ts-expect-error FIXME: Importing SVGs like this might need a custom declaration file.
 import closeMenuIcon from "../../../assets/icons/close_menu.svg";
 import { useMenuStore } from "../../../stores/menu/store";
 

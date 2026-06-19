@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import { XR, XROrigin } from "@react-three/xr";
+import { canvasInputProps } from "@react-three/uikit";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import CameraSync from "../systems/CameraSync.tsx";
@@ -23,9 +24,32 @@ import OpenBrowserMenu from "../ui/shared/OpenBrowserMenuProps.tsx";
 import FloatingContainer from "../ui/shared/FloatingContainer.tsx";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { store } from "./xrStore";
+import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
 import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 
 export { store };
+
+export function shouldUseMobileControls() {
+    if (typeof window === "undefined") return false;
+
+    const hasMultiTouch = navigator.maxTouchPoints >= 2;
+
+    const noHover = window.matchMedia?.("(any-hover: none)").matches ?? false;
+    const coarse = window.matchMedia?.("(any-pointer: coarse)").matches ?? false;
+
+    const screenWidth = window.screen?.width;
+    const screenHeight = window.screen?.height;
+    const width =
+        typeof screenWidth === "number" && screenWidth > 0 ? screenWidth : window.innerWidth;
+    const height =
+        typeof screenHeight === "number" && screenHeight > 0 ? screenHeight : window.innerHeight;
+    const shortSide = Math.min(width, height);
+    const phoneSized = shortSide <= 900;
+
+    const uaMobile = (navigator as any).userAgentData?.mobile === true;
+
+    return uaMobile || (hasMultiTouch && noHover && coarse && phoneSized);
+}
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
@@ -72,6 +96,16 @@ export default function NdmvrEnv({
 
     const { x = 0, y = 1.7, z = 10 } = config?.environment?.camera?.position ?? {};
 
+    const touch = shouldUseMobileControls();
+
+    const startMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
+        window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: true } }));
+    };
+
+    const stopMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
+        window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: false } }));
+    };
+
     return (
         <div
             style={{
@@ -80,6 +114,7 @@ export default function NdmvrEnv({
             }}
         >
             <Canvas
+                {...canvasInputProps}
                 shadows
                 gl={{ localClippingEnabled: true }}
                 onCreated={({ gl }) => {
@@ -118,9 +153,7 @@ export default function NdmvrEnv({
                                 <CloseBrowserMenu setBrowser={setBrowser} />
                             ) : setBrowser ? (
                                 <OpenBrowserMenu setBrowser={setBrowser} />
-                            ) : (
-                                null
-                            )}
+                            ) : null}
                             <BinInfo />
                             <DrawOptions />
                             <SettingsPanel />
@@ -151,6 +184,8 @@ export default function NdmvrEnv({
                     <XROrigin ref={xrOriginRef} position={[x, y, z]} />
                 </XR>
             </Canvas>
+
+            {touch && <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />}
         </div>
     );
 }
