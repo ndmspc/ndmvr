@@ -14,6 +14,7 @@ import DrawOptions from "./components/ui/shared/DrawOptions.tsx";
 import SettingsPanel from "./components/ui/shared/SettingsPanel.tsx";
 import HelperTips from "./components/ui/shared/HelperTips.tsx";
 import Demo from "./components/ui/shared/Demo.tsx";
+import ModeToolsPanel from "./components/ui/shared/ModeToolsPanel.tsx";
 import { WsConnectionMenu, HttpConnectionMenu } from "./components/ui/shared/ConnectionMenu.tsx";
 import Menu from "./components/ui/shared/Menu.tsx";
 import IframeService from "./components/service/IframeService.tsx";
@@ -51,6 +52,7 @@ export {
     SettingsPanel,
     HelperTips,
     Demo,
+    ModeToolsPanel,
     WsConnectionMenu,
     HttpConnectionMenu,
     VRController,
@@ -75,7 +77,7 @@ export {
 // Export types for component props
 export type { NdmspcEnvProps } from "./components/env/NdmspcEnv.tsx";
 export type { NdmvrEnvProps } from "./components/env/NdmvrEnv.tsx";
-export type { HistogramContext } from "./components/scene/NdmvrContent.tsx";
+export type { HistogramContext, NdmvrContentProps } from "./components/scene/NdmvrContent.tsx";
 export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
 export type { CanvasComponentProps, CanvasLocation } from "./components/scene/CanvasComponent.tsx";
 export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";

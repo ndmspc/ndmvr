@@ -11,7 +11,6 @@ import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 // import app from "../../../App.tsx";
-import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
