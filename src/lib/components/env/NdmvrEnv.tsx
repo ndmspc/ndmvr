@@ -25,7 +25,6 @@ import FloatingContainer from "../ui/shared/FloatingContainer.tsx";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { store } from "./xrStore";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
-import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 
 export { store };
 
@@ -141,8 +140,6 @@ export default function NdmvrEnv({
                             />
                         </group>
                     )}
-
-                    <ModeToolsPanel />
 
                     <NdmvrContent>
                         <Menu defaultOpen={menuDefaultOpen} originRef={xrOriginRef}>

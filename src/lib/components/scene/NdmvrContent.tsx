@@ -5,11 +5,20 @@ import CanvasComponent from "./CanvasComponent.tsx";
 import KeyboardListener from "../systems/inputs/KeyboardListener.tsx";
 import { histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { map, merge } from "rxjs";
+import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const HistogramContext = createContext(null);
 
-export default function NdmvrContent({ children }: { children?: React.ReactNode | null }) {
+export interface NdmvrContentProps {
+    children?: React.ReactNode | null;
+    showModeTools?: boolean;
+}
+
+export default function NdmvrContent({
+    children,
+    showModeTools = true,
+}: NdmvrContentProps) {
     const [config, setConfig] = useState(null);
     const [histogram, setHistogram] = useState(null);
 
@@ -55,6 +64,7 @@ export default function NdmvrContent({ children }: { children?: React.ReactNode 
                     />
                 )}
                 <KeyboardListener />
+                {showModeTools && <ModeToolsPanel />}
                 {children}
             </HistogramContext.Provider>
         </>
