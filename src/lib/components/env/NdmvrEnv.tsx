@@ -141,7 +141,7 @@ export default function NdmvrEnv({
                         </group>
                     )}
 
-                    <NdmvrContent>
+                    <NdmvrContent originRef={xrOriginRef}>
                         <Menu defaultOpen={menuDefaultOpen} originRef={xrOriginRef}>
                             <Demo />
                             <HttpConnectionMenu />

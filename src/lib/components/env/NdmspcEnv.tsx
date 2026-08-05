@@ -11,6 +11,7 @@ import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 // import app from "../../../App.tsx";
+import { store } from "./xrStore.ts";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
@@ -169,7 +170,6 @@ export default function NdmspcEnv({
             />
             <FullscreenButton />
             <UIToggleButton />
-
         </div>
     );
 }
