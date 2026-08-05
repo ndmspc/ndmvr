@@ -13,7 +13,7 @@ const xrRayPointer = {
 };
 
 export const store = createXRStore({
-    emulate: false,
+    emulate: true,
     offerSession: "immersive-vr",
     domOverlay: false,
     controller: {

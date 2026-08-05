@@ -15,6 +15,7 @@ export interface UseMoveAndRotationOptions {
     originRef: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
     faceUser?: boolean;
+    storageKey?: string;
 }
 
 export type MoveAndRotationCtx = {
@@ -76,6 +77,7 @@ export function useMoveAndRotation({
     originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
     faceUser = true,
+    storageKey = "menu",
 }: UseMoveAndRotationOptions) {
     const groupRef = useRef<THREE.Group | null>(null);
 
@@ -131,7 +133,7 @@ export function useMoveAndRotation({
 
     const saveOffset = () => {
         sessionStorage.setItem(
-            "menuOffset",
+            `${storageKey}Offset`,
             JSON.stringify({
                 x: currentPos.current.x,
                 y: currentPos.current.y,
@@ -142,7 +144,7 @@ export function useMoveAndRotation({
 
     const saveRotation = () => {
         sessionStorage.setItem(
-            "menuRotation",
+            `${storageKey}Rotation`,
             JSON.stringify({
                 x: rotation.current.x,
                 y: rotation.current.y,
@@ -158,7 +160,7 @@ export function useMoveAndRotation({
     };
 
     useEffect(() => {
-        const savedOffset = sessionStorage.getItem("menuOffset");
+        const savedOffset = sessionStorage.getItem(`${storageKey}Offset`);
         if (savedOffset) {
             try {
                 const obj = JSON.parse(savedOffset);
@@ -167,14 +169,17 @@ export function useMoveAndRotation({
             } catch {
                 /* empty */
             }
+        } else {
+            currentPos.current.set(offset.x, offset.y, offset.z);
+            recomputeOrbitFrom(currentPos.current);
         }
 
-        const savedFollow = sessionStorage.getItem("menuFollow");
+        const savedFollow = sessionStorage.getItem(`${storageKey}Follow`);
         if (savedFollow !== null) {
             followEnabled.current = savedFollow === "true";
         }
 
-        const savedAnchor = sessionStorage.getItem("menuAnchor");
+        const savedAnchor = sessionStorage.getItem(`${storageKey}Anchor`);
         if (savedAnchor) {
             try {
                 const obj = JSON.parse(savedAnchor);
@@ -183,7 +188,7 @@ export function useMoveAndRotation({
                 /* empty */
             }
         }
-    }, []);
+    }, [storageKey]);
 
     // EVENTS
     useEffect(() => {
@@ -199,10 +204,10 @@ export function useMoveAndRotation({
             followEnabled.current = true;
             originAnchor.current.set(0, 0, 0);
 
-            sessionStorage.setItem("menuOffset", JSON.stringify(offset));
-            sessionStorage.setItem("menuRotation", JSON.stringify({ x: 0, y: 0 }));
-            sessionStorage.setItem("menuFollow", "true");
-            sessionStorage.removeItem("menuAnchor");
+            sessionStorage.setItem(`${storageKey}Offset`, JSON.stringify(offset));
+            sessionStorage.setItem(`${storageKey}Rotation`, JSON.stringify({ x: 0, y: 0 }));
+            sessionStorage.setItem(`${storageKey}Follow`, "true");
+            sessionStorage.removeItem(`${storageKey}Anchor`);
         };
 
         const handleShift = (e: CustomEvent<{ pressed: boolean }>) => {
@@ -216,9 +221,9 @@ export function useMoveAndRotation({
 
             if (!followEnabled.current) {
                 originAnchor.current.copy(originRef.current.position);
-                sessionStorage.setItem("menuFollow", "false");
+                sessionStorage.setItem(`${storageKey}Follow`, "false");
                 sessionStorage.setItem(
-                    "menuAnchor",
+                    `${storageKey}Anchor`,
                     JSON.stringify({
                         x: originAnchor.current.x,
                         y: originAnchor.current.y,
@@ -233,8 +238,8 @@ export function useMoveAndRotation({
                 currentPos.current.copy(newOffset);
                 recomputeOrbitFrom(newOffset);
 
-                sessionStorage.setItem("menuFollow", "true");
-                sessionStorage.removeItem("menuAnchor");
+                sessionStorage.setItem(`${storageKey}Follow`, "true");
+                sessionStorage.removeItem(`${storageKey}Anchor`);
                 saveOffset();
             }
         };
@@ -248,11 +253,11 @@ export function useMoveAndRotation({
             window.removeEventListener("ndmvr-menu-shift", handleShift as EventListener);
             window.removeEventListener("ndmvr-menu-follow-toggle", handleFollowToggle);
         };
-    }, [offset, originRef]);
+    }, [offset, originRef, storageKey]);
 
     // LOAD rotation
     useEffect(() => {
-        const savedRot = sessionStorage.getItem("menuRotation");
+        const savedRot = sessionStorage.getItem(`${storageKey}Rotation`);
         if (savedRot && groupRef.current) {
             try {
                 const obj = JSON.parse(savedRot);
@@ -262,8 +267,11 @@ export function useMoveAndRotation({
             } catch {
                 /* empty */
             }
+        } else {
+            rotation.current.set(0, 0, 0);
+            groupRef.current?.rotation.set(0, 0, 0);
         }
-    }, []);
+    }, [storageKey]);
 
     const ctx: MoveAndRotationCtx = {
         originRef,

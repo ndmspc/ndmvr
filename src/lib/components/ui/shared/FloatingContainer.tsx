@@ -10,6 +10,7 @@ interface FloatingContainerProps {
     smoothFollow?: boolean;
     lerpFactor?: number;
     faceUser?: boolean;
+    storageKey?: string;
     [key: string]: unknown;
 }
 
@@ -19,12 +20,14 @@ export default function FloatingContainer({
     offset = { x: 0, y: 1.2, z: -4 },
     classList = [],
     faceUser = true,
+    storageKey,
     ...containerProps
 }: FloatingContainerProps) {
     const { groupRef, handlePointerDown, handlePointerMove, handlePointerUp } = useMoveAndRotation({
         originRef,
         offset,
         faceUser,
+        storageKey,
     });
 
     return (

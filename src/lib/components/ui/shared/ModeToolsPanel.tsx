@@ -2,11 +2,22 @@ import { Container } from "@react-three/uikit";
 import * as Icons from "@react-three/uikit-lucide";
 import { Fullscreen, Text } from "@react-three/uikit";
 import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
+import { useMenuStore } from "../../../stores/menu/store.ts";
 import { useThree } from "@react-three/fiber";
+import { useXR } from "@react-three/xr";
+import FloatingContainer from "./FloatingContainer.tsx";
+import * as THREE from "three";
 
-export default function ModeToolsPanel() {
+type ModeToolsPanelProps = {
+    originRef?: React.RefObject<THREE.Group> | null;
+};
+
+export default function ModeToolsPanel({ originRef = null }: ModeToolsPanelProps) {
 
     const camera = useThree((s) => s.camera);
+    const session = useXR((s) => s.session);
+    const isXR = session !== null && session !== undefined;
+    const showMenu = useMenuStore((s) => s.showMenu);
     const activeMode = useSceneModeStore((s) => s.activeMode);
     const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
     const modesConfig = useSceneModeStore((s) => s.modesConfig);
@@ -59,6 +70,94 @@ export default function ModeToolsPanel() {
         return content;
     };
 
+    const panelBody = (
+        <>
+            {modeToolsNotification && (
+                <Container
+                    classList={["NotificationBubble"]}
+                    pointerEvents="none"
+                    depthTest={false}
+                    depthWrite={false}
+                >
+                    {renderNotificationContent()}
+                </Container>
+            )}
+            <Container
+                classList={["ModeToolsPanel"]}
+                pointerEvents="listener"
+                pointerEventsType="all"
+                renderOrder={4500}
+                depthTest={false}
+                depthWrite={false}
+            >
+                {Object.keys(modesConfig).map((mode) => (
+                    <Container
+                        classList={["ToolButton"]}
+                        key={mode}
+                        alignItems="center"
+                        justifyContent="center"
+                        pointerEvents="listener"
+                        cursor="pointer"
+                        backgroundColor={
+                            activeMode === mode
+                                ? "rgba(255,255,255,0.18)"
+                                : "rgba(255,255,255,0.08)"
+                        }
+                        borderColor={
+                            activeMode === mode
+                                ? "rgba(255,255,255,0.78)"
+                                : "rgba(255,255,255,0.28)"
+                        }
+                        onClick={() => {
+                            setMode(mode);
+                            getOnClickEvent(mode, modesConfig).forEach((h) => h());
+                        }}
+                        onPointerOver={() => {
+                            getOnHoverEvent(mode, modesConfig).forEach((h) => h());
+                        }}
+                    >
+                        <Container classList={["ToolButtonIcon"]}>
+                            {(() => {
+                                const Icon = resolveIcon(mode);
+                                return <Icon classList={["ToolButtonIcon"]} />;
+                            })()}
+                        </Container>
+                    </Container>
+                ))}
+            </Container>
+        </>
+    );
+
+    if (isXR) {
+        return (
+            <FloatingContainer
+                originRef={originRef}
+                offset={{ x: 0, y: -2, z: -4.15 }}
+                faceUser={true}
+                storageKey="modeToolsPanel"
+                classList={["ModeToolsPanelXR"]}
+                pointerEvents="listener"
+                pointerEventsType="all"
+                renderOrder={4500}
+                depthTest={false}
+                depthWrite={false}
+            >
+                <Container
+                    flexDirection="column"
+                    alignItems="center"
+                    gap={6}
+                    pointerEvents="listener"
+                    pointerEventsType="all"
+                    renderOrder={4500}
+                    depthTest={false}
+                    depthWrite={false}
+                >
+                    {panelBody}
+                </Container>
+            </FloatingContainer>
+        );
+    }
+
     return (
         <Fullscreen
             key={camera.uuid} // reload when camera changes to rebind events
@@ -72,61 +171,8 @@ export default function ModeToolsPanel() {
                 depthTest={false}
                 depthWrite={false}
             >
-                {modeToolsNotification && (
-                    <Container
-                        classList={["NotificationBubble"]}
-                        pointerEvents="none"
-                        depthTest={false}
-                        depthWrite={false}
-                    >
-                        {renderNotificationContent()}
-                    </Container>
-                )}
-                <Container
-                    classList={["ModeToolsPanel"]}
-                    pointerEvents="listener"
-                    pointerEventsType="all"
-                    renderOrder={10001}
-                    depthTest={false}
-                    depthWrite={false}
-                >
-                    {Object.keys(modesConfig).map((mode) => (
-                        <Container classList={["ToolButton"]}
-                            key={mode}
-                            alignItems="center"
-                            justifyContent="center"
-                            pointerEvents="listener"
-                            backgroundColor={
-                                (activeMode === mode)
-                                    ? "rgba(255,255,255,0.18)"
-                                    : "rgba(255,255,255,0.08)"
-                            }
-                            borderColor={
-                                (activeMode === mode)
-                                    ? "rgba(255,255,255,0.78)"
-                                    : "rgba(255,255,255,0.28)"
-                            }
-                            onClick={() => {
-                                setMode(mode);
-                                getOnClickEvent(mode, modesConfig).forEach((h) => h());
-                            }}
-                            onPointerOver={() => {
-                                getOnHoverEvent(mode, modesConfig).forEach((h) => h());
-                            }}
-                        >
-                            <Container
-                                classList={["ToolButtonIcon"]}
-                            >
-                                {(() => {
-                                    const Icon = resolveIcon(mode);
-                                    return <Icon classList={["ToolButtonIcon"]} />;
-                                })()}
-                            </Container>
-                        </Container>
-                    ))}
-                </Container>
+                {panelBody}
             </Container>
         </Fullscreen>
     );
 }
-

@@ -6,6 +6,7 @@ import KeyboardListener from "../systems/inputs/KeyboardListener.tsx";
 import { histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { map, merge } from "rxjs";
 import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
+import * as THREE from "three";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const HistogramContext = createContext(null);
@@ -13,11 +14,13 @@ export const HistogramContext = createContext(null);
 export interface NdmvrContentProps {
     children?: React.ReactNode | null;
     showModeTools?: boolean;
+    originRef?: React.RefObject<THREE.Group> | null;
 }
 
 export default function NdmvrContent({
     children,
     showModeTools = true,
+    originRef = null,
 }: NdmvrContentProps) {
     const [config, setConfig] = useState(null);
     const [histogram, setHistogram] = useState(null);
@@ -64,7 +67,7 @@ export default function NdmvrContent({
                     />
                 )}
                 <KeyboardListener />
-                {showModeTools && <ModeToolsPanel />}
+                {showModeTools && <ModeToolsPanel originRef={originRef} />}
                 {children}
             </HistogramContext.Provider>
         </>
