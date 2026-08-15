@@ -10,7 +10,9 @@ import FloatingContainer from "./FloatingContainer.tsx";
 import WebsocketBanner from "./WebsocketBanner.tsx";
 import { useMenuStore } from "../../../stores/menu/store.ts";
 import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
-import { useInputFocus } from "../focus/useInputFocus.ts";
+import { useInputFocus } from "../../../stores/interaction/inputFocus";
+import { INTERACTION_EVENTS } from "../../../interactions/events";
+import type { PressedInteractionDetail } from "../../../interactions/events";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
 
 const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
@@ -82,7 +84,7 @@ export default function Menu({
         }
 
         if (keys["KeyR"]) {
-            window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+            window.dispatchEvent(new CustomEvent(INTERACTION_EVENTS.MENU_RESET));
         }
 
         if (keys["KeyB"]) {
@@ -103,13 +105,13 @@ export default function Menu({
 
         if (useSceneModeStore.getState().activeMode === "modify" && (keys["ShiftLeft"] || keys["ShiftRight"])) {
             window.dispatchEvent(
-                new CustomEvent("ndmvr-shiftstep-scale", {
+                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.SHIFT_STEP_SCALE, {
                     detail: { pressed: true },
                 })
             );
         } else {
             window.dispatchEvent(
-                new CustomEvent("ndmvr-shiftstep-scale", {
+                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.SHIFT_STEP_SCALE, {
                     detail: { pressed: false },
                 })
             );
@@ -118,13 +120,13 @@ export default function Menu({
 
         if (keys["ShiftLeft"] || keys["ShiftRight"]) {
             window.dispatchEvent(
-                new CustomEvent("ndmvr-menu-shift", {
+                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.MENU_SHIFT, {
                     detail: { pressed: true },
                 })
             );
         } else {
             window.dispatchEvent(
-                new CustomEvent("ndmvr-menu-shift", {
+                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.MENU_SHIFT, {
                     detail: { pressed: false },
                 })
             );

@@ -4,6 +4,8 @@ repo_url: https://gitlab.com/ndmspc/ndmvr-r3f/docs
 edit_uri: edit/main/docs/
 nav:
   - "Home": index.md
+  - "Architecture decisions":
+      - "0001 - Shared interaction infrastructure": adr/0001-shared-interaction-infrastructure.md
 extra:
   version: v1.0.0
   ndmspc:

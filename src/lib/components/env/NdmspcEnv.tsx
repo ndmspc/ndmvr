@@ -1,4 +1,4 @@
-import NdmvrEnv, { shouldUseMobileControls } from "./NdmvrEnv.tsx";
+import NdmvrEnv from "./NdmvrEnv.tsx";
 import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
 
@@ -12,6 +12,7 @@ import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 // import app from "../../../App.tsx";
 import { store } from "./xrStore.ts";
+import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobileControls";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;

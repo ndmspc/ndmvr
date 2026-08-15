@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useXR, useXRInputSourceState } from "@react-three/xr";
-import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { useInputFocus } from "../../../stores/interaction/inputFocus";
 import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
 import * as THREE from "three";
 import { useMenuStore } from "../../../stores/menu/store.ts";
+import { INTERACTION_EVENTS } from "../../../interactions/events";
+import type { MenuOrbitDetail, PressedInteractionDetail } from "../../../interactions/events";
 
 export interface VRControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -152,7 +154,7 @@ export default function VRController({
             const xBtn = (leftGamepad as any)["x-button"];
             const xPressed = !!xBtn && xBtn.state === "pressed";
             if (xPressed && !lastX.current) {
-                window.dispatchEvent(new CustomEvent("ndmvr-menu-reset"));
+                window.dispatchEvent(new CustomEvent(INTERACTION_EVENTS.MENU_RESET));
             }
             lastX.current = xPressed;
 
@@ -204,7 +206,9 @@ export default function VRController({
 
             if (snapPressed !== lastSnap.current) {
                 window.dispatchEvent(
-                    new CustomEvent("ndmvr-shiftstep-scale", { detail: { pressed: snapPressed } })
+                    new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.SHIFT_STEP_SCALE, {
+                        detail: { pressed: snapPressed },
+                    })
                 );
                 lastSnap.current = snapPressed;
             }
@@ -222,7 +226,7 @@ export default function VRController({
                         })
                     );
                 } else {
-                    window.dispatchEvent(new CustomEvent("ndmvr-menu-follow-toggle"));
+                    window.dispatchEvent(new CustomEvent(INTERACTION_EVENTS.MENU_FOLLOW_TOGGLE));
                 }
             }
             lastA.current = aPressed;
@@ -252,7 +256,7 @@ export default function VRController({
 
                 if (orbitX !== 0 || orbitY !== 0) {
                     window.dispatchEvent(
-                        new CustomEvent("ndmvr-menu-orbit", {
+                        new CustomEvent<MenuOrbitDetail>(INTERACTION_EVENTS.MENU_ORBIT, {
                             detail: { axisX: orbitX, axisY: orbitY, delta },
                         })
                     );
@@ -260,7 +264,7 @@ export default function VRController({
             }
 
             if (!rightSqueezePressed && lastRightSqueeze.current) {
-                window.dispatchEvent(new CustomEvent("ndmvr-menu-orbit-end"));
+                window.dispatchEvent(new CustomEvent(INTERACTION_EVENTS.MENU_ORBIT_END));
             }
 
             lastRightSqueeze.current = rightSqueezePressed;

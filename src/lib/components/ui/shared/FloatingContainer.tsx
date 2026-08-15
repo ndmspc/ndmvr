@@ -1,5 +1,5 @@
 import { Container } from "@react-three/uikit";
-import { useMoveAndRotation } from "../../systems/inputs/MoveAndRotation";
+import { useMoveAndRotation } from "../../../interactions/spatial/useMoveAndRotation";
 import * as THREE from "three";
 
 interface FloatingContainerProps {

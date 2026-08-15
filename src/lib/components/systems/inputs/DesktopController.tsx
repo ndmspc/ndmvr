@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useUIInteraction } from "../../ui/interactions/useUIInteraction";
-import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { useUIInteraction } from "../../../stores/interaction/uiInteraction";
+import { useInputFocus } from "../../../stores/interaction/inputFocus";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
+import { INTERACTION_EVENTS } from "../../../interactions/events";
+import type { MobileMoveDetail } from "../../../interactions/events";
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
@@ -166,8 +168,8 @@ export default function DesktopController({
     });
 
     useEffect(() => {
-        const handler = (e: any) => {
-            const { dir, pressed } = e.detail;
+        const handler = (event: Event) => {
+            const { dir, pressed } = (event as CustomEvent<MobileMoveDetail>).detail;
             const setKey = useKeyboardStore.getState().setKey;
 
             if (dir === "forward") setKey("KeyW", pressed);
@@ -178,8 +180,8 @@ export default function DesktopController({
             if (dir === "down") setKey("KeyQ", pressed);
         };
 
-        window.addEventListener("mobile-move", handler);
-        return () => window.removeEventListener("mobile-move", handler);
+        window.addEventListener(INTERACTION_EVENTS.MOBILE_MOVE, handler);
+        return () => window.removeEventListener(INTERACTION_EVENTS.MOBILE_MOVE, handler);
     }, []);
 
     return null;

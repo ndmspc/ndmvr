@@ -25,30 +25,11 @@ import FloatingContainer from "../ui/shared/FloatingContainer.tsx";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { store } from "./xrStore";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
+import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobileControls";
+import { INTERACTION_EVENTS } from "../../interactions/events";
+import type { MobileMoveDetail, MobileMoveDirection } from "../../interactions/events";
 
 export { store };
-
-export function shouldUseMobileControls() {
-    if (typeof window === "undefined") return false;
-
-    const hasMultiTouch = navigator.maxTouchPoints >= 2;
-
-    const noHover = window.matchMedia?.("(any-hover: none)").matches ?? false;
-    const coarse = window.matchMedia?.("(any-pointer: coarse)").matches ?? false;
-
-    const screenWidth = window.screen?.width;
-    const screenHeight = window.screen?.height;
-    const width =
-        typeof screenWidth === "number" && screenWidth > 0 ? screenWidth : window.innerWidth;
-    const height =
-        typeof screenHeight === "number" && screenHeight > 0 ? screenHeight : window.innerHeight;
-    const shortSide = Math.min(width, height);
-    const phoneSized = shortSide <= 900;
-
-    const uaMobile = (navigator as any).userAgentData?.mobile === true;
-
-    return uaMobile || (hasMultiTouch && noHover && coarse && phoneSized);
-}
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
@@ -97,12 +78,20 @@ export default function NdmvrEnv({
 
     const touch = shouldUseMobileControls();
 
-    const startMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
-        window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: true } }));
+    const startMove = (dir: MobileMoveDirection) => {
+        window.dispatchEvent(
+            new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
+                detail: { dir, pressed: true },
+            })
+        );
     };
 
-    const stopMove = (dir: "forward" | "back" | "left" | "right" | "up" | "down") => {
-        window.dispatchEvent(new CustomEvent("mobile-move", { detail: { dir, pressed: false } }));
+    const stopMove = (dir: MobileMoveDirection) => {
+        window.dispatchEvent(
+            new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
+                detail: { dir, pressed: false },
+            })
+        );
     };
 
     return (

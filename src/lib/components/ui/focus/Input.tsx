@@ -1,5 +1,5 @@
 import { Input as UIKitInput } from "@react-three/uikit";
-import { useInputFocus } from "./useInputFocus";
+import { useInputFocus } from "../../../stores/interaction/inputFocus";
 
 const mergeHandlers = (original, added) => (e) => {
     added?.(e);

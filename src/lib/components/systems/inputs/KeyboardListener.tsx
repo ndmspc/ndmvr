@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
-import { useInputFocus } from "../../ui/focus/useInputFocus";
+import { useInputFocus } from "../../../stores/interaction/inputFocus";
 
 function isEditableTarget(target: EventTarget | null) {
     if (!(target instanceof HTMLElement)) return false;
