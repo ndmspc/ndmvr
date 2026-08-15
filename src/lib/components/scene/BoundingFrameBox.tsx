@@ -4,8 +4,10 @@ import * as THREE from "three";
 import { Line2 } from "three/examples/jsm/lines/Line2";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
-import { getUnifiedRay } from "../ui/hover/UnifiedRay";
-import { useUIInteraction } from "../ui/interactions/useUIInteraction";
+import { getUnifiedRay } from "../../interactions/pointer/getUnifiedRay";
+import { INTERACTION_EVENTS } from "../../interactions/events";
+import type { PressedInteractionDetail } from "../../interactions/events";
+import { useUIInteraction } from "../../stores/interaction/uiInteraction";
 
 type Axis = "X" | "Y" | "Z";
 
@@ -455,13 +457,14 @@ export default function BoundingFrameBox({
 
 
     useEffect(() => {
-        const handler = (e: any) => {
-            setSnapPressed(!!e.detail?.pressed);
+        const handler = (event: Event) => {
+            const { detail } = event as CustomEvent<PressedInteractionDetail>;
+            setSnapPressed(!!detail?.pressed);
         };
 
-        window.addEventListener("ndmvr-shiftstep-scale", handler);
+        window.addEventListener(INTERACTION_EVENTS.SHIFT_STEP_SCALE, handler);
         return () =>
-            window.removeEventListener("ndmvr-shiftstep-scale", handler);
+            window.removeEventListener(INTERACTION_EVENTS.SHIFT_STEP_SCALE, handler);
     }, []);
 
     return (

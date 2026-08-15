@@ -3,8 +3,7 @@ import styled from "styled-components";
 import arrowUp from "../../../assets/icons/arrow.svg";
 import arrowBig from "../../../assets/icons/arrow_big.svg";
 import gamepadIcon from "../../../assets/icons/gamepad.svg";
-
-type Dir = "forward" | "back" | "left" | "right" | "up" | "down";
+import type { MobileMoveDirection } from "../../../interactions/events";
 
 interface ButtonProps {
     $active?: boolean;
@@ -148,8 +147,8 @@ const GamepadIcon = styled.img`
 `;
 
 interface MobileMoveControllerProps {
-    onMoveStart: (dir: Dir) => void;
-    onMoveEnd: (dir: Dir) => void;
+    onMoveStart: (dir: MobileMoveDirection) => void;
+    onMoveEnd: (dir: MobileMoveDirection) => void;
 }
 
 export default function MobileMoveController({
@@ -158,7 +157,7 @@ export default function MobileMoveController({
                                              }: MobileMoveControllerProps) {
     const [controlsVisible, setControlsVisible] = useState(true);
 
-    const [active, setActive] = useState<Record<Dir, boolean>>({
+    const [active, setActive] = useState<Record<MobileMoveDirection, boolean>>({
         forward: false,
         back: false,
         left: false,
@@ -167,12 +166,12 @@ export default function MobileMoveController({
         down: false,
     });
 
-    const press = (dir: Dir) => {
+    const press = (dir: MobileMoveDirection) => {
         setActive((p) => ({ ...p, [dir]: true }));
         onMoveStart(dir);
     };
 
-    const release = (dir: Dir) => {
+    const release = (dir: MobileMoveDirection) => {
         setActive((p) => ({ ...p, [dir]: false }));
         onMoveEnd(dir);
     };
@@ -181,7 +180,7 @@ export default function MobileMoveController({
         if (controlsVisible) {
             Object.entries(active).forEach(([dir, isActive]) => {
                 if (isActive) {
-                    onMoveEnd(dir as Dir);
+                    onMoveEnd(dir as MobileMoveDirection);
                 }
             });
 
@@ -198,7 +197,7 @@ export default function MobileMoveController({
         setControlsVisible((p) => !p);
     };
 
-    const holdHandlers = (dir: Dir) => ({
+    const holdHandlers = (dir: MobileMoveDirection) => ({
         onPointerDown: () => press(dir),
         onPointerUp: () => release(dir),
         onPointerCancel: () => release(dir),

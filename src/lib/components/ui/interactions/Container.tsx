@@ -1,5 +1,5 @@
 import { Container as UIKitContainer } from "@react-three/uikit";
-import { useUIInteraction } from "./useUIInteraction";
+import { useUIInteraction } from "../../../stores/interaction/uiInteraction";
 
 const mergeHandlers = (original, added) => (e) => {
     added?.(e);

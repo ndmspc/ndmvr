@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { ThreeEvent } from "@react-three/fiber";
-import type { MoveAndRotationCtx } from "./MoveAndRotation";
+import type { MoveAndRotationCtx } from "./types";
 
 export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
     const g = ctx.groupRef.current;

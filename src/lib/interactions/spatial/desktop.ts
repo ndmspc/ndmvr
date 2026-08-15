@@ -1,4 +1,4 @@
-import type { MoveAndRotationCtx } from "./MoveAndRotation";
+import type { MoveAndRotationCtx } from "./types";
 
 export function updateDesktopFrame(ctx: MoveAndRotationCtx, _delta: number) {
     const g = ctx.groupRef.current;

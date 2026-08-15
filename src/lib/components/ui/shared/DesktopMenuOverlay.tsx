@@ -3,7 +3,7 @@ import { useThree } from "@react-three/fiber";
 import { Fullscreen } from "@react-three/uikit";
 
 import Container from "../interactions/Container";
-import { useUIInteraction } from "../interactions/useUIInteraction";
+import { useUIInteraction } from "../../../stores/interaction/uiInteraction";
 
 const DEFAULT_LEFT = 16;
 const DEFAULT_TOP = 16;
