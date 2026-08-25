@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import type { ComponentType, ReactNode } from "react";
-import { configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
+import { configSubjectGet } from "@ndmspc/ndmvr-core";
+import {
+    getActiveHistogramPadId,
+    getActiveHistogramPadState,
+    updateHistogramPadState,
+} from "../histogramWorkspace";
 
 export type HistogramEventName =
     | "mouseclick"
@@ -231,35 +236,42 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             onEnter: "default",
             onClick: () => {
                 // console.log("Clicked in layers mode");
-                const state = stateSubjectGet("pad1").getValue();
+                const activePadId = getActiveHistogramPadId();
+                const state = getActiveHistogramPadState();
                 // console.log("Current state: ", state);
+                if (!activePadId || !state) return;
 
+                let currentLayer: number;
                 if (state?.currentLayer) {
-                    state.currentLayer = state.currentLayer + 1;
-                    if (state.currentLayer > state.availableAxes.length - state.sets.length) {
-                        state.currentLayer = 1;
+                    currentLayer = state.currentLayer + 1;
+                    if (currentLayer > state.availableAxes.length - state.sets.length) {
+                        currentLayer = 1;
                     }
                 } else {
-                    state.currentLayer = 2;
+                    currentLayer = 2;
                 }
                 window.dispatchEvent(
                     new KeyboardEvent("keydown", {
-                        key: state.currentLayer.toString(),
-                        code: "Numpad" + state.currentLayer.toString(),
+                        key: currentLayer.toString(),
+                        code: "Numpad" + currentLayer.toString(),
                         bubbles: true,
                         cancelable: true
                     }));
 
-                useSceneModeStore.getState().showModeToolsNotification(`Layer ${state.currentLayer - 1} shown`, 2000);
-                stateSubjectGet("pad1").next(state);
+                useSceneModeStore.getState().showModeToolsNotification(`Layer ${currentLayer - 1} shown`, 2000);
+                updateHistogramPadState(activePadId, { currentLayer });
             },
             onHover: () => {
-                const state = stateSubjectGet("pad1").getValue();
+                const activePadId = getActiveHistogramPadId();
+                const state = getActiveHistogramPadState();
+                if (!activePadId || !state) return;
+
+                let currentLayer = state.currentLayer;
                 if (!state?.currentLayer) {
-                    state.currentLayer = 1;
-                    stateSubjectGet("pad1").next(state);
+                    currentLayer = 1;
+                    updateHistogramPadState(activePadId, { currentLayer });
                 }
-                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${state.currentLayer - 1}`, 2000);
+                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${currentLayer - 1}`, 2000);
             },
             onExit: "default",
         }
@@ -281,9 +293,9 @@ export const defaultSceneModesConfig: SceneModesConfig = {
             onClick: () => {
                 // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
-                const state = stateSubjectGet("pad1").getValue();
+                const state = getActiveHistogramPadState();
                 // console.log("Current config: ", cfg);
-                if (!cfg?.config?.histogram?.wireframe) return;
+                if (!state || !cfg?.config?.histogram?.wireframe) return;
                 cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
                 if (state?.availableAxes) cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
                 if (cfg.config.histogram.wireframe.display.start > cfg.config.histogram.wireframe.display.end) {
