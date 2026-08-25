@@ -1,15 +1,14 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 import HistogramWrapper from "./HistogramWrapper.tsx";
 import CanvasComponent from "./CanvasComponent.tsx";
 import KeyboardListener from "../systems/inputs/KeyboardListener.tsx";
-import { histogramSubjectGet } from "@ndmspc/ndmvr-core";
-import { map, merge } from "rxjs";
 import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 import * as THREE from "three";
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const HistogramContext = createContext(null);
+import {
+    retainHistogramWorkspace,
+    useHistogramWorkspace,
+} from "../../stores/histogramWorkspace";
 
 export interface NdmvrContentProps {
     children?: React.ReactNode | null;
@@ -23,25 +22,11 @@ export default function NdmvrContent({
     originRef = null,
 }: NdmvrContentProps) {
     const [config, setConfig] = useState(null);
-    const [histogram, setHistogram] = useState(null);
+    const pads = useHistogramWorkspace((state) => state.pads);
 
     useEffect(() => {
-        const pads = config?.environment?.histogramPads ?? [];
-
-        const streams = pads.map((pad) =>
-            histogramSubjectGet()
-                .getStream(pad.id)
-                .pipe(map((histo) => ({ id: pad.id, obj: histo })))
-        );
-
-        const histoSub = merge(...streams).subscribe(({ obj }) => {
-            console.log(obj);
-            setHistogram(obj);
-        });
-        return () => {
-            histoSub.unsubscribe();
-        };
-    }, [config]);
+        return retainHistogramWorkspace();
+    }, []);
 
     useEffect(() => {
         const configSub = configSubjectGet()
@@ -56,20 +41,18 @@ export default function NdmvrContent({
 
     return (
         <>
-            <HistogramContext.Provider value={histogram}>
-                {config?.environment?.histogramPads?.map((object) => (
-                    <HistogramWrapper key={object.id} id={object.id} />
-                ))}
-                {config?.environment?.histogramPads?.length > 0 && (
-                    <CanvasComponent
-                        location={config?.environment?.canvas}
-                        id={`${config?.environment?.histogramPads?.[0]?.id}-cinema`}
-                    />
-                )}
-                <KeyboardListener />
-                {showModeTools && <ModeToolsPanel originRef={originRef} />}
-                {children}
-            </HistogramContext.Provider>
+            {pads.map((pad) => (
+                <HistogramWrapper key={pad.id} id={pad.id} />
+            ))}
+            {config && pads.length > 0 && (
+                <CanvasComponent
+                    location={config?.environment?.canvas}
+                    id={`${pads[0].id}-cinema`}
+                />
+            )}
+            <KeyboardListener />
+            {showModeTools && <ModeToolsPanel originRef={originRef} />}
+            {children}
         </>
     );
 }

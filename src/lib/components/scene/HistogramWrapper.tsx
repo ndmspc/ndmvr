@@ -34,6 +34,10 @@ import {
     hasBlockingIntersectionForObject,
 } from "./histogram-wrapper/intersections";
 import { getHoveredBinFrameData, type HoveredBinLike } from "./histogram-wrapper/hovered-bin-frame";
+import {
+    activateHistogramPad,
+    prepareHistogramPadState,
+} from "../../stores/histogramWorkspace";
 
 export interface HistogramWrapperProps {
     id: string;
@@ -142,6 +146,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const [nestedMesh, setNestedMesh] = useState<any>(null);
     const [wireframeObj, setWireframeObj] = useState<any>(null);
     const [painterLimits, setPainterLimits] = useState<PainterLimits | null>(null);
+    const nestedMeshObject = useRef<THREE.Object3D | null>(null);
+    const wireframeObject = useRef<THREE.Object3D | null>(null);
 
     const meshRef = useRef<any>(null);
     const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -162,12 +168,19 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         const mesh = painter?.mesh ?? null;
         const wireframe = painter?.wireframe?.wireframe ?? null;
 
-        mesh?.parent?.remove(mesh);
-        wireframe?.parent?.remove(wireframe);
+        if (nestedMeshObject.current !== mesh) {
+            mesh?.parent?.remove(mesh);
+            nestedMeshObject.current = mesh;
+            setNestedMesh(() => mesh);
+        }
+
+        if (wireframeObject.current !== wireframe) {
+            wireframe?.parent?.remove(wireframe);
+            wireframeObject.current = wireframe;
+            setWireframeObj(() => wireframe);
+        }
 
         setPainterLimits(painter?.limits ?? null);
-        setNestedMesh(() => mesh);
-        setWireframeObj(() => wireframe);
     }, []);
 
     const installNestedPainterMeshSync = useCallback(
@@ -348,6 +361,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         if (nestedMesh) disposeThree(nestedMesh);
         if (wireframeObj) disposeThree(wireframeObj);
 
+        nestedMeshObject.current = null;
+        wireframeObject.current = null;
         setNestedMesh(null);
         setWireframeObj(null);
         setPainterLimits(null);
@@ -409,6 +424,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     function raycastHandler(event: any) {
         const painter = nestedHistogram.current;
         if (!painter) return;
+
+        if (event.type === "click" || event.type === "dblclick" || event.type === "pointerup") {
+            activateHistogramPad(id);
+        }
 
         const isXR = session !== null && session !== undefined;
         const isXRClick = isXRTriggerRelease(event, isXR);
@@ -586,6 +605,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                                 console.log("[HistogramWrapper] UPDATE:", nestedHistogram.current);
                             });
                         } else {
+                            // Core subscribes to retained pad state before creating its mesh.
+                            // Clear constructor-unsafe state while retaining valid draw choices.
+                            prepareHistogramPadState(id, histo);
                             const painter = new THnPainter(histo, id, histo?.opts);
                             nestedHistogram.current = painter;
                             installNestedPainterMeshSync(painter);
@@ -611,7 +633,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     }, [applyJsrootMeshBounds, camera, id, installNestedPainterMeshSync, syncNestedPainterObjects]);
 
     return (
-        <>
+        <group onPointerDown={() => activateHistogramPad(id)}>
             <group>
                 <Text
                     position={vector3ToArray(jsrootError?.position)}
@@ -688,6 +710,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         passThroughPointerEvents={true}
                     />
                 )}
-        </>
+        </group>
     );
 }

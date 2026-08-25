@@ -1,13 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "./Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
-import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "../interactions/Container";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import WebsocketBanner from "./WebsocketBanner.tsx";
-import { HistogramContext } from "../../scene/NdmvrContent.tsx";
 import { Input } from "../focus/Input.tsx";
+import {
+    activateHistogramPad,
+    setHistogramPadRenderer,
+    updateHistogramPadState,
+    useHistogramWorkspace,
+} from "../../../stores/histogramWorkspace";
 
 type MinMaxFieldValues = {
     valueMin: string;
@@ -79,37 +83,24 @@ const toNumberOrNull = (value: string) => {
 };
 
 export default function DrawOptions() {
-    const [availableArrays, setAvailableArrays] = useState([]);
-    const [selectedArray, setSelectedArray] = useState("content");
-
-    const [availableSets, setAvailableSets] = useState(["content"]);
-    const [selectedSets, setSelectedSets] = useState([]);
-
-    const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
-
-    const [minMaxValue, setMinMaxValue] = useState(null);
     const [minMaxForm, setMinMaxForm] = useState<MinMaxFieldValues>(EMPTY_MIN_MAX_FORM);
 
-    const histogram = useContext(HistogramContext);
-
-    useEffect(() => {
-        if (!histogram) return;
-        const stateSubject = stateSubjectGet(histogram.id)
-            .getObservable()
-            .subscribe((e) => {
-                if (e.sets) setAvailableSets(e.sets);
-                if (e.selectedSet) setSelectedSets(e.selectedSet);
-                if (e.arrays) setAvailableArrays(e.arrays);
-                if (e.selectedArray) setSelectedArray(e.selectedArray);
-                if (e.minMaxValue) setMinMaxValue(e.minMaxValue);
-
-
-            });
-
-        return () => {
-            stateSubject.unsubscribe();
-        };
-    }, [histogram]);
+    const pads = useHistogramWorkspace((state) => state.pads);
+    const activePadId = useHistogramWorkspace((state) => state.activePadId);
+    const histogram = useHistogramWorkspace((state) =>
+        state.activePadId ? state.histogramsByPad[state.activePadId] ?? null : null
+    );
+    const activePadState = useHistogramWorkspace((state) =>
+        state.activePadId ? state.statesByPad[state.activePadId] : undefined
+    );
+    const availableSets = activePadState?.sets ?? ["content"];
+    const selectedSets = activePadState?.selectedSet ?? [];
+    const availableArrays = activePadState?.arrays ?? [];
+    const selectedArray = availableArrays.includes(activePadState?.selectedArray ?? "")
+        ? activePadState?.selectedArray
+        : (availableArrays[0] ?? "");
+    const minMaxValue = activePadState?.minMaxValue ?? null;
+    const selectedRenderer = histogram?.opts?.render ?? "ndmvr";
 
     useEffect(() => {
         if (!minMaxValue?.length) {
@@ -125,13 +116,11 @@ export default function DrawOptions() {
 
 
     const updateStateSubject = (updates) => {
-        const currentVal = stateSubjectGet(histogram.id).getValue();
-        stateSubjectGet(histogram.id).next({ ...currentVal, ...updates });
+        if (!activePadId) return;
+        updateHistogramPadState(activePadId, updates);
     };
 
     const handleArraySelect = (value) => {
-        setSelectedArray(value);
-
         if (histogram) {
             updateStateSubject({
                 selectedSet: selectedSets,
@@ -145,8 +134,6 @@ export default function DrawOptions() {
             ? [...selectedSets, setValue]
             : selectedSets.filter((v) => v !== setValue);
 
-        setSelectedSets(newSelectedSets);
-
         if (histogram) {
             updateStateSubject({
                 selectedSet: newSelectedSets,
@@ -156,20 +143,8 @@ export default function DrawOptions() {
     };
 
     const handleRendererSelect = (value) => {
-        setSelectedRenderer(value);
-
-        console.log({
-            id: histogram.id,
-            opts: { render: value },
-            obj: histogram.obj,
-        });
-
-        if (histogram) {
-            histogramSubjectGet().next({
-                id: histogram.id,
-                opts: { render: value },
-                obj: histogram.obj,
-            });
+        if (activePadId && histogram && (value === "ndmvr" || value === "jsroot")) {
+            setHistogramPadRenderer(activePadId, value);
         }
     };
 
@@ -195,7 +170,6 @@ export default function DrawOptions() {
 
         if (previousMinMaxValue.length === 0) {
             const initializedMinMaxValue = [{ [selectedArray]: payload }];
-            setMinMaxValue(initializedMinMaxValue);
             updateStateSubject({ minMaxValue: initializedMinMaxValue });
             console.log("Submitted min/max payload:", payload);
             return;
@@ -210,7 +184,6 @@ export default function DrawOptions() {
             [selectedArray]: payload,
         };
 
-        setMinMaxValue(updatedMinMaxValue);
         updateStateSubject({ minMaxValue: updatedMinMaxValue });
         console.log("Submitted min/max payload:", payload);
     };
@@ -221,7 +194,18 @@ export default function DrawOptions() {
             <WebsocketBanner />
             <DropdownProvider>
                 <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
+                    {pads.length > 1 && (
+                        <Dropdown
+                            key={`pad-${activePadId ?? "none"}`}
+                            placeholder={"Select pad"}
+                            options={pads.map((pad) => pad.id)}
+                            defaultValue={activePadId}
+                            onSelect={activateHistogramPad}
+                            width={300}
+                        />
+                    )}
                     <Dropdown
+                        key={`array-${activePadId ?? "none"}-${selectedArray}`}
                         placeholder={"Select array"}
                         options={availableArrays}
                         defaultValue={selectedArray || (availableArrays.length > 0 ? availableArrays[0] : "")}
@@ -289,7 +273,8 @@ export default function DrawOptions() {
                         <Container flexDirection="column" gap={8}>
                             <Text>Select Renderer:</Text>
                             <RadioGroup
-                                defaultValue="ndmvr"
+                                key={`${activePadId ?? "none"}-${selectedRenderer}`}
+                                defaultValue={selectedRenderer}
                                 onValueChange={(value) => {
                                     handleRendererSelect(value);
                                 }}
