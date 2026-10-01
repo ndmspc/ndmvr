@@ -11,20 +11,16 @@ import { useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 // import app from "../../../App.tsx";
-import { store } from "./xrStore.ts";
 import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobileControls";
 
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
     config?: NdmvrConfig | null;
     onConfigChange?: ((config: Record<string, unknown>) => void) | null;
-    controlsHelp?: boolean;
-    menu?: boolean;
-    help?: boolean;
     setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
-function isEmptyObject(obj: any): boolean {
+function isEmptyObject(obj: unknown): boolean {
     return (
         obj != null &&
         typeof obj === "object" &&
@@ -37,8 +33,6 @@ export default function NdmspcEnv({
     children = null,
     config = null,
     onConfigChange = null,
-    help = false,
-    menu = false,
     setBrowser,
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
@@ -46,21 +40,12 @@ export default function NdmspcEnv({
     // const initializedRef2 = useRef(false);
     const [appConfig, setAppConfig] = useState(null);
 
-    const [showUI, setShowUI] = useState(menu || help);
     const [touch, setTouch] = useState(() => shouldUseMobileControls());
 
     const { setUIHover, setVrEnabled } = useSceneModeStore();
 
     // console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
     // console.log("[NEW] onConfigChange:", onConfigChange);
-
-    const handleUIToggle = () => {
-        setShowUI((prev) => !prev);
-    };
-
-    const handleUIStateChange = (isUIVisible: boolean) => {
-        setShowUI(isUIVisible);
-    };
 
     const applyConfig = useCallback(
         (newConfig) => {
@@ -86,7 +71,6 @@ export default function NdmspcEnv({
         console.log("[CONFIG] NdmspcEnv initialized, config:", newConfig);
 
         // @ts-error FIXME: Config
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAppConfig(newConfig);
     }, [config]);
 
@@ -151,8 +135,6 @@ export default function NdmspcEnv({
                 <NdmvrEnv
                     currentConfig={appConfig}
                     onConfigChange={applyConfig}
-                    showUIExternal={showUI}
-                    onUIStateChange={handleUIStateChange}
                     setBrowser={setBrowser}
                 >
                     {children}

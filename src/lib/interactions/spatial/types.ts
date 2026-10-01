@@ -17,8 +17,7 @@ export type MoveAndRotationCtx = {
     session: XRSession | null;
     camera: THREE.Camera;
 
-    rightController: unknown;
-    leftController: unknown;
+    getSpatialInput: () => { active: boolean; x: number; y: number };
 
     groupRef: MutableRefObject<THREE.Group | null>;
 
@@ -27,6 +26,7 @@ export type MoveAndRotationCtx = {
     radius: MutableRefObject<number>;
 
     isDragging: MutableRefObject<boolean>;
+    capture: MutableRefObject<{ target: PointerCaptureTarget; pointerId: number } | null>;
     dragPlane: MutableRefObject<THREE.Plane>;
     dragOffset: MutableRefObject<THREE.Vector3>;
     dragIntersection: MutableRefObject<THREE.Vector3>;
@@ -50,10 +50,15 @@ export type MoveAndRotationCtx = {
     tmpTarget: MutableRefObject<THREE.Vector3>;
     tmpWorld: MutableRefObject<THREE.Vector3>;
 
-    isRightSqueezePressed: () => boolean;
     saveOffset: () => void;
     saveRotation: () => void;
     recomputeOrbitFrom: (v: THREE.Vector3) => void;
+};
+
+export type PointerCaptureTarget = {
+    setPointerCapture?: (id: number) => void;
+    releasePointerCapture?: (id: number) => void;
+    hasPointerCapture?: (id: number) => boolean;
 };
 
 export interface MoveAndRotationResult {

@@ -325,11 +325,7 @@ function App() {
                     width: "100%",
                 }}
             >
-                <NdmspcNavigator
-                    menu={true}
-                    help={false}
-                // ndmspcConfig={{type:"browser"}}
-                >
+                <NdmspcNavigator>
                     <IframeCernboxService onConfigLoad={onConfigLoad} />
                 </NdmspcNavigator>
                 {/* <NdmspcDefaultBrowserEnv renderer="jsroot" layout="grid2x2" /> */}

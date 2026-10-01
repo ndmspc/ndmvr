@@ -1,5 +1,5 @@
 import { Text } from "@react-three/uikit";
-import { Container } from "../interactions/Container";
+import { Container } from "@react-three/uikit";
 import { ChevronDown, ChevronUp } from "@react-three/uikit-lucide";
 import { createContext, useContext, useId, useState } from "react";
 

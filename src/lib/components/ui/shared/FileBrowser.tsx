@@ -1,4 +1,5 @@
-import { Container } from "../interactions/Container.tsx";
+import { Container } from "@react-three/uikit";
+import InteractionContainer from "../interactions/Container.tsx";
 import { useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
 import RendererModeSwitch from "./RendererModeSwitch.tsx";
@@ -25,7 +26,7 @@ setRendererMode,
     // console.log(" FileBrowser Slelect: ", onSelect);
     const [selectedPath, setSelectedPath] = useState("");
     return (
-        <Container
+        <InteractionContainer
             classList={["menuContainer"]}
             borderRadius={16}
             width={500}
@@ -53,6 +54,6 @@ setRendererMode,
                     />
                 )}
             </Container>
-        </Container>
+        </InteractionContainer>
     );
 }

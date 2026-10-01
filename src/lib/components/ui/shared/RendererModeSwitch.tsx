@@ -1,5 +1,5 @@
 import { Text } from "@react-three/uikit";
-import { Container } from "../interactions/Container.tsx";
+import { Container } from "@react-three/uikit";
 
 interface RendererModeSwitchProps {
     rendererMode: "jsroot" | "ndmvr";

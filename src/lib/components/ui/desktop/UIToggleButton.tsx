@@ -40,16 +40,11 @@ const CloseMenuImage = styled.img`
 `;
 
 export default function UIToggleButton() {
-    const { showMenu, toggleTab, menuExists } = useMenuStore();
+    const { showMenu, toggleMenu, menuExists } = useMenuStore();
 
     if (!menuExists) return null;
     return (
-        <ToggleButtonWrapper
-            $isActive={showMenu}
-            onClick={() => {
-                toggleTab(null);
-            }}
-        >
+        <ToggleButtonWrapper $isActive={showMenu} onClick={toggleMenu}>
             {showMenu ? (
                 <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} />
             ) : (

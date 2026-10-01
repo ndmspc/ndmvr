@@ -17,7 +17,8 @@ export const store = createXRStore({
     offerSession: "immersive-vr",
     domOverlay: false,
     controller: {
-        rayPointer: xrRayPointer,
+        default: { rayPointer: xrRayPointer },
+        left: { rayPointer: false, grabPointer: false },
     },
     hand: {
         rayPointer: xrRayPointer,

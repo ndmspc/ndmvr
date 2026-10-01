@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useThree } from "@react-three/fiber";
-import { Fullscreen } from "@react-three/uikit";
+import { Container, Fullscreen } from "@react-three/uikit";
 
-import Container from "../interactions/Container";
-import { useUIInteraction } from "../../../stores/interaction/uiInteraction";
+import InteractionContainer from "../interactions/Container";
+import { useUIInteractionOwner } from "../../../stores/interaction/uiInteraction";
 
 const DEFAULT_LEFT = 16;
 const DEFAULT_TOP = 16;
@@ -46,7 +46,6 @@ type InteractionState =
 type UIKitPointerEventLike = {
     nativeEvent?: unknown;
     stopPropagation?: () => void;
-    preventDefault?: () => void;
 };
 
 type DesktopMenuOverlayProps = {
@@ -120,13 +119,11 @@ function stopDesktopPointerEvent(event: unknown) {
 
     const uiEvent = event as UIKitPointerEventLike;
     uiEvent.stopPropagation?.();
-    uiEvent.preventDefault?.();
 
     const nativeEvent = uiEvent.nativeEvent;
     if (typeof nativeEvent === "object" && nativeEvent !== null) {
         const pointerEvent = nativeEvent as UIKitPointerEventLike;
         pointerEvent.stopPropagation?.();
-        pointerEvent.preventDefault?.();
     }
 }
 
@@ -165,7 +162,7 @@ function areOverlayStatesEqual(a: OverlayState, b: OverlayState) {
 
 export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps) {
     const canvasSize = useThree((state) => state.size);
-    const setInteracting = useUIInteraction((state) => state.setInteracting);
+    const setInteracting = useUIInteractionOwner();
     const [overlayReady, setOverlayReady] = useState(false);
     const [overlay, setOverlay] = useState<OverlayState>(() => readStoredOverlayState());
     const overlayRef = useRef(overlay);
@@ -255,6 +252,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
             window.removeEventListener("pointermove", handlePointerMove, true);
             window.removeEventListener("pointerup", endInteraction, true);
             window.removeEventListener("pointercancel", endInteraction, true);
+            window.removeEventListener("blur", endInteraction);
 
             interactionRef.current = null;
             cleanupInteractionRef.current = null;
@@ -270,6 +268,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
             window.removeEventListener("pointermove", handlePointerMove, true);
             window.removeEventListener("pointerup", endInteraction, true);
             window.removeEventListener("pointercancel", endInteraction, true);
+            window.removeEventListener("blur", endInteraction);
             interactionRef.current = null;
             cleanupInteractionRef.current = null;
             setInteracting(false);
@@ -279,6 +278,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
         window.addEventListener("pointermove", handlePointerMove, true);
         window.addEventListener("pointerup", endInteraction, true);
         window.addEventListener("pointercancel", endInteraction, true);
+        window.addEventListener("blur", endInteraction);
     };
 
     const beginScale = (event: unknown) => {
@@ -331,6 +331,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
             window.removeEventListener("pointermove", handlePointerMove, true);
             window.removeEventListener("pointerup", endInteraction, true);
             window.removeEventListener("pointercancel", endInteraction, true);
+            window.removeEventListener("blur", endInteraction);
 
             interactionRef.current = null;
             cleanupInteractionRef.current = null;
@@ -346,6 +347,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
             window.removeEventListener("pointermove", handlePointerMove, true);
             window.removeEventListener("pointerup", endInteraction, true);
             window.removeEventListener("pointercancel", endInteraction, true);
+            window.removeEventListener("blur", endInteraction);
             interactionRef.current = null;
             cleanupInteractionRef.current = null;
             setInteracting(false);
@@ -355,13 +357,14 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
         window.addEventListener("pointermove", handlePointerMove, true);
         window.addEventListener("pointerup", endInteraction, true);
         window.addEventListener("pointercancel", endInteraction, true);
+        window.addEventListener("blur", endInteraction);
     };
 
     if (!overlayReady) return null;
 
     return (
         <Fullscreen>
-            <Container
+            <InteractionContainer
                 positionType="absolute"
                 positionTop={overlay.top}
                 positionLeft={overlay.left}
@@ -429,7 +432,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
                         borderColor="#94a3b8"
                     />
                 </Container>
-            </Container>
+            </InteractionContainer>
         </Fullscreen>
     );
 }

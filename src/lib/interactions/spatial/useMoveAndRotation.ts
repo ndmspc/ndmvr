@@ -1,11 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useInputBinding, controllerGamepad } from "../input/useInputBinding";
+import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useXR, useXRInputSourceState } from "@react-three/xr";
 
-import { INTERACTION_EVENTS } from "../events";
-import type { PressedInteractionDetail } from "../events";
 import { updateDesktopFrame } from "./desktop";
 import {
     getSpatialStorageKeys,
@@ -16,16 +15,13 @@ import {
     writeStoredJson,
 } from "./storage";
 import type { StoredRotation, StoredVector3 } from "./storage";
-import type {
-    MoveAndRotationCtx,
-    MoveAndRotationResult,
-    UseMoveAndRotationOptions,
-} from "./types";
+import type { MoveAndRotationCtx, MoveAndRotationResult, UseMoveAndRotationOptions } from "./types";
 import {
     handleVRPointerDown,
     handleVRPointerMove,
     handleVRPointerUp,
     updateVRFrame,
+    finishSpatialInteraction,
 } from "./xr";
 
 export function useMoveAndRotation({
@@ -37,7 +33,6 @@ export function useMoveAndRotation({
     const groupRef = useRef<THREE.Group | null>(null);
 
     const session = useXR((s) => s.session);
-    const rightController = useXRInputSourceState("controller", "right");
     const leftController = useXRInputSourceState("controller", "left");
 
     const { camera } = useThree();
@@ -47,6 +42,7 @@ export function useMoveAndRotation({
     const radius = useRef(Math.sqrt(offset.x * offset.x + offset.z * offset.z) || 1e-6);
 
     const isDragging = useRef(false);
+    const capture = useRef<MoveAndRotationCtx["capture"]["current"]>(null);
     const dragPlane = useRef(new THREE.Plane());
     const dragOffset = useRef(new THREE.Vector3());
     const dragIntersection = useRef(new THREE.Vector3());
@@ -54,6 +50,7 @@ export function useMoveAndRotation({
     const rotation = useRef(new THREE.Euler(0, 0, 0));
     const isRotating = useRef(false);
     const isShiftPressed = useRef(false);
+    const isRightGripPressed = useRef(false);
     const startRotation = useRef({ x: 0, y: 0 });
     const startAngles = useRef({ yaw: 0, pitch: 0 });
 
@@ -70,31 +67,29 @@ export function useMoveAndRotation({
     const tmpTarget = useRef(new THREE.Vector3());
     const tmpWorld = useRef(new THREE.Vector3());
 
-    const isRightSqueezePressed = () => {
-        const gp = (rightController as any)?.gamepad as any | undefined;
-        if (!gp) return false;
-        const sq = gp["xr-standard-squeeze"];
-        if (!sq) return false;
-        const val = sq.button ?? 0;
-        return sq.state === "pressed" || val > 0.5;
+    const getSpatialInput = () => {
+        if (!isRightGripPressed.current) return { active: false, x: 0, y: 0 };
+        const left = controllerGamepad(session, leftController);
+        const stick = left?.["xr-standard-thumbstick"];
+        return { active: true, x: stick?.xAxis ?? 0, y: stick?.yAxis ?? 0 };
     };
 
-    const saveOffset = () => {
+    const saveOffset = useCallback(() => {
         const keys = getSpatialStorageKeys(storageKey);
         writeStoredJson(keys.offset, {
             x: currentPos.current.x,
             y: currentPos.current.y,
             z: currentPos.current.z,
         });
-    };
+    }, [storageKey]);
 
-    const saveRotation = () => {
+    const saveRotation = useCallback(() => {
         const keys = getSpatialStorageKeys(storageKey);
         writeStoredJson(keys.rotation, {
             x: rotation.current.x,
             y: rotation.current.y,
         });
-    };
+    }, [storageKey]);
 
     const recomputeOrbitFrom = (v: THREE.Vector3) => {
         const { x, z } = v;
@@ -107,11 +102,7 @@ export function useMoveAndRotation({
         const keys = getSpatialStorageKeys(storageKey);
         const savedOffset = readStoredJson<StoredVector3>(keys.offset);
         if (savedOffset.status === "value") {
-            currentPos.current.set(
-                savedOffset.value.x,
-                savedOffset.value.y,
-                savedOffset.value.z
-            );
+            currentPos.current.set(savedOffset.value.x, savedOffset.value.y, savedOffset.value.z);
             recomputeOrbitFrom(currentPos.current);
         } else if (savedOffset.status === "missing") {
             currentPos.current.set(offset.x, offset.y, offset.z);
@@ -125,78 +116,79 @@ export function useMoveAndRotation({
 
         const savedAnchor = readStoredJson<StoredVector3>(keys.anchor);
         if (savedAnchor.status === "value") {
-            originAnchor.current.set(
-                savedAnchor.value.x,
-                savedAnchor.value.y,
-                savedAnchor.value.z
-            );
+            originAnchor.current.set(savedAnchor.value.x, savedAnchor.value.y, savedAnchor.value.z);
         }
     }, [storageKey]);
 
-    useEffect(() => {
-        const handleReset = () => {
-            const keys = getSpatialStorageKeys(storageKey);
+    const handleReset = () => {
+        const keys = getSpatialStorageKeys(storageKey);
 
-            currentPos.current.set(offset.x, offset.y, offset.z);
-            rotation.current.set(0, 0, 0);
+        currentPos.current.set(offset.x, offset.y, offset.z);
+        rotation.current.set(0, 0, 0);
 
-            if (groupRef.current) groupRef.current.rotation.set(0, 0, 0);
+        if (groupRef.current) groupRef.current.rotation.set(0, 0, 0);
 
-            radius.current = Math.sqrt(offset.x * offset.x + offset.z * offset.z) || radius.current;
-            orbitAngle.current = Math.atan2(offset.x, offset.z);
+        radius.current = Math.sqrt(offset.x * offset.x + offset.z * offset.z) || radius.current;
+        orbitAngle.current = Math.atan2(offset.x, offset.z);
 
-            followEnabled.current = true;
-            originAnchor.current.set(0, 0, 0);
+        followEnabled.current = true;
+        originAnchor.current.set(0, 0, 0);
 
-            writeStoredJson(keys.offset, offset);
-            writeStoredJson(keys.rotation, { x: 0, y: 0 });
+        writeStoredJson(keys.offset, offset);
+        writeStoredJson(keys.rotation, { x: 0, y: 0 });
+        writeStoredBoolean(keys.follow, true);
+        removeStoredValue(keys.anchor);
+    };
+
+    const handleFollowToggle = () => {
+        if (!originRef?.current || !groupRef.current) return;
+
+        const keys = getSpatialStorageKeys(storageKey);
+        followEnabled.current = !followEnabled.current;
+
+        if (!followEnabled.current) {
+            originAnchor.current.copy(originRef.current.position);
+            writeStoredBoolean(keys.follow, false);
+            writeStoredJson(keys.anchor, {
+                x: originAnchor.current.x,
+                y: originAnchor.current.y,
+                z: originAnchor.current.z,
+            });
+        } else {
+            groupRef.current.getWorldPosition(tmpWorld.current);
+            const originPos = originRef.current.position;
+
+            const newOffset = tmpWorld.current.clone().sub(originPos);
+            currentPos.current.copy(newOffset);
+            recomputeOrbitFrom(newOffset);
+
             writeStoredBoolean(keys.follow, true);
             removeStoredValue(keys.anchor);
-        };
+            saveOffset();
+        }
+    };
 
-        const handleShift = (event: Event) => {
-            const { detail } = event as CustomEvent<PressedInteractionDetail>;
-            isShiftPressed.current = !!detail?.pressed;
-        };
-
-        const handleFollowToggle = () => {
-            if (!originRef?.current || !groupRef.current) return;
-
-            const keys = getSpatialStorageKeys(storageKey);
-            followEnabled.current = !followEnabled.current;
-
-            if (!followEnabled.current) {
-                originAnchor.current.copy(originRef.current.position);
-                writeStoredBoolean(keys.follow, false);
-                writeStoredJson(keys.anchor, {
-                    x: originAnchor.current.x,
-                    y: originAnchor.current.y,
-                    z: originAnchor.current.z,
-                });
-            } else {
-                groupRef.current.getWorldPosition(tmpWorld.current);
-                const originPos = originRef.current.position;
-
-                const newOffset = tmpWorld.current.clone().sub(originPos);
-                currentPos.current.copy(newOffset);
-                recomputeOrbitFrom(newOffset);
-
-                writeStoredBoolean(keys.follow, true);
-                removeStoredValue(keys.anchor);
-                saveOffset();
-            }
-        };
-
-        window.addEventListener(INTERACTION_EVENTS.MENU_RESET, handleReset);
-        window.addEventListener(INTERACTION_EVENTS.MENU_SHIFT, handleShift);
-        window.addEventListener(INTERACTION_EVENTS.MENU_FOLLOW_TOGGLE, handleFollowToggle);
-
-        return () => {
-            window.removeEventListener(INTERACTION_EVENTS.MENU_RESET, handleReset);
-            window.removeEventListener(INTERACTION_EVENTS.MENU_SHIFT, handleShift);
-            window.removeEventListener(INTERACTION_EVENTS.MENU_FOLLOW_TOGGLE, handleFollowToggle);
-        };
-    }, [offset, originRef, storageKey]);
+    useInputBinding({
+        keyboard: "KeyR",
+        vr: { hand: "left", button: "x-button" },
+        onPress: handleReset,
+    });
+    useInputBinding({
+        vr: { hand: "right", button: "a-button", grip: false },
+        onPress: handleFollowToggle,
+    });
+    useInputBinding({
+        keyboard: { code: ["ShiftLeft", "ShiftRight"] },
+        onChange: (held) => {
+            isShiftPressed.current = held;
+        },
+    });
+    useInputBinding({
+        vr: { hand: "right", button: "xr-standard-squeeze" },
+        onChange: (held) => {
+            isRightGripPressed.current = held;
+        },
+    });
 
     useEffect(() => {
         const keys = getSpatialStorageKeys(storageKey);
@@ -219,8 +211,7 @@ export function useMoveAndRotation({
         session,
         camera,
 
-        rightController,
-        leftController,
+        getSpatialInput,
 
         groupRef,
 
@@ -229,6 +220,7 @@ export function useMoveAndRotation({
         radius,
 
         isDragging,
+        capture,
         dragPlane,
         dragOffset,
         dragIntersection,
@@ -252,14 +244,46 @@ export function useMoveAndRotation({
         tmpTarget,
         tmpWorld,
 
-        isRightSqueezePressed,
         saveOffset,
         saveRotation,
         recomputeOrbitFrom,
     };
 
+    const cancelInteraction = useCallback(() => {
+        finishSpatialInteraction({
+            isDragging,
+            isRotating,
+            capture,
+            saveOffset,
+            saveRotation,
+        });
+    }, [saveOffset, saveRotation]);
+
+    useEffect(() => {
+        const cancel = (event: PointerEvent) => {
+            if (capture.current && event.pointerId !== capture.current.pointerId) return;
+            cancelInteraction();
+        };
+        const blur = () => {
+            isShiftPressed.current = false;
+            cancelInteraction();
+        };
+        window.addEventListener("blur", blur);
+        window.addEventListener("pointercancel", cancel);
+        window.addEventListener("pointerup", cancel);
+        session?.addEventListener("end", blur);
+        return () => {
+            window.removeEventListener("blur", blur);
+            window.removeEventListener("pointercancel", cancel);
+            window.removeEventListener("pointerup", cancel);
+            session?.removeEventListener("end", blur);
+            cancelInteraction();
+        };
+    }, [session, cancelInteraction]);
+
     useFrame((_, delta) => {
         if (!groupRef.current) return;
+        if (!isRightGripPressed.current) cancelInteraction();
 
         if (!session) {
             updateDesktopFrame(ctx, delta);

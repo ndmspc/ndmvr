@@ -12,7 +12,6 @@ import VRController from "./components/systems/inputs/VRController.tsx";
 import BinInfo from "./components/ui/shared/BinInfo.tsx";
 import DrawOptions from "./components/ui/shared/DrawOptions.tsx";
 import SettingsPanel from "./components/ui/shared/SettingsPanel.tsx";
-import HelperTips from "./components/ui/shared/HelperTips.tsx";
 import Demo from "./components/ui/shared/Demo.tsx";
 import ModeToolsPanel from "./components/ui/shared/ModeToolsPanel.tsx";
 import { WsConnectionMenu, HttpConnectionMenu } from "./components/ui/shared/ConnectionMenu.tsx";
@@ -50,7 +49,6 @@ export {
     BinInfo,
     DrawOptions,
     SettingsPanel,
-    HelperTips,
     Demo,
     ModeToolsPanel,
     WsConnectionMenu,

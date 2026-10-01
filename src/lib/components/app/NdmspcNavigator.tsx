@@ -10,15 +10,11 @@ import { useCallback, useRef, useState } from "react";
 
 interface NdmspcNavigatorProps {
     children?: React.ReactNode;
-    menu?: boolean;
-    help?: boolean;
     ndmspcConfig?: NdmspcConfig | null;
     ndmvrConfig?: NdmvrConfig | null;
 }
 function NdmspcNavigator({
     children = null,
-    menu = false,
-    help = false,
     ndmspcConfig = null,
     ndmvrConfig = null,
 }: NdmspcNavigatorProps) {
@@ -57,12 +53,14 @@ function NdmspcNavigator({
         <>
             {children}
             {localConfig?.type === "object" && (
-                <NdmspcEnv config={ndmvrConfig} help={help} menu={false} setBrowser={setBrowserConfig} />
+                <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
             )}
             {localConfig?.type === "browser" && (
                 <NdmspcDefaultBrowserEnv file={localConfig?.file} layout="simple" setBrowser={setBrowserConfig}/>
             )}
-            {!localConfig?.type && <NdmspcEnv config={ndmvrConfig} menu={menu} help={help} setBrowser={setBrowserConfig}/>}
+            {!localConfig?.type && (
+                <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
+            )}
         </>
     );
 }

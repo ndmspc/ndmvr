@@ -1,18 +1,84 @@
 import { useEffect, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useUIInteraction } from "../../../stores/interaction/uiInteraction";
-import { useInputFocus } from "../../../stores/interaction/inputFocus";
+import { isInputBlocked } from "../../../interactions/input/useInputBinding";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
-import { INTERACTION_EVENTS } from "../../../interactions/events";
-import type { MobileMoveDetail } from "../../../interactions/events";
+import {
+    INTERACTION_EVENTS,
+    type MobileMoveDetail,
+    type MobileMoveDirection,
+} from "../../../interactions/events";
+
+/** Acquire look on the canvas and release it even when the pointer leaves it. */
+function listenDesktopLook(
+    element: HTMLElement,
+    rotate: (x: number, y: number) => void,
+    blocked: () => boolean
+) {
+    let mouse = false;
+    let touch: { id: number; x: number; y: number } | null = null;
+    const cancel = () => {
+        mouse = false;
+        touch = null;
+    };
+    const down = (event: MouseEvent) => {
+        if (event.button === 0 && !blocked()) mouse = true;
+    };
+    const up = (event: MouseEvent) => {
+        if (event.button === 0) mouse = false;
+    };
+    const move = (event: MouseEvent) => {
+        if (blocked()) return cancel();
+        if (mouse) rotate(event.movementX, event.movementY);
+    };
+    const touchStart = (event: TouchEvent) => {
+        if (event.touches.length !== 1 || blocked()) return cancel();
+        const first = event.touches[0];
+        touch = { id: first.identifier, x: first.clientX, y: first.clientY };
+    };
+    const touchMove = (event: TouchEvent) => {
+        if (blocked() || event.touches.length !== 1) return cancel();
+        if (!touch) return;
+        const current = event.touches[0];
+        if (current.identifier !== touch.id) return cancel();
+        rotate(current.clientX - touch.x, current.clientY - touch.y);
+        touch.x = current.clientX;
+        touch.y = current.clientY;
+        event.preventDefault();
+    };
+    const visibility = () => {
+        if (document.hidden) cancel();
+    };
+    element.addEventListener("mousedown", down);
+    element.addEventListener("touchstart", touchStart);
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+    document.addEventListener("touchmove", touchMove, { passive: false });
+    document.addEventListener("touchend", cancel);
+    document.addEventListener("touchcancel", cancel);
+    document.addEventListener("pointercancel", cancel);
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("blur", cancel);
+    return () => {
+        element.removeEventListener("mousedown", down);
+        element.removeEventListener("touchstart", touchStart);
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", up);
+        document.removeEventListener("touchmove", touchMove);
+        document.removeEventListener("touchend", cancel);
+        document.removeEventListener("touchcancel", cancel);
+        document.removeEventListener("pointercancel", cancel);
+        document.removeEventListener("visibilitychange", visibility);
+        window.removeEventListener("blur", cancel);
+        cancel();
+    };
+}
 
 export interface DesktopControllerProps {
     originRef: React.RefObject<THREE.Group>;
     cameraRef: React.RefObject<THREE.Camera>;
     speed?: number;
-    onToggleMenu?: () => void;
-    onToggleHelp?: () => void;
 }
 
 export default function DesktopController({
@@ -20,116 +86,59 @@ export default function DesktopController({
     cameraRef,
     speed = 5,
 }: DesktopControllerProps) {
-    const isMouseDown = useRef(false);
-    const isTouching = useRef(false);
-    const lastTouchPosition = useRef({ x: 0, y: 0 });
+    const element = useThree((state) => state.gl.domElement);
 
     const yaw = useRef(0);
     const pitch = useRef(0);
-
-    const isInteracting = useUIInteraction((s) => s.isInteracting);
-    const isFocused = useInputFocus((s) => s.isFocused);
-
-    const frozenRotation = useRef({ x: 0, y: 0 });
+    const mobile = useRef(new Set<MobileMoveDirection>());
 
     const velocity = useRef(new THREE.Vector3());
     const forward = useRef(new THREE.Vector3());
     const right = useRef(new THREE.Vector3());
     const up = useRef(new THREE.Vector3(0, 1, 0));
 
+    useEffect(
+        () =>
+            listenDesktopLook(
+                element,
+                (dx, dy) => {
+                    yaw.current -= dx * 0.002;
+                    pitch.current = Math.max(
+                        -Math.PI / 2,
+                        Math.min(Math.PI / 2, pitch.current - dy * 0.002)
+                    );
+                },
+                () => isInputBlocked() || useUIInteraction.getState().isInteracting
+            ),
+        [element]
+    );
+
     useEffect(() => {
-        const onMouseDown = (e: MouseEvent) => {
-            if (e.button === 0) isMouseDown.current = true;
+        const held = mobile.current;
+        const move = (event: Event) => {
+            const detail = (event as CustomEvent<MobileMoveDetail>).detail;
+            if (!detail) return;
+            if (detail.pressed) held.add(detail.dir);
+            else held.delete(detail.dir);
         };
-
-        const onMouseUp = (e: MouseEvent) => {
-            if (e.button === 0) isMouseDown.current = false;
+        const cancel = () => held.clear();
+        const visibility = () => {
+            if (document.hidden) cancel();
         };
-
-        const onMouseMove = (e: MouseEvent) => {
-            if (!isMouseDown.current) return;
-
-            const sensitivity = 0.002;
-
-            yaw.current -= e.movementX * sensitivity;
-            pitch.current -= e.movementY * sensitivity;
-
-            pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
-        };
-
-        document.addEventListener("mousedown", onMouseDown);
-        document.addEventListener("mouseup", onMouseUp);
-        document.addEventListener("mousemove", onMouseMove);
-
+        window.addEventListener(INTERACTION_EVENTS.MOBILE_MOVE, move);
+        window.addEventListener("blur", cancel);
+        document.addEventListener("visibilitychange", visibility);
         return () => {
-            document.removeEventListener("mousedown", onMouseDown);
-            document.removeEventListener("mouseup", onMouseUp);
-            document.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener(INTERACTION_EVENTS.MOBILE_MOVE, move);
+            window.removeEventListener("blur", cancel);
+            document.removeEventListener("visibilitychange", visibility);
+            cancel();
         };
     }, []);
-
-    useEffect(() => {
-        const onTouchStart = (e: TouchEvent) => {
-            if (e.touches.length !== 1) return;
-
-            isTouching.current = true;
-
-            lastTouchPosition.current = {
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY,
-            };
-        };
-
-        const onTouchEnd = () => {
-            isTouching.current = false;
-        };
-
-        const onTouchMove = (e: TouchEvent) => {
-            if (!isTouching.current || e.touches.length !== 1) return;
-
-            const current = {
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY,
-            };
-
-            const dx = current.x - lastTouchPosition.current.x;
-            const dy = current.y - lastTouchPosition.current.y;
-
-            lastTouchPosition.current = current;
-
-            const sensitivity = 0.002;
-
-            yaw.current -= dx * sensitivity;
-            pitch.current -= dy * sensitivity;
-
-            pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current));
-
-            e.preventDefault();
-        };
-
-        document.addEventListener("touchstart", onTouchStart);
-        document.addEventListener("touchend", onTouchEnd);
-        document.addEventListener("touchcancel", onTouchEnd);
-        document.addEventListener("touchmove", onTouchMove, { passive: false });
-
-        return () => {
-            document.removeEventListener("touchstart", onTouchStart);
-            document.removeEventListener("touchend", onTouchEnd);
-            document.removeEventListener("touchcancel", onTouchEnd);
-            document.removeEventListener("touchmove", onTouchMove);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (isInteracting && cameraRef.current) {
-            frozenRotation.current.x = cameraRef.current.rotation.x;
-            frozenRotation.current.y = cameraRef.current.rotation.y;
-        }
-    }, [isInteracting]);
 
     useFrame((_, delta) => {
         if (!originRef.current) return;
-        if (isFocused) return;
+        if (isInputBlocked() || document.hidden) return;
 
         const keys = useKeyboardStore.getState().keys;
 
@@ -138,12 +147,12 @@ export default function DesktopController({
 
         velocity.current.set(0, 0, 0);
 
-        if (keys["KeyW"]) velocity.current.add(forward.current);
-        if (keys["KeyS"]) velocity.current.sub(forward.current);
-        if (keys["KeyA"]) velocity.current.sub(right.current);
-        if (keys["KeyD"]) velocity.current.add(right.current);
-        if (keys["KeyQ"]) velocity.current.y -= 1;
-        if (keys["KeyE"]) velocity.current.y += 1;
+        if (keys["KeyW"] || mobile.current.has("forward")) velocity.current.add(forward.current);
+        if (keys["KeyS"] || mobile.current.has("back")) velocity.current.sub(forward.current);
+        if (keys["KeyA"] || mobile.current.has("left")) velocity.current.sub(right.current);
+        if (keys["KeyD"] || mobile.current.has("right")) velocity.current.add(right.current);
+        if (keys["KeyQ"] || mobile.current.has("down")) velocity.current.y -= 1;
+        if (keys["KeyE"] || mobile.current.has("up")) velocity.current.y += 1;
 
         if (velocity.current.lengthSq() > 0) {
             velocity.current.normalize().multiplyScalar(speed * delta);
@@ -156,33 +165,9 @@ export default function DesktopController({
 
         cameraRef.current.rotation.order = "YXZ";
 
-        if (!isInteracting) {
-            cameraRef.current.rotation.y = yaw.current;
-            cameraRef.current.rotation.x = pitch.current;
-        } else {
-            cameraRef.current.rotation.y = frozenRotation.current.y;
-            cameraRef.current.rotation.x = frozenRotation.current.x;
-            yaw.current = cameraRef.current.rotation.y;
-            pitch.current = cameraRef.current.rotation.x;
-        }
+        cameraRef.current.rotation.y = yaw.current;
+        cameraRef.current.rotation.x = pitch.current;
     });
-
-    useEffect(() => {
-        const handler = (event: Event) => {
-            const { dir, pressed } = (event as CustomEvent<MobileMoveDetail>).detail;
-            const setKey = useKeyboardStore.getState().setKey;
-
-            if (dir === "forward") setKey("KeyW", pressed);
-            if (dir === "back") setKey("KeyS", pressed);
-            if (dir === "left") setKey("KeyA", pressed);
-            if (dir === "right") setKey("KeyD", pressed);
-            if (dir === "up") setKey("KeyE", pressed);
-            if (dir === "down") setKey("KeyQ", pressed);
-        };
-
-        window.addEventListener(INTERACTION_EVENTS.MOBILE_MOVE, handler);
-        return () => window.removeEventListener(INTERACTION_EVENTS.MOBILE_MOVE, handler);
-    }, []);
 
     return null;
 }

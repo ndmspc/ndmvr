@@ -1,3 +1,4 @@
+import { isInputBlocked } from "../../interactions/input/useInputBinding";
 import { useThree } from "@react-three/fiber";
 import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { filter } from "rxjs";
@@ -130,7 +131,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const nestedHistogram = useRef<any>(null);
 
     const activeMode = useSceneModeStore((state) => state.activeMode);
-    const setActiveMode = useSceneModeStore((state) => state.setActiveMode);
     const getActiveConfigHistogramEvents = useSceneModeStore((state) => state.modesConfig[state.activeMode]?.histogramEvents);
     const binBoxEnabled = useSceneModeStore((state) => state.binBoxEnabled);
 
@@ -151,6 +151,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
     const meshRef = useRef<any>(null);
     const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const clearPendingClick = useCallback(() => {
+        if (clickTimeout.current !== null) clearTimeout(clickTimeout.current);
+        clickTimeout.current = null;
+    }, []);
     const lastXRTriggerRelease = useRef(0);
 
     const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
@@ -386,42 +390,66 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     }, [scene]);
 
     useEffect(() => {
-        if (!session) return;
-
-        const onSqueezeStart = () => {
+        const sources = new Set<XRInputSource>();
+        const onSqueezeStart = (event: XRInputSourceEvent) => {
+            if (isInputBlocked() || document.hidden || session?.visibilityState !== "visible") return;
+            sources.add(event.inputSource);
             squeezeHeld.current = true;
         };
-
-        const onSqueezeEnd = () => {
+        const onSqueezeEnd = (event: XRInputSourceEvent) => {
+            sources.delete(event.inputSource);
+            squeezeHeld.current = sources.size > 0;
+        };
+        const cancel = () => {
+            sources.clear();
             squeezeHeld.current = false;
+            clearPendingClick();
+        };
+        const block = () => {
+            if (isInputBlocked() || document.hidden || (session && session.visibilityState !== "visible")) cancel();
+        };
+        const sourcesChanged = () => {
+            for (const source of sources) {
+                if (!Array.from(session?.inputSources ?? []).includes(source)) sources.delete(source);
+            }
+            squeezeHeld.current = sources.size > 0;
+            clearPendingClick();
         };
 
-        session.addEventListener("squeezestart", onSqueezeStart);
-        session.addEventListener("squeezeend", onSqueezeEnd);
+        session?.addEventListener("squeezestart", onSqueezeStart);
+        session?.addEventListener("squeezeend", onSqueezeEnd);
+        session?.addEventListener("end", cancel);
+        session?.addEventListener("inputsourceschange", sourcesChanged);
+        session?.addEventListener("visibilitychange", block);
+        window.addEventListener("blur", cancel);
+        document.addEventListener("focusin", block);
+        document.addEventListener("visibilitychange", block);
 
         return () => {
-            session.removeEventListener("squeezestart", onSqueezeStart);
-            session.removeEventListener("squeezeend", onSqueezeEnd);
+            session?.removeEventListener("squeezestart", onSqueezeStart);
+            session?.removeEventListener("squeezeend", onSqueezeEnd);
+            session?.removeEventListener("end", cancel);
+            session?.removeEventListener("inputsourceschange", sourcesChanged);
+            session?.removeEventListener("visibilitychange", block);
+            window.removeEventListener("blur", cancel);
+            document.removeEventListener("focusin", block);
+            document.removeEventListener("visibilitychange", block);
+            cancel();
         };
-    }, [session]);
-
-    function clearPendingClick() {
-        if (!clickTimeout.current) return;
-
-        clearTimeout(clickTimeout.current);
-        clickTimeout.current = null;
-    }
+    }, [clearPendingClick, session]);
 
     function scheduleSingleClick(painter: any, hit: HistogramIntersection, source: string) {
         clearPendingClick();
 
         clickTimeout.current = setTimeout(() => {
             clickTimeout.current = null;
+            if (isInputBlocked() || document.hidden) return;
             painter.intersectionHandler(hit, source);
         }, CLICK_DELAY_MS);
     }
 
     function raycastHandler(event: any) {
+        if (isInputBlocked()) return;
         const painter = nestedHistogram.current;
         if (!painter) return;
 
@@ -502,6 +530,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             .getStream(id)
             .pipe(filter((e) => (e as { id: string | number }).id === id))
             .subscribe((histo: any) => {
+                clearPendingClick();
                 try {
                     const isJsroot = histo?.opts?.render === "jsroot";
                     setIsJsrootRenderer(isJsroot);
@@ -630,7 +659,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             clearJsrootMesh();
             clearNestedMeshes();
         };
-    }, [applyJsrootMeshBounds, camera, id, installNestedPainterMeshSync, syncNestedPainterObjects]);
+    }, [applyJsrootMeshBounds, camera, id, installNestedPainterMeshSync, syncNestedPainterObjects, clearPendingClick]);
 
     return (
         <group onPointerDown={() => activateHistogramPad(id)}>
@@ -649,9 +678,11 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         key={jsrootMesh.uuid}
                         object={jsrootMesh}
                         onPointerMove={() => {
+                            if (isInputBlocked()) return;
                             setRaycasterTriggerSource(raycaster, "mousemove");
                         }}
                         onClick={(e: any) => {
+                            if (isInputBlocked()) return;
                             const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
                             setRaycasterTriggerSource(
                                 raycaster,
@@ -659,6 +690,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                             );
                         }}
                         onDoubleClick={(e: any) => {
+                            if (isInputBlocked()) return;
                             const isShift = e.nativeEvent?.shiftKey || squeezeHeld.current;
                             setRaycasterTriggerSource(
                                 raycaster,

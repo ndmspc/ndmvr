@@ -257,6 +257,10 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                         bubbles: true,
                         cancelable: true
                     }));
+                // Core still exposes layer selection through keyboard input; release the synthetic key.
+                window.dispatchEvent(new KeyboardEvent("keyup", {
+                    key: currentLayer.toString(), code: "Numpad" + currentLayer.toString(),
+                }));
 
                 useSceneModeStore.getState().showModeToolsNotification(`Layer ${currentLayer - 1} shown`, 2000);
                 updateHistogramPadState(activePadId, { currentLayer });
@@ -426,3 +430,11 @@ export const useSceneModeStore = create<SceneModeStore>((set, get) => ({
         return get().uiHover === true || get().vrEnabled === false;
     },
 }));
+
+/** Shared by the mode tools and the scene's input binding; keeps the legacy notification. */
+export function selectSceneMode(mode: string) {
+    useSceneModeStore.getState().setActiveMode(mode);
+    if (useSceneModeStore.getState().activeMode === mode) {
+        window.dispatchEvent(new CustomEvent("ndmvr-mode-toggle", { detail: { enabled: mode } }));
+    }
+}
