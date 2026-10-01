@@ -1,7 +1,7 @@
 export function shouldUseMobileControls() {
     if (typeof window === "undefined") return false;
 
-    const hasMultiTouch = navigator.maxTouchPoints >= 2;
+    const hasTouch = navigator.maxTouchPoints > 0;
 
     const noHover = window.matchMedia?.("(any-hover: none)").matches ?? false;
     const coarse = window.matchMedia?.("(any-pointer: coarse)").matches ?? false;
@@ -17,5 +17,5 @@ export function shouldUseMobileControls() {
 
     const uaMobile = (navigator as any).userAgentData?.mobile === true;
 
-    return uaMobile || (hasMultiTouch && noHover && coarse && phoneSized);
+    return uaMobile || (hasTouch && noHover && coarse && phoneSized);
 }

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import type { MobileMoveDirection } from "../../../interactions/events";
 import arrowUp from "../../../assets/icons/arrow.svg";
 import arrowBig from "../../../assets/icons/arrow_big.svg";
 import gamepadIcon from "../../../assets/icons/gamepad.svg";
-import type { MobileMoveDirection } from "../../../interactions/events";
 
 interface ButtonProps {
     $active?: boolean;
@@ -22,7 +22,6 @@ const ControllerWrapper = styled.div<ControllerProps>`
     grid-template-columns: 64px 64px 64px;
     grid-template-rows: 64px 64px 64px;
     gap: 8px;
-
 
     z-index: 100;
     user-select: none;
@@ -151,10 +150,34 @@ interface MobileMoveControllerProps {
     onMoveEnd: (dir: MobileMoveDirection) => void;
 }
 
+interface DirectionButtonProps {
+    dir: MobileMoveDirection;
+    active: boolean;
+    onPress: (dir: MobileMoveDirection, pointerId: number) => void;
+    onRelease: (pointerId: number) => void;
+    children: React.ReactNode;
+}
+
+function DirectionButton({ dir, active, onPress, onRelease, children }: DirectionButtonProps) {
+    const release = (event: React.PointerEvent) => onRelease(event.pointerId);
+    return (
+        <MoveButton
+            $active={active}
+            onPointerDown={(event) => onPress(dir, event.pointerId)}
+            onPointerUp={release}
+            onPointerCancel={release}
+            onPointerLeave={release}
+            onLostPointerCapture={release}
+        >
+            {children}
+        </MoveButton>
+    );
+}
+
 export default function MobileMoveController({
-                                                 onMoveStart,
-                                                 onMoveEnd,
-                                             }: MobileMoveControllerProps) {
+    onMoveStart,
+    onMoveEnd,
+}: MobileMoveControllerProps) {
     const [controlsVisible, setControlsVisible] = useState(true);
 
     const [active, setActive] = useState<Record<MobileMoveDirection, boolean>>({
@@ -166,72 +189,83 @@ export default function MobileMoveController({
         down: false,
     });
 
-    const press = (dir: MobileMoveDirection) => {
-        setActive((p) => ({ ...p, [dir]: true }));
-        onMoveStart(dir);
-    };
+    const held = useRef(new Map<number, MobileMoveDirection>());
+    const endMove = useRef(onMoveEnd);
+    useLayoutEffect(() => {
+        endMove.current = onMoveEnd;
+    }, [onMoveEnd]);
 
-    const release = (dir: MobileMoveDirection) => {
-        setActive((p) => ({ ...p, [dir]: false }));
-        onMoveEnd(dir);
-    };
+    const release = useCallback((pointerId: number) => {
+        const dir = held.current.get(pointerId);
+        if (!dir) return;
+        held.current.delete(pointerId);
+        if (![...held.current.values()].includes(dir)) {
+            setActive((previous) => ({ ...previous, [dir]: false }));
+            endMove.current(dir);
+        }
+    }, []);
+
+    useEffect(() => {
+        const pointers = held.current;
+        const end = (event: PointerEvent) => release(event.pointerId);
+        const cancel = () => {
+            for (const pointerId of pointers.keys()) release(pointerId);
+        };
+        const visibility = () => {
+            if (document.hidden) cancel();
+        };
+        window.addEventListener("pointerup", end);
+        window.addEventListener("pointercancel", end);
+        window.addEventListener("blur", cancel);
+        document.addEventListener("visibilitychange", visibility);
+        return () => {
+            window.removeEventListener("pointerup", end);
+            window.removeEventListener("pointercancel", end);
+            window.removeEventListener("blur", cancel);
+            document.removeEventListener("visibilitychange", visibility);
+            cancel();
+        };
+    }, [release]);
 
     const hideControls = () => {
-        if (controlsVisible) {
-            Object.entries(active).forEach(([dir, isActive]) => {
-                if (isActive) {
-                    onMoveEnd(dir as MobileMoveDirection);
-                }
-            });
-
-            setActive({
-                forward: false,
-                back: false,
-                left: false,
-                right: false,
-                up: false,
-                down: false,
-            });
-        }
-
-        setControlsVisible((p) => !p);
+        for (const pointerId of held.current.keys()) release(pointerId);
+        setControlsVisible((previous) => !previous);
     };
 
-    const holdHandlers = (dir: MobileMoveDirection) => ({
-        onPointerDown: () => press(dir),
-        onPointerUp: () => release(dir),
-        onPointerCancel: () => release(dir),
-        onPointerLeave: () => release(dir),
-    });
-
+    const press = (dir: MobileMoveDirection, pointerId: number) => {
+        if (held.current.has(pointerId)) return;
+        const alreadyHeld = [...held.current.values()].includes(dir);
+        held.current.set(pointerId, dir);
+        if (!alreadyHeld) {
+            setActive((previous) => ({ ...previous, [dir]: true }));
+            onMoveStart(dir);
+        }
+    };
     return (
         <>
-            <HideButton
-                $visible={controlsVisible}
-                onClick={hideControls}
-            >
+            <HideButton $visible={controlsVisible} onClick={hideControls}>
                 <GamepadIcon src={gamepadIcon} />
                 {controlsVisible && "Hide"}
             </HideButton>
 
             <ControllerWrapper $visible={controlsVisible}>
                 <div />
-                <MoveButton $active={active.forward} {...holdHandlers("forward")}>
+                <DirectionButton dir="forward" active={active.forward} onPress={press} onRelease={release}>
                     <ArrowIcon src={arrowUp} $rotate={0} />
-                </MoveButton>
+                </DirectionButton>
                 <div />
 
-                <MoveButton $active={active.left} {...holdHandlers("left")}>
+                <DirectionButton dir="left" active={active.left} onPress={press} onRelease={release}>
                     <ArrowIcon src={arrowUp} $rotate={-90} />
-                </MoveButton>
+                </DirectionButton>
 
-                <MoveButton $active={active.back} {...holdHandlers("back")}>
+                <DirectionButton dir="back" active={active.back} onPress={press} onRelease={release}>
                     <ArrowIcon src={arrowUp} $rotate={180} />
-                </MoveButton>
+                </DirectionButton>
 
-                <MoveButton $active={active.right} {...holdHandlers("right")}>
+                <DirectionButton dir="right" active={active.right} onPress={press} onRelease={release}>
                     <ArrowIcon src={arrowUp} $rotate={90} />
-                </MoveButton>
+                </DirectionButton>
 
                 <div />
                 <div />
@@ -239,13 +273,13 @@ export default function MobileMoveController({
             </ControllerWrapper>
 
             <RightControllerWrapper $visible={controlsVisible}>
-                <MoveButton $active={active.up} {...holdHandlers("up")}>
+                <DirectionButton dir="up" active={active.up} onPress={press} onRelease={release}>
                     <ArrowIconBig src={arrowBig} $rotate={0} />
-                </MoveButton>
+                </DirectionButton>
 
-                <MoveButton $active={active.down} {...holdHandlers("down")}>
+                <DirectionButton dir="down" active={active.down} onPress={press} onRelease={release}>
                     <ArrowIconBig src={arrowBig} $rotate={180} />
-                </MoveButton>
+                </DirectionButton>
             </RightControllerWrapper>
         </>
     );

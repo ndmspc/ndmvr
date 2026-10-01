@@ -1,209 +1,95 @@
-import { useEffect, useMemo, Children, isValidElement, cloneElement, useRef } from "react";
-import { Text } from "@react-three/uikit";
-import Container from "../interactions/Container";
+import { useEffect, useState, useRef, Children, isValidElement } from "react";
+import { Container, Text } from "@react-three/uikit";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import * as THREE from "three";
 import { useXR } from "@react-three/xr";
-
-import DesktopMenuOverlay from "./DesktopMenuOverlay.tsx";
-import FloatingContainer from "./FloatingContainer.tsx";
-import WebsocketBanner from "./WebsocketBanner.tsx";
-import { useMenuStore } from "../../../stores/menu/store.ts";
-import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
-import { useInputFocus } from "../../../stores/interaction/inputFocus";
-import { INTERACTION_EVENTS } from "../../../interactions/events";
-import type { PressedInteractionDetail } from "../../../interactions/events";
-import { useKeyboardStore } from "../../../stores/keyboard/store";
+import * as THREE from "three";
+import { useInputBinding } from "../../../interactions/input/useInputBinding";
+import { useMenuStore } from "../../../stores/menu/store";
+import DesktopMenuOverlay from "./DesktopMenuOverlay";
+import FloatingContainer from "./FloatingContainer";
+import WebsocketBanner from "./WebsocketBanner";
 
 const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
-
-type MenuChildType = {
-    menuName?: string;
-    menuLabel?: string;
-};
-
-function getMenuChildType(child: React.ReactElement<unknown>): MenuChildType {
-    return child.type as unknown as MenuChildType;
-}
 
 export interface MenuProps {
     children?: React.ReactNode;
     defaultOpen?: boolean;
-    initialTabHelp?: boolean;
     originRef?: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
     scale?: number;
 }
 
-export default function Menu({
+export default function Menu({ defaultOpen = false, ...props }: MenuProps) {
+    const { showMenu, setShowMenu, setMenuExists, toggleMenu } = useMenuStore();
+    const initialOpen = useRef(defaultOpen);
+    useEffect(() => {
+        setMenuExists(true);
+        setShowMenu(initialOpen.current);
+        return () => setMenuExists(false);
+    }, [setMenuExists, setShowMenu]);
+
+    useInputBinding({
+        keyboard: { code: "KeyM", ctrl: false },
+        vr: { hand: "right", button: "b-button", grip: false },
+        onPress: toggleMenu,
+    });
+
+    // The binding stays mounted while hidden; tab selection resets when content unmounts.
+    return showMenu ? <MenuContent {...props} /> : null;
+}
+
+function MenuContent({
     children,
-    defaultOpen = false,
-    initialTabHelp = false,
     originRef = null,
     offset = DEFAULT_OFFSET,
     scale = 1,
 }: MenuProps) {
-    const { showMenu, activeTab, setShowMenu, setActiveTab, setMenuExists, toggleTab } =
-        useMenuStore();
-    const activeMode = useSceneModeStore((s) => s.activeMode);
-    const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
-    const toggleBinBoxEnabled = useSceneModeStore((s) => s.toggleBinBoxEnabled);
-    const keys = useKeyboardStore((s) => s.keys);
-    const session = useXR((s) => s.session);
-    const isFocused = useInputFocus((state) => state.isFocused);
-    const binBoxTogglePressed = useRef(false);
-    const isXR = session !== null && session !== undefined;
-
-    const menuItems = useMemo(() => {
-        const items: { name: string; label: string }[] = [];
-        Children.forEach(children, (child) => {
-            if (!isValidElement(child)) return;
-            const type = getMenuChildType(child);
-            if (type?.menuName) {
-                items.push({ name: type.menuName, label: type.menuLabel ?? type.menuName });
-            }
-        });
-        return items;
-    }, [children]);
-
-    useEffect(() => {
-        setMenuExists(true);
-        setShowMenu(defaultOpen);
-        setActiveTab(initialTabHelp ? "help" : null);
-    }, []);
-
-    useEffect(() => {
-        if (isFocused) return;
-
-        if (keys["KeyM"] && !keys["ControlLeft"] && !keys["ControlRight"]) {
-            toggleTab?.(null);
-        }
-
-        if (keys["KeyH"] && menuItems.some((item) => item.name === "help")) {
-            toggleTab?.("help");
-        }
-
-        if (keys["KeyR"]) {
-            window.dispatchEvent(new CustomEvent(INTERACTION_EVENTS.MENU_RESET));
-        }
-
-        if (keys["KeyB"]) {
-            if (!binBoxTogglePressed.current) {
-                toggleBinBoxEnabled();
-                binBoxTogglePressed.current = true;
-            }
-        } else {
-            binBoxTogglePressed.current = false;
-        }
-
-        if (keys["KeyM"] && (keys["ControlLeft"] || keys["ControlRight"])) {
-            setActiveMode(activeMode === "default" ? "modify" : "default");
-            window.dispatchEvent(
-                new CustomEvent("ndmvr-mode-toggle", { detail: { enabled: activeMode === "default" ? "modify" : "default" } })
-            );
-        }
-
-        if (useSceneModeStore.getState().activeMode === "modify" && (keys["ShiftLeft"] || keys["ShiftRight"])) {
-            window.dispatchEvent(
-                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.SHIFT_STEP_SCALE, {
-                    detail: { pressed: true },
-                })
-            );
-        } else {
-            window.dispatchEvent(
-                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.SHIFT_STEP_SCALE, {
-                    detail: { pressed: false },
-                })
-            );
-        }
-
-
-        if (keys["ShiftLeft"] || keys["ShiftRight"]) {
-            window.dispatchEvent(
-                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.MENU_SHIFT, {
-                    detail: { pressed: true },
-                })
-            );
-        } else {
-            window.dispatchEvent(
-                new CustomEvent<PressedInteractionDetail>(INTERACTION_EVENTS.MENU_SHIFT, {
-                    detail: { pressed: false },
-                })
-            );
-        }
-    }, [keys, isFocused]);
-
-    if (!showMenu) return null;
-
-    const activeTabContent =
-        activeTab !== null &&
-        Children.map(children, (child) => {
-            if (!isValidElement(child)) return null;
-            const type = getMenuChildType(child);
-            if (type?.menuName === activeTab) return child;
-            return null;
-        });
-
-    const menuContent = (
-        <>
-            {activeTab === null && (
-                <Container classList={["menuContainer"]}>
-                    <Text classList={["menuHeader"]}>Menu</Text>
-
-                    <Container flexDirection="column" gap={8}>
-                        <WebsocketBanner showTransient={true} />
-                        <Container classList={["menuBlock"]}>
-                            <RadioGroup onValueChange={setActiveTab}>
-                                {menuItems.map((item) => (
-                                    <RadioGroupItem key={item.name} value={item.name}>
-                                        <Label>
-                                            <Text>{item.label}</Text>
-                                        </Label>
-                                    </RadioGroupItem>
-                                ))}
-                            </RadioGroup>
-                        </Container>
+    const [activeTab, setActiveTab] = useState<string | null>(null);
+    const session = useXR((state) => state.session);
+    const items = Children.toArray(children)
+        .filter(isValidElement)
+        .map((child) => {
+            const { menuName, menuLabel } = child.type as { menuName?: string; menuLabel?: string };
+            return { child, menuName, menuLabel };
+        })
+        .filter((item) => item.menuName);
+    const content =
+        activeTab === null ? (
+            <Container classList={["menuContainer"]}>
+                <Text classList={["menuHeader"]}>Menu</Text>
+                <Container flexDirection="column" gap={8}>
+                    <WebsocketBanner showTransient={true} />
+                    <Container classList={["menuBlock"]}>
+                        <RadioGroup onValueChange={setActiveTab}>
+                            {items.map(({ menuName, menuLabel }) => (
+                                <RadioGroupItem key={menuName} value={menuName}>
+                                    <Label>
+                                        <Text>{menuLabel ?? menuName}</Text>
+                                    </Label>
+                                </RadioGroupItem>
+                            ))}
+                        </RadioGroup>
                     </Container>
                 </Container>
-            )}
-            {activeTabContent}
-        </>
-    );
+            </Container>
+        ) : (
+            items.filter((item) => item.menuName === activeTab).map((item) => item.child)
+        );
 
-    return (
-        <>
-            {activeTab !== "help" && (
-                isXR ? (
-                    <FloatingContainer
-                        renderOrder={5000}
-                        originRef={originRef}
-                        offset={offset}
-                        transformScaleX={scale}
-                        transformScaleY={scale}
-                        transformScaleZ={scale}
-                        depthTest={false}
-                        depthWrite={false}
-                    >
-                        {menuContent}
-                    </FloatingContainer>
-                ) : (
-                    <DesktopMenuOverlay>{menuContent}</DesktopMenuOverlay>
-                )
-            )}
-
-            {activeTab === "help" &&
-                Children.map(children, (child) => {
-                    if (!isValidElement(child)) return null;
-                    const type = getMenuChildType(child);
-                    if (type?.menuName === "help")
-                        return cloneElement(
-                            child as React.ReactElement<{
-                                originRef: React.RefObject<THREE.Group>;
-                            }>,
-                            { originRef }
-                        );
-                    return null;
-                })}
-        </>
+    return session ? (
+        <FloatingContainer
+            renderOrder={5000}
+            originRef={originRef}
+            offset={offset}
+            transformScaleX={scale}
+            transformScaleY={scale}
+            transformScaleZ={scale}
+            depthTest={false}
+            depthWrite={false}
+        >
+            {content}
+        </FloatingContainer>
+    ) : (
+        <DesktopMenuOverlay>{content}</DesktopMenuOverlay>
     );
 }

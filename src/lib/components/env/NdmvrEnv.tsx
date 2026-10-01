@@ -26,20 +26,17 @@ import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { store } from "./xrStore";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
 import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobileControls";
-import { INTERACTION_EVENTS } from "../../interactions/events";
-import type { MobileMoveDetail, MobileMoveDirection } from "../../interactions/events";
+import { INTERACTION_EVENTS, type MobileMoveDirection, type MobileMoveDetail } from "../../interactions/events";
 
 export { store };
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;
-    showUIExternal?: boolean;
     currentConfig?: NdmvrConfig;
     hierarchy?: any;
     rootNode?: any;
     hierarchyDocRef?: React.MutableRefObject<HTMLDivElement>;
     onConfigChange?: ((config: NdmvrConfig) => void) | null;
-    onUIStateChange?: (isVisible: boolean) => void;
     onSelectItem?: (path: string) => void;
     browser?: boolean;
     setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
@@ -66,6 +63,7 @@ export default function NdmvrEnv({
     const cameraRef = useRef(null);
 
     const [config, setConfig] = useState(null);
+    const [touch, setTouch] = useState(() => shouldUseMobileControls());
 
     useEffect(() => {
         const sub = configSubjectGet()
@@ -74,24 +72,29 @@ export default function NdmvrEnv({
         return () => sub.unsubscribe();
     }, []);
 
+    useEffect(() => {
+        const updateTouch = () => setTouch(shouldUseMobileControls());
+        updateTouch();
+        window.addEventListener("resize", updateTouch);
+        window.addEventListener("orientationchange", updateTouch);
+        return () => {
+            window.removeEventListener("resize", updateTouch);
+            window.removeEventListener("orientationchange", updateTouch);
+        };
+    }, []);
+
     const { x = 0, y = 1.7, z = 10 } = config?.environment?.camera?.position ?? {};
 
-    const touch = shouldUseMobileControls();
-
     const startMove = (dir: MobileMoveDirection) => {
-        window.dispatchEvent(
-            new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
-                detail: { dir, pressed: true },
-            })
-        );
+        window.dispatchEvent(new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
+            detail: { dir, pressed: true },
+        }));
     };
 
     const stopMove = (dir: MobileMoveDirection) => {
-        window.dispatchEvent(
-            new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
-                detail: { dir, pressed: false },
-            })
-        );
+        window.dispatchEvent(new CustomEvent<MobileMoveDetail>(INTERACTION_EVENTS.MOBILE_MOVE, {
+            detail: { dir, pressed: false },
+        }));
     };
 
     return (
@@ -103,6 +106,7 @@ export default function NdmvrEnv({
         >
             <Canvas
                 {...canvasInputProps}
+                style={{ touchAction: "none" }}
                 shadows
                 gl={{ localClippingEnabled: true }}
                 onCreated={({ gl }) => {
@@ -143,7 +147,6 @@ export default function NdmvrEnv({
                             <BinInfo />
                             <DrawOptions />
                             <SettingsPanel />
-                            {/* <HelperTips /> */}
                         </Menu>
 
                         {browserInputMenu && (

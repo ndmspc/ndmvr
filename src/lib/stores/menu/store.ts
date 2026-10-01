@@ -3,24 +3,16 @@ import { create } from "zustand";
 interface MenuStore {
     menuExists: boolean;
     showMenu: boolean;
-    activeTab: string | null;
     setMenuExists: (exists: boolean) => void;
     setShowMenu: (state: boolean) => void;
-    toggleTab: (tab: string) => void;
-    setActiveTab: (tab: string | null) => void;
+    toggleMenu: () => void;
 }
 
-export const useMenuStore = create<MenuStore>((set, get) => ({
+export const useMenuStore = create<MenuStore>((set) => ({
     menuExists: false,
     showMenu: false,
-    activeTab: null,
-    setMenuExists: (exists) => set({ menuExists: exists }),
-    setShowMenu: (state) => set({ showMenu: state, activeTab: null }),
-    toggleTab: (tab) => {
-        set((state) => ({
-            showMenu: !state.showMenu,
-            activeTab: !state.showMenu ? tab : null,
-        }));
-    },
-    setActiveTab: (tab) => set({ activeTab: tab }),
+    setMenuExists: (exists) =>
+        set(exists ? { menuExists: true } : { menuExists: false, showMenu: false }),
+    setShowMenu: (showMenu) => set({ showMenu }),
+    toggleMenu: () => set((state) => ({ showMenu: !state.showMenu })),
 }));

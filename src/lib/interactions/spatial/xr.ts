@@ -1,49 +1,68 @@
 import * as THREE from "three";
 import type { ThreeEvent } from "@react-three/fiber";
-import type { MoveAndRotationCtx } from "./types";
+import type { MoveAndRotationCtx, PointerCaptureTarget } from "./types";
+
+function capturePointer(ctx: MoveAndRotationCtx, event: ThreeEvent<PointerEvent>) {
+    const target = event.target as unknown as PointerCaptureTarget;
+    target?.setPointerCapture?.(event.pointerId);
+    ctx.capture.current = { target, pointerId: event.pointerId };
+}
+
+export function releaseSpatialPointer(capture: MoveAndRotationCtx["capture"]) {
+    const current = capture.current;
+    capture.current = null;
+    if (current && current.target?.hasPointerCapture?.(current.pointerId) !== false) {
+        current.target?.releasePointerCapture?.(current.pointerId);
+    }
+}
+
+export function finishSpatialInteraction(
+    ctx: Pick<MoveAndRotationCtx, "isDragging" | "isRotating" | "capture" | "saveOffset" | "saveRotation">
+) {
+    const dragged = ctx.isDragging.current;
+    const rotated = ctx.isRotating.current;
+    if (!dragged && !rotated && !ctx.capture.current) return;
+    ctx.isDragging.current = false;
+    ctx.isRotating.current = false;
+    releaseSpatialPointer(ctx.capture);
+    if (dragged) ctx.saveOffset();
+    if (rotated) ctx.saveRotation();
+}
 
 export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
     const g = ctx.groupRef.current;
     if (!g) return;
     if (!ctx.originRef?.current) return;
 
-    const rightGamepad = (ctx.rightController as any)?.gamepad as any | undefined;
-    const leftGamepad = (ctx.leftController as any)?.gamepad as any | undefined;
+    const input = ctx.getSpatialInput();
+    if (input.active) {
+        const rawX = input.x;
+        const rawY = input.y;
 
-    if (rightGamepad && leftGamepad) {
-        const squeezePressed = ctx.isRightSqueezePressed();
-        const leftThumbstick = leftGamepad["xr-standard-thumbstick"];
+        const xVal = Math.abs(rawX) > ctx.DEADZONE ? rawX : 0;
+        const yVal = Math.abs(rawY) > ctx.DEADZONE ? rawY : 0;
 
-        if (squeezePressed && leftThumbstick) {
-            const rawX = leftThumbstick.xAxis ?? 0;
-            const rawY = leftThumbstick.yAxis ?? 0;
-
-            const xVal = Math.abs(rawX) > ctx.DEADZONE ? rawX : 0;
-            const yVal = Math.abs(rawY) > ctx.DEADZONE ? rawY : 0;
-
-            if (xVal !== 0) {
-                ctx.rotation.current.y += -xVal * ctx.ROTATION_SPEED * delta;
-                g.rotation.set(ctx.rotation.current.x, ctx.rotation.current.y, 0);
-            }
-
-            if (yVal !== 0) {
-                ctx.radius.current += yVal * ctx.ZOOM_SPEED * delta;
-
-                const x = Math.sin(ctx.orbitAngle.current) * ctx.radius.current;
-                const z = Math.cos(ctx.orbitAngle.current) * ctx.radius.current;
-
-                ctx.currentPos.current.x = x;
-                ctx.currentPos.current.z = z;
-            }
+        if (xVal !== 0) {
+            ctx.rotation.current.y += -xVal * ctx.ROTATION_SPEED * delta;
+            g.rotation.set(ctx.rotation.current.x, ctx.rotation.current.y, 0);
         }
 
-        const squeezeNow = ctx.isRightSqueezePressed();
-        if (!squeezeNow && ctx.lastRightSqueeze.current) {
-            ctx.saveOffset();
-            ctx.saveRotation();
+        if (yVal !== 0) {
+            ctx.radius.current += yVal * ctx.ZOOM_SPEED * delta;
+
+            const x = Math.sin(ctx.orbitAngle.current) * ctx.radius.current;
+            const z = Math.cos(ctx.orbitAngle.current) * ctx.radius.current;
+
+            ctx.currentPos.current.x = x;
+            ctx.currentPos.current.z = z;
         }
-        ctx.lastRightSqueeze.current = squeezeNow;
     }
+
+    if (!input.active && ctx.lastRightSqueeze.current) {
+        ctx.saveOffset();
+        ctx.saveRotation();
+    }
+    ctx.lastRightSqueeze.current = input.active;
 
     const baseOrigin = ctx.followEnabled.current
         ? ctx.originRef.current.position
@@ -61,10 +80,10 @@ export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
 function onDragStart(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
     if (!ctx.groupRef.current || !e.ray) return;
-    if (!ctx.isRightSqueezePressed()) return;
+    if (!ctx.getSpatialInput().active) return;
 
     ctx.isDragging.current = true;
-    (e.target as any)?.setPointerCapture?.(e.pointerId);
+    capturePointer(ctx, e);
 
     ctx.groupRef.current.getWorldPosition(ctx.tmpWorld.current);
     const normal = e.ray.direction.clone().negate().normalize();
@@ -78,6 +97,10 @@ function onDragStart(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
 function onDragMove(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
     if (!ctx.isDragging.current) return;
+    if (!ctx.getSpatialInput().active) {
+        finishSpatialInteraction(ctx);
+        return;
+    }
     if (!e.ray?.intersectPlane(ctx.dragPlane.current, ctx.dragIntersection.current)) return;
 
     const newWorldPos = ctx.dragIntersection.current.sub(ctx.dragOffset.current);
@@ -92,20 +115,13 @@ function onDragMove(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     ctx.recomputeOrbitFrom(desired);
 }
 
-function onDragEnd(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
-    if (!ctx.session) return;
-    if (ctx.isDragging.current) (e.target as any)?.releasePointerCapture?.(e.pointerId);
-    ctx.isDragging.current = false;
-    ctx.saveOffset();
-}
-
 function onRotateStart(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
     if (!ctx.groupRef.current || !e.ray) return;
-    if (!ctx.isRightSqueezePressed()) return;
+    if (!ctx.getSpatialInput().active) return;
 
     ctx.isRotating.current = true;
-    (e.target as any)?.setPointerCapture?.(e.pointerId);
+    capturePointer(ctx, e);
 
     const dir = e.ray.direction.clone().normalize();
 
@@ -124,8 +140,8 @@ function onRotateMove(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
     if (!ctx.isRotating.current) return;
 
-    if (!ctx.isRightSqueezePressed()) {
-        onRotateEnd(ctx, e);
+    if (!ctx.getSpatialInput().active) {
+        finishSpatialInteraction(ctx);
         return;
     }
 
@@ -156,15 +172,9 @@ function onRotateMove(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     ctx.groupRef.current.rotation.set(ctx.rotation.current.x, ctx.rotation.current.y, 0);
 }
 
-function onRotateEnd(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
-    if (!ctx.session) return;
-    if (ctx.isRotating.current) (e.target as any)?.releasePointerCapture?.(e.pointerId);
-    ctx.isRotating.current = false;
-    ctx.saveRotation();
-}
-
 export function handleVRPointerDown(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
+    if (ctx.isDragging.current || ctx.isRotating.current) return;
 
     if (ctx.isShiftPressed.current) {
         onRotateStart(ctx, e);
@@ -180,8 +190,7 @@ export function handleVRPointerMove(ctx: MoveAndRotationCtx, e: ThreeEvent<Point
     if (ctx.isDragging.current) return onDragMove(ctx, e);
 }
 
-export function handleVRPointerUp(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
-    if (!ctx.session) return;
-    onDragEnd(ctx, e);
-    onRotateEnd(ctx, e);
+export function handleVRPointerUp(ctx: MoveAndRotationCtx, e?: ThreeEvent<PointerEvent>) {
+    if (e && ctx.capture.current && e.pointerId !== ctx.capture.current.pointerId) return;
+    finishSpatialInteraction(ctx);
 }

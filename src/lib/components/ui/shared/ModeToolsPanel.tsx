@@ -1,8 +1,7 @@
 import { Container } from "@react-three/uikit";
 import * as Icons from "@react-three/uikit-lucide";
 import { Fullscreen, Text } from "@react-three/uikit";
-import { useSceneModeStore } from "../../../stores/sceneMode/store.ts";
-import { useMenuStore } from "../../../stores/menu/store.ts";
+import { selectSceneMode, useSceneModeStore } from "../../../stores/sceneMode/store.ts";
 import { useThree } from "@react-three/fiber";
 import { useXR } from "@react-three/xr";
 import FloatingContainer from "./FloatingContainer.tsx";
@@ -17,25 +16,13 @@ export default function ModeToolsPanel({ originRef = null }: ModeToolsPanelProps
     const camera = useThree((s) => s.camera);
     const session = useXR((s) => s.session);
     const isXR = session !== null && session !== undefined;
-    const showMenu = useMenuStore((s) => s.showMenu);
     const activeMode = useSceneModeStore((s) => s.activeMode);
-    const setActiveMode = useSceneModeStore((s) => s.setActiveMode);
     const modesConfig = useSceneModeStore((s) => s.modesConfig);
     const getOnClickEvent = useSceneModeStore((s) => s.getOnClickEvent);
     const getOnHoverEvent = useSceneModeStore((s) => s.getOnHoverEvent);
     const modeToolsNotification = useSceneModeStore(
         (s) => s.modeToolsNotification
     );
-
-    const setMode = (mode: string) => {
-        setActiveMode(mode);
-
-        window.dispatchEvent(
-            new CustomEvent("ndmvr-mode-toggle", {
-                detail: { enabled: mode },
-            })
-        );
-    };
 
     const resolveIcon = (mode: string) => {
         let iconName = modesConfig[mode]?.icon;
@@ -109,7 +96,7 @@ export default function ModeToolsPanel({ originRef = null }: ModeToolsPanelProps
                                 : "rgba(255,255,255,0.28)"
                         }
                         onClick={() => {
-                            setMode(mode);
+                            selectSceneMode(mode);
                             getOnClickEvent(mode, modesConfig).forEach((h) => h());
                         }}
                         onPointerOver={() => {

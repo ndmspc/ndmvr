@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
-import { Container } from "../interactions/Container";
+import { Container } from "@react-three/uikit";
 //
 interface RootNode {
     _name: string;
@@ -266,4 +266,3 @@ export default function TreeViewer({
         </Container>
     );
 }
-

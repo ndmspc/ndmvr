@@ -1,4 +1,4 @@
-import { Container } from "@react-three/uikit";
+import Container from "../interactions/Container";
 import { useMoveAndRotation } from "../../../interactions/spatial/useMoveAndRotation";
 import * as THREE from "three";
 
@@ -36,7 +36,8 @@ export default function FloatingContainer({
             classList={classList}
             onPointerDown={handlePointerDown as any}
             onPointerMove={handlePointerMove as any}
-            onPointerUp={handlePointerUp as any}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
             {...containerProps}
         >
             {children}

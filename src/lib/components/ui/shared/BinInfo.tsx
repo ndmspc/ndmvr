@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
-import { Container } from "../interactions/Container";
+import { Container } from "@react-three/uikit";
 import { Color } from "three";
 import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 

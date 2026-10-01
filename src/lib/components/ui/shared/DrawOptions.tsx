@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import Checkbox from "./Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
-import { Text } from "@react-three/uikit";
-import { Container } from "../interactions/Container";
+import { Text, Input } from "@react-three/uikit";
+import { Container } from "@react-three/uikit";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import WebsocketBanner from "./WebsocketBanner.tsx";
-import { Input } from "../focus/Input.tsx";
 import {
     activateHistogramPad,
     setHistogramPadRenderer,

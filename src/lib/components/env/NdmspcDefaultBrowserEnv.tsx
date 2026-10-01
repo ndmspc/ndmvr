@@ -106,11 +106,9 @@ export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
     config?: NdmvrConfig | null;
     onConfigChange?: ((config: NdmspcConfig) => void) | null;
-    controlsHelp?: boolean;
     renderer?: "jsroot" | "ndmvr";
     vr?: boolean;
     menu?: boolean;
-    help?: boolean;
     file?: string | null;
     item?: string | null;
     opt?: string | null;

@@ -10,12 +10,16 @@ export const useKeyboardStore = create<KeyboardState>((set) => ({
     keys: {},
 
     setKey: (code, pressed) =>
-        set((state) => ({
-            keys: {
-                ...state.keys,
-                [code]: pressed,
-            },
-        })),
+        set((state) =>
+            state.keys[code] === pressed
+                ? state
+                : {
+                      keys: {
+                          ...state.keys,
+                          [code]: pressed,
+                      },
+                  }
+        ),
 
     clearKeys: () =>
         set({
