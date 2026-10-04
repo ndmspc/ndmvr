@@ -5,14 +5,8 @@ import { selectSceneMode, useSceneModeStore } from "../../../stores/sceneMode/st
 import { useThree } from "@react-three/fiber";
 import { useXR } from "@react-three/xr";
 import FloatingContainer from "./FloatingContainer.tsx";
-import * as THREE from "three";
 
-type ModeToolsPanelProps = {
-    originRef?: React.RefObject<THREE.Group> | null;
-};
-
-export default function ModeToolsPanel({ originRef = null }: ModeToolsPanelProps) {
-
+export default function ModeToolsPanel() {
     const camera = useThree((s) => s.camera);
     const session = useXR((s) => s.session);
     const isXR = session !== null && session !== undefined;
@@ -118,7 +112,6 @@ export default function ModeToolsPanel({ originRef = null }: ModeToolsPanelProps
     if (isXR) {
         return (
             <FloatingContainer
-                originRef={originRef}
                 offset={{ x: 0, y: -2, z: -4.15 }}
                 faceUser={true}
                 storageKey="modeToolsPanel"

@@ -26,43 +26,6 @@ declare module "@ndmspc/ndmvr-core" {
         handleRaycast(): void;
     }
 
-    export interface Position {
-        x: number;
-        y: number;
-        z: number;
-    }
-
-    export interface Rotation {
-        x: number;
-        y: number;
-        z: number;
-    }
-
-    export interface Scale {
-        x: number;
-        y: number;
-        z: number;
-    }
-
-    export class CanvasClass {
-        constructor(
-            element: HTMLElement | null,
-            position: Position,
-            rotation: Rotation,
-            scale: Scale,
-            id: string
-        );
-        plane: THREE.Mesh;
-        cinemaSub: Subscription;
-        position: Position;
-        rotation: Rotation;
-        scale: Scale;
-        id: string;
-        configSub: Subscription;
-        getPlane(): THREE.Mesh;
-        remove(): void;
-    }
-
     export interface HistogramData {
         id: string;
         obj: any;
@@ -75,8 +38,17 @@ declare module "@ndmspc/ndmvr-core" {
     export class THnPainter {
         constructor(histo: HistogramData, id: string, opts?: Record<string, unknown>);
         stateSub: Subscription;
+        functionSub: Subscription;
+        configSub: Subscription;
+        dispatchSub: Subscription;
+        keyDownHandler(event: KeyboardEvent): void;
+        keyUpHandler(event: KeyboardEvent): void;
         pointer: any;
-        wireframe: { wireframe: THREE.Object3D };
+        wireframe: {
+            wireframe: THREE.Object3D;
+            stateSub: Subscription;
+            dispose(): void;
+        };
         BVHTree: any;
         maxInstancesPerLayer: number;
         maxContentPerLayer: number;
@@ -96,8 +68,9 @@ declare module "@ndmspc/ndmvr-core" {
         instanceScales: Float32Array;
         instanceColors: Float32Array;
         colorArray: Float32Array;
-        updateHistogram(histo: HistogramData): void;
-        async renderHistogram(startIndex: number, endIndex: number, layer: number): Promise<THREE.Object3D>;
+        updateHistogram(histo: HistogramData): Promise<void>;
+        renderHistogram(startIndex: number, endIndex: number, layer: number): Promise<void>;
+        pushVisibleInstances(): void;
         remove(): void;
         checkIntersectionBVH(ray: THREE.Ray): any[];
         intersectionHandler(intersection: any, triggerSource: string): void;
@@ -109,6 +82,8 @@ declare module "@ndmspc/ndmvr-core" {
         binInfoComponent: any;
         id: string;
         configSub: Subscription;
+        sub: Subscription;
+        buildPromise: Promise<void>;
         rootObj: any;
         histoSub: Subscription;
         dummyEl: HTMLElement;
@@ -126,11 +101,6 @@ declare module "@ndmspc/ndmvr-core" {
         getValue(): any;
         getObservable(): Subject<any>;
         appendPads(ids: string[], disp_kind: string, settings: Record<string, unknown>): void;
-    }
-
-    export interface CanvasSubject {
-        next(data: any): void;
-        getObservable(): Subject<any>;
     }
 
     export interface FunctionSubject {
@@ -156,7 +126,6 @@ declare module "@ndmspc/ndmvr-core" {
     export function brokerManagerGet(): BrokerManager;
     export function histogramSubjectGet(): HistogramSubject;
     export function configSubjectGet(): ConfigSubject;
-    export function canvasSubjectGet(): CanvasSubject;
     export function functionSubjectGet(): FunctionSubject;
     export function binInfoSubjectGet(): BinInfoSubject;
     export function dispatchSubjectGet(): DispatchSubject;

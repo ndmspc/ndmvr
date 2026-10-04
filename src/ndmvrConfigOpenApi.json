@@ -97,8 +97,15 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
+                                        "pattern": "^grid[0-9]+x[0-9]+x[0-9]+$",
                                         "default": "grid2x1x2",
                                         "title": "Pad Layout Type"
+                                    },
+                                    "prefix": {
+                                        "type": "string",
+                                        "pattern": "^(?!0x)",
+                                        "default": "pad",
+                                        "title": "Pad ID Prefix"
                                     },
                                     "scale": {
                                         "type": "object",

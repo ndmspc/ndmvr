@@ -10,29 +10,38 @@ The component acts as the main integration layer between histogram streams, rend
 
 ## Usage
 
+`NdmvrContent` normally supplies one wrapper per configured histogram pad and owns
+the histogram workspace lifetime. Use the complete histogram bundle under
+`NdmvrBase`, or use `NdmvrEnv` for the standard application.
+
+`HistogramWrapper` remains a low-level public component. The following snippet
+assumes the required R3F/XR ancestors and a mounted `NdmvrContent` workspace owner;
+the wrapper does not independently start or retain the workspace. Do not add an
+extra wrapper for a pad that Content already renders.
+
 ```tsx
 <HistogramWrapper id="histogram-1" />
 ```
 
 ## Props
 
-| Name | Type | Required | Description |
-|---|---|---:|---|
-| `id` | `string` | Yes | Unique identifier of the histogram stream that should be rendered in the scene. |
+| Name | Type     | Required | Description                                                                     |
+| ---- | -------- | -------: | ------------------------------------------------------------------------------- |
+| `id` | `string` |      Yes | Unique identifier of the histogram stream that should be rendered in the scene. |
 
 ## Main responsibilities
 
 `HistogramWrapper` provides the following functionality:
 
-| Responsibility | Description |
-|---|---|
-| Histogram rendering | Creates and updates the 3D histogram object according to the received histogram data. |
-| Renderer selection | Uses either the standard NDMVR renderer or the JSROOT renderer depending on the configuration. |
-| Interaction handling | Handles click, double-click, hover, and shifted interaction variants. |
-| Bin inspection | Displays `BinBox` for the currently hovered or selected bin. |
-| Modify mode support | Displays `BoundingFrameBox` when the histogram is editable. |
-| Configuration updates | Emits updated histogram bounds after editing. |
-| Resource cleanup | Disposes obsolete Three.js objects when the rendered object changes or the component is unmounted. |
+| Responsibility        | Description                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| Histogram rendering   | Creates and updates the 3D histogram object according to the received histogram data.              |
+| Renderer selection    | Uses either the standard NDMVR renderer or the JSROOT renderer depending on the configuration.     |
+| Interaction handling  | Handles click, double-click, hover, and shifted interaction variants.                              |
+| Bin inspection        | Displays `BinBox` for the currently hovered or selected bin.                                       |
+| Modify mode support   | Displays `BoundingFrameBox` when the histogram is editable.                                        |
+| Configuration updates | Emits updated histogram bounds after editing.                                                      |
+| Resource cleanup      | Disposes obsolete Three.js objects when the rendered object changes or the component is unmounted. |
 
 ## Rendering behavior
 
@@ -46,13 +55,13 @@ If the histogram uses the JSROOT renderer, the component creates a JSROOT-based 
 
 The component supports several interaction types used by the histogram system.
 
-| Interaction | Event name |
-|---|---|
-| Mouse click | `mouseclick` |
-| Mouse double-click | `mousedbclick` |
-| Shift + mouse click | `shiftmouseclick` |
+| Interaction                | Event name          |
+| -------------------------- | ------------------- |
+| Mouse click                | `mouseclick`        |
+| Mouse double-click         | `mousedbclick`      |
+| Shift + mouse click        | `shiftmouseclick`   |
 | Shift + mouse double-click | `shiftmousedbclick` |
-| Pointer move / hover | `mousemove` |
+| Pointer move / hover       | `mousemove`         |
 
 The same interaction model is reused in desktop and VR environments. In VR mode, the controller squeeze action can be interpreted as a shifted interaction, which allows the application to keep the same logic for mouse and controller input.
 
@@ -62,12 +71,12 @@ When bin information display is enabled, `HistogramWrapper` renders the `BinBox`
 
 The wrapper prepares the data required by `BinBox`, including:
 
-| Data | Description |
-|---|---|
-| Position | Center position of the selected bin. |
-| Scale | Size of the selected bin in the 3D scene. |
-| Axis ranges | Minimum and maximum values for displayed axes. |
-| Content label | Textual information about the bin value. |
+| Data          | Description                                    |
+| ------------- | ---------------------------------------------- |
+| Position      | Center position of the selected bin.           |
+| Scale         | Size of the selected bin in the 3D scene.      |
+| Axis ranges   | Minimum and maximum values for displayed axes. |
+| Content label | Textual information about the bin value.       |
 
 Example:
 
@@ -93,30 +102,32 @@ The bounding frame allows the user to resize the histogram directly in the 3D sc
 Example:
 
 ```tsx
-{painterLimits && modifyModeEnabled && !isJsrootRenderer && (
-    <BoundingFrameBox
-        position={getBoundingFramePosition(painterLimits)}
-        scale={getBoundingFrameScale(painterLimits)}
-        shiftScaleStep={currentShiftStep}
-        onChange={onBoundingBoxChange}
-        onDragEnd={onBoundingBoxDragEnd}
-    />
-)}
+{
+    painterLimits && modifyModeEnabled && !isJsrootRenderer && (
+        <BoundingFrameBox
+            position={getBoundingFramePosition(painterLimits)}
+            scale={getBoundingFrameScale(painterLimits)}
+            shiftScaleStep={currentShiftStep}
+            onChange={onBoundingBoxChange}
+            onDragEnd={onBoundingBoxDragEnd}
+        />
+    );
+}
 ```
 
 ## Internal helpers
 
 `HistogramWrapper` uses helper logic to keep rendering, interaction, and configuration updates separated from the main component structure.
 
-| Helper / helper logic | Description |
-|---|---|
-| `getBoundingFramePosition()` | Calculates the center position of the editable bounding frame from histogram limits. |
-| `getBoundingFrameScale()` | Calculates the size of the editable bounding frame according to histogram dimensions. |
-| Hovered bin data conversion | Converts hovered bin data into position, scale, axis ranges, and text content for `BinBox`. |
-| Bounds conversion | Converts the edited bounding frame position and scale back into histogram pad bounds. |
-| Histogram stream access | Receives histogram data from the communication layer using the histogram identifier. |
-| Configuration stream access | Sends updated histogram configuration after editing. |
-| Object cleanup | Removes obsolete Three.js objects and disposes their resources when necessary. |
+| Helper / helper logic        | Description                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `getBoundingFramePosition()` | Calculates the center position of the editable bounding frame from histogram limits.        |
+| `getBoundingFrameScale()`    | Calculates the size of the editable bounding frame according to histogram dimensions.       |
+| Hovered bin data conversion  | Converts hovered bin data into position, scale, axis ranges, and text content for `BinBox`. |
+| Bounds conversion            | Converts the edited bounding frame position and scale back into histogram pad bounds.       |
+| Histogram stream access      | Receives histogram data from the communication layer using the histogram identifier.        |
+| Configuration stream access  | Sends updated histogram configuration after editing.                                        |
+| Object cleanup               | Removes obsolete Three.js objects and disposes their resources when necessary.              |
 
 These helpers are used internally by the component and are not intended to be used directly by external components.
 
@@ -124,16 +135,25 @@ These helpers are used internally by the component and are not intended to be us
 
 `HistogramWrapper` manages the lifecycle of the rendered histogram object.
 
-When the component receives new data, it updates or recreates the rendered object. When the renderer type changes or the component is unmounted, old Three.js objects are removed from the scene and disposed.
+When the component receives new data, it updates or recreates the rendered object.
+When the renderer type changes or the component is unmounted, it retires the
+associated painter and cleans up live Three.js objects. Async operations capture
+their painter instance; retired, superseded or unmounted instances cannot publish
+stale meshes or component state. Existing mesh synchronization and interception
+use the same ownership guards.
 
-This prevents obsolete geometry, materials, or renderer instances from remaining in memory.
+Cleanup calls the painter's removal path, then uses targeted fallbacks for the
+known subscriptions, event handlers, DOM elements and Three.js resources. These
+local safeguards do not cancel Core's internal async work or recover resources
+allocated by a Core constructor that throws before returning an instance. Those
+upstream lifecycle gaps remain deferred.
 
 ## Related components
 
-| Component | Relationship |
-|---|---|
-| `BinBox` | Used to display information about the currently hovered histogram bin. |
-| `BoundingFrameBox` | Used to resize the histogram in modify mode. |
+| Component          | Relationship                                                           |
+| ------------------ | ---------------------------------------------------------------------- |
+| `BinBox`           | Used to display information about the currently hovered histogram bin. |
+| `BoundingFrameBox` | Used to resize the histogram in modify mode.                           |
 
 ## Notes
 

@@ -111,7 +111,9 @@ export const useHistogramWorkspace = create<HistogramWorkspaceState>((set) => ({
             return {
                 statesByPad: {
                     ...state.statesByPad,
-                    [padId]: padState,
+                    // Core can mutate and re-emit the same object. Refresh the
+                    // selector envelope without cloning its nested values.
+                    [padId]: padState ? { ...padState } : padState,
                 },
             };
         }),

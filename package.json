@@ -31,6 +31,7 @@
         "./style.css": "./dist/ndmvr.css"
     },
     "scripts": {
+        "test": "node --test --test-concurrency=1 tests/*.test.mjs",
         "dev": "vite",
         "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
         "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",

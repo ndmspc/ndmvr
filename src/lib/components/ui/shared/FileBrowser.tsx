@@ -7,7 +7,7 @@ import RendererModeSwitch from "./RendererModeSwitch.tsx";
 interface FileBrowserProps {
     hierarchy: any;
     root: any;
-    doc: React.MutableRefObject<HTMLDivElement>;
+    doc: React.RefObject<HTMLDivElement | null> | null;
     onSelect?: (path: string) => void;
     rendererMode?: "jsroot" | "ndmvr";
     setRendererMode?: React.Dispatch<React.SetStateAction<"jsroot" | "ndmvr">>;
@@ -43,7 +43,7 @@ setRendererMode,
             />
 
             <Container gap={8} display="flex" flexDirection="column">
-                {root && (
+                {root && doc?.current && (
                     <TreeViewer
                         hierarchy={hierarchy}
                         root={root}

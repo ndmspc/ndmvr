@@ -16,7 +16,7 @@ export function updateDesktopFrame(ctx: MoveAndRotationCtx, _delta: number) {
         g.quaternion.copy(cam.quaternion);
     } else {
         const baseOrigin = ctx.followEnabled.current
-            ? (ctx.originRef?.current?.position ?? ctx.tmpWorld.current.set(0, 0, 0))
+            ? ctx.tmpWorld.current.set(0, 0, 0)
             : ctx.originAnchor.current;
 
         g.position.set(

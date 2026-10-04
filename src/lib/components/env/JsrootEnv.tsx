@@ -1,7 +1,7 @@
 import { redraw } from "jsroot";
 import { useEffect } from "react";
 import { map, merge } from "rxjs";
-import { canvasSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
+import { histogramSubjectGet } from "@ndmspc/ndmvr-core";
 import { Tabs } from "../ui/desktop/Tabs.tsx";
 import { Tab } from "../ui/desktop/Tab.tsx";
 
@@ -22,24 +22,6 @@ function jsrootRedraw(obj, elementId, onUser = defaultUserHandler) {
 }
 
 export default function JsrootEnv() {
-    const histoCinemaID = "nh-canva";
-    useEffect(() => {
-        const cinemaSub = canvasSubjectGet()
-            .getObservable()
-            .pipe()
-            // .pipe(filter)
-            .subscribe((obj) => {
-                console.log(obj);
-                jsrootRedraw(obj?.obj, histoCinemaID);
-            });
-        return () => {
-            cinemaSub.unsubscribe();
-        };
-    }, []);
-
-    // const pads = config?.environment?.histogramPads ?? [];
-    // const n = pads.length;
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const pads = [
         {
@@ -69,18 +51,6 @@ export default function JsrootEnv() {
 
     return (
         <Tabs>
-            <Tab name="Cinema">
-                <div
-                    id={histoCinemaID}
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        overflow: "hidden",
-                        aspectRatio: "1 / 1",
-                        border: "1px solid black",
-                    }}
-                />
-            </Tab>
             {/*<Tab name={n === 1 ? pads[0]?.id : "All histograms"}>*/}
             <Tab name={n === 1 ? "Canvas" : "All histograms"}>
                 <div

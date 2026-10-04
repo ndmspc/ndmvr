@@ -1,10 +1,8 @@
 import Container from "../interactions/Container";
 import { useMoveAndRotation } from "../../../interactions/spatial/useMoveAndRotation";
-import * as THREE from "three";
 
 interface FloatingContainerProps {
     children?: React.ReactNode;
-    originRef: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
     classList?: string[];
     smoothFollow?: boolean;
@@ -16,7 +14,6 @@ interface FloatingContainerProps {
 
 export default function FloatingContainer({
     children,
-    originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
     classList = [],
     faceUser = true,
@@ -24,7 +21,6 @@ export default function FloatingContainer({
     ...containerProps
 }: FloatingContainerProps) {
     const { groupRef, handlePointerDown, handlePointerMove, handlePointerUp } = useMoveAndRotation({
-        originRef,
         offset,
         faceUser,
         storageKey,
