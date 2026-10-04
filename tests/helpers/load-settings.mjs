@@ -4,7 +4,11 @@ import { fileURLToPath } from "node:url";
 
 // Bundle only local TypeScript; tests keep the installed Core and Ajv contracts.
 const result = await build({
-    entryPoints: [fileURLToPath(new URL("../../src/lib/utils/schema-helpers.ts", import.meta.url))],
+    entryPoints: [
+        fileURLToPath(
+            new URL("../../src/lib/components/ui/shared/menu/panels/settings/settings-helpers.ts", import.meta.url)
+        ),
+    ],
     bundle: true,
     packages: "external",
     platform: "node",

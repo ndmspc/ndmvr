@@ -1,4 +1,4 @@
-import "../../scripts/uikit-styles";
+import "../../styles/uikit-styles";
 import * as THREE from "three";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
@@ -19,7 +19,7 @@ import {
     type MobileMoveDirection,
     type MobileMoveDetail,
 } from "../../interactions/events";
-import { store } from "./xrStore";
+import { store } from "../../stores/xr/store";
 
 export interface NdmvrBaseProps {
     children?: React.ReactNode;

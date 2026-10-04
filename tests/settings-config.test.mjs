@@ -12,7 +12,7 @@ import {
 } from "./helpers/load-settings.mjs";
 
 const schema = JSON.parse(
-    await readFile(new URL("../src/ndmvrConfigOpenApi.json", import.meta.url), "utf8")
+    await readFile(new URL("../src/lib/config/ndmvrConfigOpenApi.json", import.meta.url), "utf8")
 );
 const allFields = flattenSchema(schema.components.schemas.Config.properties.environment);
 const scalarFields = Object.fromEntries(

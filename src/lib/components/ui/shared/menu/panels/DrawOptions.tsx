@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import Checkbox from "./Checkbox.tsx";
-import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
+import Checkbox from "../../common/Checkbox.tsx";
+import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
 import { Text, Input } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import WebsocketBanner from "./WebsocketBanner.tsx";
+import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 import {
     activateHistogramPad,
     setHistogramPadRenderer,
     updateHistogramPadState,
     useHistogramWorkspace,
-} from "../../../stores/histogramWorkspace";
+} from "../../../../../stores/histogramWorkspace";
 
 type MinMaxFieldValues = {
     valueMin: string;

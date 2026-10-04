@@ -4,8 +4,8 @@ import { Container } from "@react-three/uikit";
 import { Color } from "three";
 import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 
-import NotoRegular from "../../../assets/fonts/NotoSans-Regular.json";
-import NotoBold from "../../../assets/fonts/NotoSans-Bold.json";
+import NotoRegular from "../../../../../assets/fonts/NotoSans-Regular.json";
+import NotoBold from "../../../../../assets/fonts/NotoSans-Bold.json";
 
 function formatSmartNumber(
     val: number | undefined | null,

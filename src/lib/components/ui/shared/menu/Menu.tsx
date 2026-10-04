@@ -2,11 +2,11 @@ import { useEffect, useState, useRef, Children, isValidElement } from "react";
 import { Container, Text } from "@react-three/uikit";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import { useXR } from "@react-three/xr";
-import { useInputBinding } from "../../../interactions/input/useInputBinding";
-import { useMenuStore } from "../../../stores/menu/store";
+import { useInputBinding } from "../../../../interactions/input/useInputBinding";
+import { useMenuStore } from "../../../../stores/menu/store";
 import DesktopMenuOverlay from "./DesktopMenuOverlay";
-import FloatingContainer from "./FloatingContainer";
-import WebsocketBanner from "./WebsocketBanner";
+import FloatingContainer from "../common/FloatingContainer";
+import WebsocketBanner from "../connections/WebsocketBanner";
 
 const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
 

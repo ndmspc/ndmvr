@@ -3,8 +3,8 @@ import { Container } from "@react-three/uikit";
 import { Button } from "@react-three/uikit-default";
 import { Cross } from "@react-three/uikit-lucide";
 
-import { useBrokerStore } from "../../../stores/broker/store.ts";
-import { STAT } from "../../../stores/broker/constants.ts";
+import { useBrokerStore } from "../../../../stores/broker/store.ts";
+import { STAT } from "../../../../stores/broker/constants.ts";
 
 const trimUrl = (s: string, head = 40, tail = 40) => {
     if (!s) return "";

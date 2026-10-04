@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@react-three/uikit-default";
 import { Text, Input, Container } from "@react-three/uikit";
-import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
+import openapiSchema from "../../../../../../config/ndmvrConfigOpenApi.json";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import {
@@ -11,7 +11,7 @@ import {
     flattenSchema,
     getSettingsDefaults,
     readSettings,
-} from "../../../utils/schema-helpers";
+} from "./settings-helpers";
 
 const envSchema = openapiSchema.components.schemas.Config.properties.environment;
 const flatSchema = flattenSchema(envSchema);

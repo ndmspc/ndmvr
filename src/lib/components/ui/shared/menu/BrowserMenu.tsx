@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import type { BrowserConfig } from "./BrowserContent.tsx";
-import { store } from "../../env/xrStore";
+import type { BrowserConfig } from "../browser/BrowserContent.tsx";
+import { store } from "../../../../stores/xr/store";
 
 interface BrowserMenuProps {
     browserConfig?: BrowserConfig;

@@ -263,14 +263,14 @@ const modules = new Map([
     ],
     ["@react-three/uikit-lucide", "export const MousePointer2=()=>null;"],
     ["styled-components", "export default h.styled;"],
-    ["../../scripts/uikit-styles", ""],
+    ["../../styles/uikit-styles", ""],
     ["./HistogramWrapper.tsx", "export default h.HistogramWrapper;"],
     [
         "./FileBrowser.tsx",
-        `import RealFileBrowser from "${rootDirectory.replaceAll("\\", "/")}src/lib/components/ui/shared/FileBrowser.tsx";
+        `import RealFileBrowser from "${rootDirectory.replaceAll("\\", "/")}src/lib/components/ui/shared/browser/FileBrowser.tsx";
         h.RealFileBrowser=RealFileBrowser; export default h.FileBrowser;`,
     ],
-    ["./WebsocketBanner", "export default ()=>null;"],
+    ["../connections/WebsocketBanner", "export default ()=>null;"],
     [
         "jsroot",
         `
@@ -288,7 +288,7 @@ const modules = new Map([
     `,
     ],
     [
-        "../ui/shared/BrowserRootFileMenu.tsx",
+        "../ui/shared/browser/BrowserRootFileMenu.tsx",
         "export default ()=>h.jsx('div',{'data-root-file-input':'true'});",
     ],
     [
@@ -314,8 +314,9 @@ for (const [file, name, label] of [
     ["DrawOptions", "draw-options", "Draw Options"],
     ["SettingsPanel", "settings", "Settings"],
 ]) {
+    const directory = file === "SettingsPanel" ? "menu/panels/settings" : "menu/panels";
     modules.set(
-        `../ui/shared/${file}.tsx`,
+        `../ui/shared/${directory}/${file}.tsx`,
         `
         function Panel(){return h.jsx('div',{'data-panel':'${name}'});}
         Panel.menuName='${name}'; Panel.menuLabel='${label}'; export default Panel;
@@ -323,7 +324,7 @@ for (const [file, name, label] of [
     );
 }
 modules.set(
-    "../ui/shared/ConnectionMenu.tsx",
+    "../ui/shared/menu/panels/ConnectionMenu.tsx",
     `
     export const HttpConnectionMenu=()=>null;
     HttpConnectionMenu.menuName='http'; HttpConnectionMenu.menuLabel='HTTP Connection';
@@ -341,7 +342,7 @@ const result = await build({
             export { default as NdmspcEnv } from './src/lib/components/env/NdmspcEnv';
             export { default as NdmspcDefaultBrowserEnv } from './src/lib/components/env/NdmspcDefaultBrowserEnv';
             export { default as JsrootEnv } from './src/lib/components/env/JsrootEnv';
-            export { default as Menu } from './src/lib/components/ui/shared/Menu';
+            export { default as Menu } from './src/lib/components/ui/shared/menu/Menu';
             export { useHistogramWorkspace } from './src/lib/stores/histogramWorkspace';
             export { useMenuStore } from './src/lib/stores/menu/store';
             export { useKeyboardStore } from './src/lib/stores/keyboard/store';

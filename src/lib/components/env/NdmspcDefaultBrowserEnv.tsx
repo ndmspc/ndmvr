@@ -6,14 +6,14 @@ import { HierarchyPainter, setDefaultDrawOpt } from "jsroot";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { configSubjectGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
 
-import { getPads } from "../../utils/helper-functions.ts";
+import { getPads } from "../../utils/get-pads.ts";
 import "./NdmspcDefaultBrowserEnv.css";
 import { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
-import BrowserRootFileMenu from "../ui/shared/BrowserRootFileMenu.tsx";
-import type { JSRootHierarchy, RootNode } from "../ui/shared/TreeViewer.tsx";
+import BrowserRootFileMenu from "../ui/shared/browser/BrowserRootFileMenu.tsx";
+import type { JSRootHierarchy, RootNode } from "../ui/shared/browser/TreeViewer.tsx";
 
 type HistogramPadConfig = { id?: string };
 

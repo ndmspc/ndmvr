@@ -139,10 +139,11 @@ const modules = new Map([
     `,
     ],
     [
-        "../../../interactions/input/useInputBinding",
+        "../../../../interactions/input/useInputBinding",
         "export const useInputBinding = h.useInputBinding;",
     ],
-    ["../interactions/Container", "export default h.MotionContainer;"],
+    ["./InteractionContainer", "export default h.MotionContainer;"],
+    ["../common/InteractionContainer", "export default h.MotionContainer;"],
     [
         "@react-three/uikit",
         `
@@ -161,13 +162,13 @@ const modules = new Map([
     ],
     ["@react-three/uikit-lucide", "export const MousePointer2 = () => null;"],
     [
-        "../../../stores/sceneMode/store.ts",
+        "../../../../stores/sceneMode/store.ts",
         `
         export const useSceneModeStore = selector => selector(h.current.mode);
         export const selectSceneMode = mode => h.current.mode.activeMode = mode;
     `,
     ],
-    ["./WebsocketBanner", "export default () => null;"],
+    ["../connections/WebsocketBanner", "export default () => null;"],
     [
         "spatial-test-jsx/jsx-runtime",
         `
@@ -193,10 +194,10 @@ const result = await build({
             import { useFrame } from "@react-three/fiber";
             import { useXR } from "@react-three/xr";
             import { useMoveAndRotation } from "./src/lib/interactions/spatial/useMoveAndRotation";
-            import MotionContainer from "../interactions/Container";
-            export { default as Menu } from "./src/lib/components/ui/shared/Menu";
-            export { default as ModeToolsPanel } from "./src/lib/components/ui/shared/ModeToolsPanel";
-            export { default as FloatingContainer } from "./src/lib/components/ui/shared/FloatingContainer";
+            import MotionContainer from "./InteractionContainer";
+            export { default as Menu } from "./src/lib/components/ui/shared/menu/Menu";
+            export { default as ModeToolsPanel } from "./src/lib/components/ui/shared/panels/ModeToolsPanel";
+            export { default as FloatingContainer } from "./src/lib/components/ui/shared/common/FloatingContainer";
             export { XROrigin } from "./node_modules/@react-three/xr/dist/origin.js";
             export function SpatialProbe(props) {
                 const result = useMoveAndRotation(props);

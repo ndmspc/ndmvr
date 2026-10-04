@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { Container, Fullscreen } from "@react-three/uikit";
 
-import InteractionContainer from "../interactions/Container";
-import { useUIInteractionOwner } from "../../../stores/interaction/uiInteraction";
+import InteractionContainer from "../common/InteractionContainer";
+import { useUIInteractionOwner } from "../../../../stores/interaction/uiInteraction";
 
 const DEFAULT_LEFT = 16;
 const DEFAULT_TOP = 16;

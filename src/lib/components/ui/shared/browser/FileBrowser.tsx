@@ -1,5 +1,5 @@
 import { Container } from "@react-three/uikit";
-import InteractionContainer from "../interactions/Container.tsx";
+import InteractionContainer from "../common/InteractionContainer.tsx";
 import { useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
 import RendererModeSwitch from "./RendererModeSwitch.tsx";

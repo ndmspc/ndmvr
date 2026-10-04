@@ -1,7 +1,7 @@
-import type { NdmspcConfig } from "../../../interfaces/NdmspcConfig.ts";
+import type { NdmspcConfig } from "../../../../interfaces/NdmspcConfig.ts";
 import type { JSRootHierarchy, RootNode } from "./TreeViewer.tsx";
 import FileBrowser from "./FileBrowser.tsx";
-import FloatingContainer from "./FloatingContainer.tsx";
+import FloatingContainer from "../common/FloatingContainer.tsx";
 
 export interface BrowserConfig {
     browser?: boolean;

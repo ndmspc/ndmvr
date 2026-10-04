@@ -16,7 +16,7 @@
     "sideEffects": [
         "**/*.css",
         "**/uikit-styles.ts",
-        "./src/lib/scripts/uikit-styles.ts"
+        "./src/lib/styles/uikit-styles.ts"
     ],
     "type": "module",
     "types": "./dist/ndmvr.d.ts",

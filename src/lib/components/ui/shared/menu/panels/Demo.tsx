@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import Checkbox from "./Checkbox.tsx";
-import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
+import Checkbox from "../../common/Checkbox.tsx";
+import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
-import h3scat from "../../../data/h3scat.json";
-import histo125 from "../../../data/nested/test_125.json";
-import histo12_5 from "../../../data/nested/test_12_5.json";
-import histo1_25 from "../../../data/nested/test_1_25.json";
-import histo1_2_5 from "../../../data/nested/test_1_2_5.json";
-import histo5_2_1 from "../../../data/nested/test_5_2_1.json";
-import cernstaff_145_369 from "../../../data/nested/cernstaff_145_369.json";
+import h3scat from "../../../../../data/h3scat.json";
+import histo125 from "../../../../../data/nested/test_125.json";
+import histo12_5 from "../../../../../data/nested/test_12_5.json";
+import histo1_25 from "../../../../../data/nested/test_1_25.json";
+import histo1_2_5 from "../../../../../data/nested/test_1_2_5.json";
+import histo5_2_1 from "../../../../../data/nested/test_5_2_1.json";
+import cernstaff_145_369 from "../../../../../data/nested/cernstaff_145_369.json";
 
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import WebsocketBanner from "./WebsocketBanner.tsx";
+import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 
 export default function Demo() {
     const [selectedHistogram, setSelectedHistogram] = useState(null);
