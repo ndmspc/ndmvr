@@ -1,8 +1,8 @@
 import { Container as UIKitContainer } from "@react-three/uikit";
-import { useUIInteractionOwner } from "../../../stores/interaction/uiInteraction";
+import { useUIInteractionOwner } from "../../../../stores/interaction/uiInteraction";
 import { useCallback, useEffect, useRef } from "react";
 
-export const Container = (props) => {
+export const InteractionContainer = (props) => {
     const pointers = useRef(new Set<number>());
     const setInteracting = useUIInteractionOwner();
     const release = useCallback((event: { pointerId: number }) => {
@@ -55,4 +55,4 @@ export const Container = (props) => {
     );
 };
 
-export default Container;
+export default InteractionContainer;

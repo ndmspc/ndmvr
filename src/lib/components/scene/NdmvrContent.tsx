@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import HistogramWrapper from "./HistogramWrapper.tsx";
-import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
+import ModeToolsPanel from "../ui/shared/panels/ModeToolsPanel.tsx";
 import { useInputBinding } from "../../interactions/input/useInputBinding";
 import { selectSceneMode, useSceneModeStore } from "../../stores/sceneMode/store";
 import {

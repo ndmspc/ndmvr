@@ -1,5 +1,5 @@
-import Container from "../interactions/Container";
-import { useMoveAndRotation } from "../../../interactions/spatial/useMoveAndRotation";
+import InteractionContainer from "./InteractionContainer";
+import { useMoveAndRotation } from "../../../../interactions/spatial/useMoveAndRotation";
 
 interface FloatingContainerProps {
     children?: React.ReactNode;
@@ -27,7 +27,7 @@ export default function FloatingContainer({
     });
 
     return (
-        <Container
+        <InteractionContainer
             ref={groupRef as any}
             classList={classList}
             onPointerDown={handlePointerDown as any}
@@ -37,6 +37,6 @@ export default function FloatingContainer({
             {...containerProps}
         >
             {children}
-        </Container>
+        </InteractionContainer>
     );
 }

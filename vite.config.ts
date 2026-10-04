@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     build: {
         chunkSizeWarningLimit: 1000,
         lib: {
-            entry: resolve(__dirname, "src/lib/index.tsx"),
+            entry: resolve(__dirname, "src/lib/index.ts"),
             name: "NDMVR R3F React Library Vite",
             // Build only ESM to avoid generating a UMD bundle that requires
             // providing global names for many subpath externals (react/jsx-runtime, etc.)

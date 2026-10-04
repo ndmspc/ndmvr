@@ -1,5 +1,3 @@
-import { Vector3 } from "three";
-
 export function getPads(str: string): string[] {
     if (str === "simple") {
         return ["pad1"];
@@ -14,9 +12,3 @@ export function getPads(str: string): string[] {
 
     return Array.from({ length: total }, (_, i) => `pad${i + 1}`);
 }
-
-export const vector3ToArray = (v?: Vector3): [number, number, number] => [
-    v?.x ?? 0,
-    v?.y ?? 0,
-    v?.z ?? 0,
-];

@@ -13,7 +13,7 @@ import {
     THnPainter,
     binInfoSubjectGet,
 } from "@ndmspc/ndmvr-core";
-import { vector3ToArray } from "../../utils/helper-functions.ts";
+import { vector3ToArray } from "../../utils/vector3-to-array.ts";
 import { histogramEvents, useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
 import BinBox from "./BinBox";

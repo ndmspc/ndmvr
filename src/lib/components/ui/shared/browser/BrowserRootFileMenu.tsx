@@ -1,7 +1,7 @@
 import { Text } from "@react-three/uikit";
 
 import { Container } from "@react-three/uikit";
-import InputCard from "./InputCard.tsx";
+import InputCard from "../connections/InputCard.tsx";
 
 export interface BrowserRootFileMenuProps {
     value: string;

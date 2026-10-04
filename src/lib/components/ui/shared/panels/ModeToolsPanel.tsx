@@ -1,10 +1,10 @@
 import { Container } from "@react-three/uikit";
 import * as Icons from "@react-three/uikit-lucide";
 import { Fullscreen, Text } from "@react-three/uikit";
-import { selectSceneMode, useSceneModeStore } from "../../../stores/sceneMode/store.ts";
+import { selectSceneMode, useSceneModeStore } from "../../../../stores/sceneMode/store.ts";
 import { useThree } from "@react-three/fiber";
 import { useXR } from "@react-three/xr";
-import FloatingContainer from "./FloatingContainer.tsx";
+import FloatingContainer from "../common/FloatingContainer.tsx";
 
 export default function ModeToolsPanel() {
     const camera = useThree((s) => s.camera);

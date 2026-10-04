@@ -1,7 +1,7 @@
 // import { useRef, useState } from "react";
 // import { parse as jsrootParse } from "jsroot";
-import NdmspcEnv from "../env/NdmspcEnv";
-import NdmspcDefaultBrowserEnv from "../env/NdmspcDefaultBrowserEnv";
+import NdmspcEnv from "./NdmspcEnv";
+import NdmspcDefaultBrowserEnv from "./NdmspcDefaultBrowserEnv";
 import useNdmspcConfig from "../../hooks/useNdmspcConfig";
 import useNdmspcWebsocket from "../../hooks/useNdmspcWebsocket";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig";

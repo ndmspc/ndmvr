@@ -263,7 +263,7 @@ const modules = new Map([
     ["@react-three/drei", "export const Text = h.Text;"],
     ["../../interactions/input/useInputBinding", "export const isInputBlocked = () => false;"],
     [
-        "../../utils/helper-functions.ts",
+        "../../utils/vector3-to-array.ts",
         "export const vector3ToArray = v => [v?.x ?? 0, v?.y ?? 0, v?.z ?? 0];",
     ],
     [

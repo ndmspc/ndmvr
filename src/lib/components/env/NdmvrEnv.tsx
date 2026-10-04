@@ -1,15 +1,15 @@
 import NdmvrBase from "./NdmvrBase.tsx";
 import NdmvrContent from "../scene/NdmvrContent.tsx";
 import SceneDecorations from "../scene/SceneDecorations.tsx";
-import Menu from "../ui/shared/Menu.tsx";
-import Demo from "../ui/shared/Demo.tsx";
-import { HttpConnectionMenu, WsConnectionMenu } from "../ui/shared/ConnectionMenu.tsx";
-import BrowserMenu from "../ui/shared/BrowserMenu.tsx";
-import BinInfo from "../ui/shared/BinInfo.tsx";
-import DrawOptions from "../ui/shared/DrawOptions.tsx";
-import SettingsPanel from "../ui/shared/SettingsPanel.tsx";
-import BrowserContent from "../ui/shared/BrowserContent.tsx";
-import type { BrowserConfig } from "../ui/shared/BrowserContent.tsx";
+import Menu from "../ui/shared/menu/Menu.tsx";
+import Demo from "../ui/shared/menu/panels/Demo.tsx";
+import { HttpConnectionMenu, WsConnectionMenu } from "../ui/shared/menu/panels/ConnectionMenu.tsx";
+import BrowserMenu from "../ui/shared/menu/BrowserMenu.tsx";
+import BinInfo from "../ui/shared/menu/panels/BinInfo.tsx";
+import DrawOptions from "../ui/shared/menu/panels/DrawOptions.tsx";
+import SettingsPanel from "../ui/shared/menu/panels/settings/SettingsPanel.tsx";
+import BrowserContent from "../ui/shared/browser/BrowserContent.tsx";
+import type { BrowserConfig } from "../ui/shared/browser/BrowserContent.tsx";
 
 export interface NdmvrEnvProps {
     children?: React.ReactNode;

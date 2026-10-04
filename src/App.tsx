@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 // import NdmspcDefaultBrowserEnv from "./lib/components/env/NdmspcDefaultBrowserEnv.tsx";
 import { brokerManagerGet, histogramSubjectGet, configSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { parse as jsrootParse } from "jsroot";
-import { NdmspcConfig, IframeCernboxService, NdmspcNavigator, useSceneModeStore, defaultSceneModesConfig } from "./lib/index.tsx";
-import FileBrowser from "./lib/components/ui/shared/FileBrowser.tsx";
-import type { SceneModesConfig } from "./lib/index.tsx";
+import { NdmspcConfig, IframeCernboxService, NdmspcNavigator, useSceneModeStore, defaultSceneModesConfig } from "./lib/index.ts";
+import FileBrowser from "./lib/components/ui/shared/browser/FileBrowser.tsx";
+import type { SceneModesConfig } from "./lib/index.ts";
 
 // Defaults in defaultSceneModesConfig (user can override them by passing custom config by using setModesConfig from useSceneModeStore)
 // const modesConfig: SceneModesConfig = {

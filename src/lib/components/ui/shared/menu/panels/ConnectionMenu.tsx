@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import Checkbox from "./Checkbox.tsx";
-import Dropdown, { DropdownProvider } from "./Dropdown.tsx";
+import Checkbox from "../../common/Checkbox.tsx";
+import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
 import { Text } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
 
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import { Divider } from "@react-three/uikit-horizon";
-import { useBrokerStore } from "../../../stores/broker/store.ts";
+import { useBrokerStore } from "../../../../../stores/broker/store.ts";
 import { parse } from "jsroot";
-import InputCard from "./InputCard.tsx";
-import WebsocketBanner from "./WebsocketBanner.tsx";
+import InputCard from "../../connections/InputCard.tsx";
+import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 
 interface ConnectionMenuProps {
     type?: "http" | "ws" | null;
