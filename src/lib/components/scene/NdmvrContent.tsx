@@ -1,29 +1,15 @@
-import { useEffect, useState } from "react";
-import { configSubjectGet } from "@ndmspc/ndmvr-core";
+import { useEffect } from "react";
 import HistogramWrapper from "./HistogramWrapper.tsx";
-import CanvasComponent from "./CanvasComponent.tsx";
-import KeyboardListener from "../systems/inputs/KeyboardListener.tsx";
 import ModeToolsPanel from "../ui/shared/ModeToolsPanel.tsx";
 import { useInputBinding } from "../../interactions/input/useInputBinding";
 import { selectSceneMode, useSceneModeStore } from "../../stores/sceneMode/store";
-import * as THREE from "three";
 import {
     retainHistogramWorkspace,
     useHistogramWorkspace,
 } from "../../stores/histogramWorkspace";
 
-export interface NdmvrContentProps {
-    children?: React.ReactNode | null;
-    showModeTools?: boolean;
-    originRef?: React.RefObject<THREE.Group> | null;
-}
-
-export default function NdmvrContent({
-    children,
-    showModeTools = true,
-    originRef = null,
-}: NdmvrContentProps) {
-    const [config, setConfig] = useState(null);
+/** The standard histogram feature: rendering, workspace lifetime, shortcuts, and mode tools. */
+export default function NdmvrContent() {
     const pads = useHistogramWorkspace((state) => state.pads);
 
     useInputBinding({
@@ -44,31 +30,12 @@ export default function NdmvrContent({
         return retainHistogramWorkspace();
     }, []);
 
-    useEffect(() => {
-        const configSub = configSubjectGet()
-            .getObservable()
-            .subscribe((c) => {
-                setConfig(c.config);
-            });
-        return () => {
-            configSub.unsubscribe();
-        };
-    }, []);
-
     return (
         <>
             {pads.map((pad) => (
                 <HistogramWrapper key={pad.id} id={pad.id} />
             ))}
-            {config && pads.length > 0 && (
-                <CanvasComponent
-                    location={config?.environment?.canvas}
-                    id={`${pads[0].id}-cinema`}
-                />
-            )}
-            <KeyboardListener />
-            {showModeTools && <ModeToolsPanel originRef={originRef} />}
-            {children}
+            <ModeToolsPanel />
         </>
     );
 }

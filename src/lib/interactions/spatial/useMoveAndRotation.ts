@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
-import { useXR, useXRInputSourceState } from "@react-three/xr";
+import { useXR, useXRInputSourceState, useXRStore } from "@react-three/xr";
 
 import { updateDesktopFrame } from "./desktop";
 import {
@@ -25,7 +25,6 @@ import {
 } from "./xr";
 
 export function useMoveAndRotation({
-    originRef = null,
     offset = { x: 0, y: 1.2, z: -4 },
     faceUser = true,
     storageKey = "menu",
@@ -33,6 +32,7 @@ export function useMoveAndRotation({
     const groupRef = useRef<THREE.Group | null>(null);
 
     const session = useXR((s) => s.session);
+    const xrStore = useXRStore();
     const leftController = useXRInputSourceState("controller", "left");
 
     const { camera } = useThree();
@@ -66,6 +66,13 @@ export function useMoveAndRotation({
     const tmpOffset = useRef(new THREE.Vector3());
     const tmpTarget = useRef(new THREE.Vector3());
     const tmpWorld = useRef(new THREE.Vector3());
+
+    const getOrigin = () => {
+        // XR refreshes its origin before ordinary frame callbacks. Read it live
+        // so session entry does not use a Scene captured during desktop rendering.
+        const state = xrStore.getState();
+        return state.session ? state.origin : undefined;
+    };
 
     const getSpatialInput = () => {
         if (!isRightGripPressed.current) return { active: false, x: 0, y: 0 };
@@ -141,13 +148,14 @@ export function useMoveAndRotation({
     };
 
     const handleFollowToggle = () => {
-        if (!originRef?.current || !groupRef.current) return;
+        const origin = getOrigin();
+        if (!origin || !groupRef.current) return;
 
         const keys = getSpatialStorageKeys(storageKey);
         followEnabled.current = !followEnabled.current;
 
         if (!followEnabled.current) {
-            originAnchor.current.copy(originRef.current.position);
+            originAnchor.current.copy(origin.position);
             writeStoredBoolean(keys.follow, false);
             writeStoredJson(keys.anchor, {
                 x: originAnchor.current.x,
@@ -156,7 +164,7 @@ export function useMoveAndRotation({
             });
         } else {
             groupRef.current.getWorldPosition(tmpWorld.current);
-            const originPos = originRef.current.position;
+            const originPos = origin.position;
 
             const newOffset = tmpWorld.current.clone().sub(originPos);
             currentPos.current.copy(newOffset);
@@ -204,7 +212,7 @@ export function useMoveAndRotation({
     }, [storageKey]);
 
     const ctx: MoveAndRotationCtx = {
-        originRef,
+        getOrigin,
         offset,
         faceUser,
 

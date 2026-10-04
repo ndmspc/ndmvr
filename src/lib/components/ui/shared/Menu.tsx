@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, Children, isValidElement } from "react";
 import { Container, Text } from "@react-three/uikit";
 import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import { useXR } from "@react-three/xr";
-import * as THREE from "three";
 import { useInputBinding } from "../../../interactions/input/useInputBinding";
 import { useMenuStore } from "../../../stores/menu/store";
 import DesktopMenuOverlay from "./DesktopMenuOverlay";
@@ -14,7 +13,6 @@ const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
 export interface MenuProps {
     children?: React.ReactNode;
     defaultOpen?: boolean;
-    originRef?: React.RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
     scale?: number;
 }
@@ -40,7 +38,6 @@ export default function Menu({ defaultOpen = false, ...props }: MenuProps) {
 
 function MenuContent({
     children,
-    originRef = null,
     offset = DEFAULT_OFFSET,
     scale = 1,
 }: MenuProps) {
@@ -49,8 +46,18 @@ function MenuContent({
     const items = Children.toArray(children)
         .filter(isValidElement)
         .map((child) => {
-            const { menuName, menuLabel } = child.type as { menuName?: string; menuLabel?: string };
-            return { child, menuName, menuLabel };
+            const component = child.type as {
+                menuName?: string;
+                menuLabel?: string;
+                getMenuMetadata?: (props: unknown) => {
+                    menuName: string;
+                    menuLabel: string;
+                } | null;
+            };
+            const metadata = component.getMenuMetadata
+                ? component.getMenuMetadata(child.props)
+                : component;
+            return { child, menuName: metadata?.menuName, menuLabel: metadata?.menuLabel };
         })
         .filter((item) => item.menuName);
     const content =
@@ -79,7 +86,6 @@ function MenuContent({
     return session ? (
         <FloatingContainer
             renderOrder={5000}
-            originRef={originRef}
             offset={offset}
             transformScaleX={scale}
             transformScaleY={scale}

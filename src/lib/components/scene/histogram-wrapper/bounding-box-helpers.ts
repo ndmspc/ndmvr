@@ -10,9 +10,11 @@ type HistogramConfig = {
     config?: {
         environment?: {
             shiftScale?: {
-                x?: number;
-                y?: number;
-                z?: number;
+                step?: {
+                    x?: number;
+                    y?: number;
+                    z?: number;
+                };
             };
             histogramPads?: ConfigPad[];
         };
@@ -47,10 +49,11 @@ const MIN_BOUNDING_FRAME_SIZE = 2;
 
 // Reads the configured keyboard/controller step for moving or scaling the frame.
 export function getShiftScaleStep(config: HistogramConfig): ShiftScaleStep {
+    const shiftScale = config.config?.environment?.shiftScale;
     return {
-        x: config.config?.environment?.shiftScale?.x ?? 10,
-        y: config.config?.environment?.shiftScale?.y ?? 10,
-        z: config.config?.environment?.shiftScale?.z ?? 10,
+        x: shiftScale?.step?.x ?? 10,
+        y: shiftScale?.step?.y ?? 10,
+        z: shiftScale?.step?.z ?? 10,
     };
 }
 

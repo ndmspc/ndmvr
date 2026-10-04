@@ -2,7 +2,7 @@ import NdmvrEnv from "./NdmvrEnv.tsx";
 import JsrootEnv from "./JsrootEnv.tsx";
 import Switch from "../ui/desktop/Switch.tsx";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 import type { NdmspcConfig } from "../../interfaces/NdmspcConfig.ts";
 import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
@@ -16,7 +16,6 @@ import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobi
 export interface NdmspcEnvProps {
     children?: React.ReactNode;
     config?: NdmvrConfig | null;
-    onConfigChange?: ((config: Record<string, unknown>) => void) | null;
     setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
@@ -32,30 +31,15 @@ function isEmptyObject(obj: unknown): boolean {
 export default function NdmspcEnv({
     children = null,
     config = null,
-    onConfigChange = null,
     setBrowser,
 }: NdmspcEnvProps) {
     const [vrMode, setVRMode] = useState(true);
     const initializedRef = useRef(false);
     // const initializedRef2 = useRef(false);
-    const [appConfig, setAppConfig] = useState(null);
 
     const [touch, setTouch] = useState(() => shouldUseMobileControls());
 
     const { setUIHover, setVrEnabled } = useSceneModeStore();
-
-    // console.log("NdmspcEnv render, config:", appConfig, "onConfigChange:", typeof onConfigChange);
-    // console.log("[NEW] onConfigChange:", onConfigChange);
-
-    const applyConfig = useCallback(
-        (newConfig) => {
-            console.log("Config changed from SettingsPanel:", newConfig);
-            setAppConfig(newConfig);
-            configSubjectGet().next(newConfig);
-            onConfigChange?.(newConfig);
-        },
-        [onConfigChange]
-    );
 
     useEffect(() => {
         if (initializedRef.current) return;
@@ -69,9 +53,6 @@ export default function NdmspcEnv({
             newConfig = configSubjectGet().getValue();
         }
         console.log("[CONFIG] NdmspcEnv initialized, config:", newConfig);
-
-        // @ts-error FIXME: Config
-        setAppConfig(newConfig);
     }, [config]);
 
     useEffect(() => {
@@ -132,11 +113,7 @@ export default function NdmspcEnv({
                     height: "100%",
                 }}
             >
-                <NdmvrEnv
-                    currentConfig={appConfig}
-                    onConfigChange={applyConfig}
-                    setBrowser={setBrowser}
-                >
+                <NdmvrEnv browserConfig={{ setBrowser }}>
                     {children}
                 </NdmvrEnv>
             </div>
@@ -151,8 +128,12 @@ export default function NdmspcEnv({
                 }}
                 {...(touch ? { label: "" } : {})}
             />
-            <FullscreenButton />
-            <UIToggleButton />
+            {!vrMode && (
+                <>
+                    <FullscreenButton />
+                    <UIToggleButton />
+                </>
+            )}
         </div>
     );
 }

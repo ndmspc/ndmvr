@@ -2,14 +2,20 @@
 
 `DesktopController` owns desktop movement and camera look. `VRController` owns XR movement
 and snap turning. `MobileMoveController` remains a separate DOM component with direction
-callbacks beside the Canvas. `NdmvrEnv` forwards those callbacks through the `mobile-move`
+callbacks beside the Canvas. `NdmvrBase` forwards those callbacks through the `mobile-move`
 window event; `DesktopController` keeps its own held-direction set. Desktop movement combines
 it with keyboard state without changing keyboard holds. Desktop unmount clears mobile
 directions so holds cannot carry across controller or XR transitions.
 
 Features register shortcuts directly with `useInputBinding`, under the existing Canvas/XR
-ancestors. `NdmvrContent` mounts the existing `KeyboardListener`. No additional input provider,
+ancestors. `NdmvrBase` mounts the existing `KeyboardListener`. No additional input provider,
 action registry or public remapping configuration is needed.
+
+The standard `NdmvrEnv` composes Base with `NdmvrContent`, decorations, and Menu panels.
+Custom Base scenes have the same movement/input infrastructure without requiring histogram
+content. Legacy raw Canvas + `NdmvrContent` scenes must supply their own compatible
+keyboard infrastructure if they do not use Base; Content owns histogram shortcuts, not the generic
+keyboard collector. Children remain under XR as scene siblings of XROrigin.
 
 ```tsx
 // Inside Menu, before its hidden-state early return:
@@ -43,13 +49,13 @@ Bindings stop with their feature. Keep a feature mounted while hidden if its sho
 reopen it. Scene-mode and bin-box toggles live in persistent `NdmvrContent`, because their
 controls may be absent and there may be several histograms.
 
-| Owner | Bindings |
-| --- | --- |
-| Menu | M / right B without grip |
-| NdmvrContent | Ctrl+M / right grip+A for mode; B / right grip+B for bin box |
-| BoundingFrameBox | Either Shift / right trigger for snapping |
+| Owner              | Bindings                                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Menu               | M / right B without grip                                                                                                   |
+| NdmvrContent       | Ctrl+M / right grip+A for mode; B / right grip+B for bin box                                                               |
+| BoundingFrameBox   | Either Shift / right trigger for snapping                                                                                  |
 | useMoveAndRotation | R / left X for reset; right A without grip for following; Shift for rotation; right grip + left stick for spatial movement |
-| HistogramWrapper | Local squeeze-start/end gesture state for modified clicks |
+| HistogramWrapper   | Local squeeze-start/end gesture state for modified clicks                                                                  |
 
 Histogram squeeze gestures retain WebXR event semantics, including holds from either hand,
 instead of being converted to sampled button thresholds.
@@ -67,6 +73,8 @@ been removed, along with unused controller Menu/Help
 callbacks and old spatial window-event adapters. Menu tabs are local; only visibility and mount
 status are shared with the external menu button.
 
-Run `npm run type-check`, `npm run lint`, `npm run build`, and
-`npm run build-app -- --outDir dist/app`. No automated input tests are currently configured. Real touch,
-pointer capture, headset input and histogram rendering require browser/device validation.
+Run `npm test`, `npm run type-check`, `npm run build`, and `npm run build-app`, plus lint and
+formatting checks scoped to the changed files. [Regression coverage](../tests/README.md)
+includes mounted spatial and component-composition checks for input ownership, mobile routing,
+XR entry/exit, and follow/drag/reset. These use rendering/session substitutes; real touch,
+pointer capture, headset input and histogram rendering still require browser/device validation.

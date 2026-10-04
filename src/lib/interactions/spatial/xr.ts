@@ -32,7 +32,8 @@ export function finishSpatialInteraction(
 export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
     const g = ctx.groupRef.current;
     if (!g) return;
-    if (!ctx.originRef?.current) return;
+    const origin = ctx.getOrigin();
+    if (!origin) return;
 
     const input = ctx.getSpatialInput();
     if (input.active) {
@@ -65,7 +66,7 @@ export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
     ctx.lastRightSqueeze.current = input.active;
 
     const baseOrigin = ctx.followEnabled.current
-        ? ctx.originRef.current.position
+        ? origin.position
         : ctx.originAnchor.current;
 
     const target = ctx.tmpTarget.current.set(
@@ -81,6 +82,7 @@ function onDragStart(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     if (!ctx.session) return;
     if (!ctx.groupRef.current || !e.ray) return;
     if (!ctx.getSpatialInput().active) return;
+    if (!ctx.getOrigin()) return;
 
     ctx.isDragging.current = true;
     capturePointer(ctx, e);
@@ -106,8 +108,9 @@ function onDragMove(ctx: MoveAndRotationCtx, e: ThreeEvent<PointerEvent>) {
     const newWorldPos = ctx.dragIntersection.current.sub(ctx.dragOffset.current);
 
     const origin = ctx.followEnabled.current
-        ? (ctx.originRef?.current?.position ?? ctx.tmpWorld.current.set(0, 0, 0))
+        ? ctx.getOrigin()?.position
         : ctx.originAnchor.current;
+    if (!origin) return;
 
     const desired = newWorldPos.clone().sub(origin);
 

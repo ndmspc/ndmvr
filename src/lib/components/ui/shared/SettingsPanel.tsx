@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@react-three/uikit-default";
 import { Text, Input, Container } from "@react-three/uikit";
 import openapiSchema from "../../../../ndmvrConfigOpenApi.json";
@@ -6,81 +6,67 @@ import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import {
     buildEnvironmentFromSettings,
+    buildSettingsImport,
     createValidator,
     flattenSchema,
-    getDeep,
+    getSettingsDefaults,
+    readSettings,
 } from "../../../utils/schema-helpers";
 
+const envSchema = openapiSchema.components.schemas.Config.properties.environment;
+const flatSchema = flattenSchema(envSchema);
+const scalarSchema = Object.fromEntries(
+    Object.entries(flatSchema).filter(([path]) => !path.startsWith("histogramPads."))
+);
+const gridSchema = Object.fromEntries(
+    Object.entries(flatSchema).filter(([path]) => path.startsWith("histogramPads."))
+);
+const validate = createValidator(openapiSchema);
+
 export default function SettingsPanel() {
-    const envSchema = openapiSchema?.components?.schemas?.Config?.properties?.environment ?? {};
-    const flatSchema = flattenSchema(envSchema);
-
-    const [currentConfig, setCurrentConfig] = useState(() => configSubjectGet().getValue());
-
+    const [settings, setSettings] = useState(() =>
+        readSettings(scalarSchema, configSubjectGet().getValue()?.config?.environment)
+    );
+    const [gridDraft, setGridDraft] = useState(() => getSettingsDefaults(gridSchema));
+    const gridDraftRef = useRef(gridDraft);
+    const [error, setError] = useState<string | null>(null);
     useEffect(() => {
         const sub = configSubjectGet()
             .getObservable()
-            .subscribe((c) => setCurrentConfig(c));
+            .subscribe((c) => {
+                // Each emission gets fresh scalar drafts, even if Core reuses
+                // its root object. Runtime pad arrays cannot describe a recipe.
+                const accepted = readSettings(scalarSchema, c?.config?.environment);
+                setSettings(accepted);
+            });
         return () => sub.unsubscribe();
     }, []);
 
-    const initialEnv = currentConfig?.config?.environment ?? {};
-
-    const [settings, setSettings] = useState(() =>
-        Object.fromEntries(
-            Object.entries(flatSchema).map(([path, schema]) => [
-                path,
-                getDeep(initialEnv, path) ?? schema.default ?? "",
-            ])
-        )
-    );
-
-    // Sync settings when config changes externally
-    const prevConfigRef = useRef(currentConfig);
-    useEffect(() => {
-        if (prevConfigRef.current === currentConfig) return;
-        prevConfigRef.current = currentConfig;
-        const env = currentConfig?.config?.environment ?? {};
-        setSettings(
-            Object.fromEntries(
-                Object.entries(flatSchema).map(([path, schema]) => [
-                    path,
-                    getDeep(env, path) ?? schema.default ?? "",
-                ])
-            )
-        );
-    }, [currentConfig, flatSchema]);
-
-    const validate = useMemo(() => createValidator(openapiSchema), []);
+    const updateGridDraft = (draft: Record<string, unknown>) => {
+        gridDraftRef.current = draft;
+        setGridDraft(draft);
+    };
 
     const applyNow = (updatedSettings: Record<string, unknown>) => {
-        const newEnv = buildEnvironmentFromSettings(flatSchema, updatedSettings);
-
-        const next = {
-            ...currentConfig,
-            config: {
-                ...(currentConfig?.config ?? {}),
-                environment: {
-                    ...(currentConfig?.config?.environment ?? {}),
-                    ...newEnv,
-                },
-            },
-        };
-
-        if (!validate(next)) {
-            console.error("Invalid config:", validate.errors);
-            return;
+        try {
+            const environment = buildEnvironmentFromSettings(
+                flatSchema,
+                updatedSettings,
+                configSubjectGet().getValue()?.config?.environment,
+                validate
+            );
+            configSubjectGet().next({ config: { environment } });
+            setError(null);
+            return true;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Invalid settings");
+            return false;
         }
-
-        configSubjectGet().next(next);
     };
 
     const resetToDefaults = () => {
-        const defaults = Object.fromEntries(
-            Object.entries(flatSchema).map(([path, schema]) => [path, schema.default ?? ""])
-        );
-        setSettings(defaults);
-        applyNow(defaults);
+        const defaults = getSettingsDefaults(flatSchema);
+        if (applyNow(defaults)) updateGridDraft(getSettingsDefaults(gridSchema));
     };
 
     const importConfig = () => {
@@ -100,22 +86,23 @@ export default function SettingsPanel() {
                         throw new Error("File content is not a string");
                     }
                     const json = JSON.parse(result);
-                    console.log("Imported user config:", json);
-
-                    const newEnv = json?.config?.environment ?? {};
-                    const importedSettings = Object.fromEntries(
-                        Object.entries(flatSchema).map(([path, schema]) => [
-                            path,
-                            getDeep(newEnv, path) ?? schema.default ?? "",
-                        ])
+                    const imported = buildSettingsImport(
+                        flatSchema,
+                        json,
+                        configSubjectGet().getValue()?.config?.environment,
+                        gridDraftRef.current,
+                        validate
                     );
-
-                    setSettings(importedSettings);
-                    applyNow(importedSettings);
+                    if (Object.keys(imported.environment).length > 0) {
+                        configSubjectGet().next({ config: { environment: imported.environment } });
+                    }
+                    if (imported.gridDraft) updateGridDraft(imported.gridDraft);
+                    setError(null);
                 } catch (err) {
-                    console.error("Invalid JSON config file:", err);
+                    setError(err instanceof Error ? err.message : "Invalid JSON config file");
                 }
             };
+            reader.onerror = () => setError("Could not read the configuration file");
             reader.readAsText(file);
         };
         input.click();
@@ -137,7 +124,7 @@ export default function SettingsPanel() {
                     height={100}
                     scrollbarColor="#475569"
                 >
-                    {Object.entries(flatSchema).map(([path, schema]) => (
+                    {Object.entries(scalarSchema).map(([path, schema]) => (
                         <Container
                             key={path}
                             flexDirection="row"
@@ -155,13 +142,45 @@ export default function SettingsPanel() {
                                 onValueChange={(v) => {
                                     const updated = { ...settings, [path]: v };
                                     setSettings(updated);
-                                    applyNow(updated);
+                                    applyNow({ [path]: v });
+                                }}
+                                minWidth={100}
+                            />
+                        </Container>
+                    ))}
+
+                    <Text classList={["menuHeader"]}>Replacement grid</Text>
+                    <Text>
+                        Accepted layout edits replace the current histogram pads. This draft is
+                        independent of the current scene layout.
+                    </Text>
+                    {Object.entries(gridSchema).map(([path, schema]) => (
+                        <Container
+                            key={path}
+                            flexDirection="row"
+                            margin={25}
+                            gap={8}
+                            alignItems="center"
+                        >
+                            <Text minWidth={400} fontSize={12}>
+                                {schema.title || path}:
+                            </Text>
+                            <Input
+                                classList={["input"]}
+                                fontSize={12}
+                                value={String(gridDraft[path] ?? "")}
+                                onValueChange={(value) => {
+                                    const nextDraft = { ...gridDraftRef.current, [path]: value };
+                                    updateGridDraft(nextDraft);
+                                    applyNow(nextDraft);
                                 }}
                                 minWidth={100}
                             />
                         </Container>
                     ))}
                 </Container>
+
+                {error && <Text color="#ef4444">{error}</Text>}
 
                 <Container
                     flexDirection="row"
@@ -183,7 +202,7 @@ export default function SettingsPanel() {
                         onClick={importConfig}
                         minWidth={120}
                     >
-                        <Text>Apply</Text>
+                        <Text>Import JSON</Text>
                     </Button>
                 </Container>
             </Container>

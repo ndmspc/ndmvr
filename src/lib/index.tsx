@@ -1,8 +1,9 @@
 import JsrootEnv from "./components/env/JsrootEnv.tsx";
 import NdmspcEnv from "./components/env/NdmspcEnv.tsx";
 import NdmvrEnv from "./components/env/NdmvrEnv.tsx";
+import NdmvrBase from "./components/env/NdmvrBase.tsx";
 import NdmspcDefaultBrowserEnv from "./components/env/NdmspcDefaultBrowserEnv.tsx";
-import CanvasComponent from "./components/scene/CanvasComponent.tsx";
+import SceneDecorations from "./components/scene/SceneDecorations.tsx";
 import HistogramWrapper from "./components/scene/HistogramWrapper.tsx";
 import NdmvrContent from "./components/scene/NdmvrContent.tsx";
 import CameraSync from "./components/systems/CameraSync.tsx";
@@ -28,7 +29,6 @@ import {
     histogramSubjectGet,
     brokerManagerGet,
     binInfoSubjectGet,
-    canvasSubjectGet,
     configSubjectGet,
     functionSubjectGet,
     stateSubjectGet,
@@ -40,8 +40,9 @@ export {
     JsrootEnv,
     NdmspcEnv,
     NdmvrEnv,
+    NdmvrBase,
     NdmspcDefaultBrowserEnv,
-    CanvasComponent,
+    SceneDecorations,
     HistogramWrapper,
     NdmvrContent,
     CameraSync,
@@ -62,7 +63,6 @@ export {
     histogramSubjectGet,
     brokerManagerGet,
     binInfoSubjectGet,
-    canvasSubjectGet,
     configSubjectGet,
     functionSubjectGet,
     stateSubjectGet,
@@ -74,10 +74,10 @@ export {
 
 // Export types for component props
 export type { NdmspcEnvProps } from "./components/env/NdmspcEnv.tsx";
+export type { BrowserConfig } from "./components/ui/shared/BrowserContent.tsx";
 export type { NdmvrEnvProps } from "./components/env/NdmvrEnv.tsx";
-export type { NdmvrContentProps } from "./components/scene/NdmvrContent.tsx";
+export type { NdmvrBaseProps } from "./components/env/NdmvrBase.tsx";
 export type { NdmspcDefaultBrowserEnvProps } from "./components/env/NdmspcDefaultBrowserEnv.tsx";
-export type { CanvasComponentProps, CanvasLocation } from "./components/scene/CanvasComponent.tsx";
 export type { HistogramWrapperProps } from "./components/scene/HistogramWrapper.tsx";
 export type {
     HistogramEventName,

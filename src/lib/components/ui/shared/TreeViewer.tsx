@@ -2,15 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
 //
-interface RootNode {
+export interface RootNode {
     _name: string;
     _childs?: RootNode[] | Record<string, RootNode>;
 }
 
-interface JSRootHierarchy {
+export interface JSRootHierarchy {
     h: RootNode;
     expandItem(name: string): Promise<void>;
-    openRootFile(path: string): Promise<void>;
+    openRootFile(path: string): Promise<unknown>;
 }
 
 interface TreeViewerProps {

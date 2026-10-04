@@ -13,6 +13,7 @@ import { NdmvrConfig } from "../../interfaces/NdmvrConfig.ts";
 import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 import FullscreenButton from "../ui/desktop/FullscreenButton.tsx";
 import BrowserRootFileMenu from "../ui/shared/BrowserRootFileMenu.tsx";
+import type { JSRootHierarchy, RootNode } from "../ui/shared/TreeViewer.tsx";
 
 type HistogramPadConfig = { id?: string };
 
@@ -20,15 +21,10 @@ type EnvironmentWithPads = Record<string, unknown> & {
     histogramPads?: HistogramPadConfig[];
 };
 
-type ConfigRootWithPads = Record<string, unknown> & {
-    environment?: EnvironmentWithPads;
-};
-
 type ConfigWithPads = Record<string, unknown> & {
     config?: {
         environment?: EnvironmentWithPads;
     };
-    environment?: EnvironmentWithPads;
 };
 
 type BrowserPainter = {
@@ -37,7 +33,8 @@ type BrowserPainter = {
     openRootFile: (file: string | null) => Promise<{ disp_kind: string }>;
     setDisplay: (layout: string | null, elementId: string) => void;
     checkResize: () => void;
-    h?: unknown;
+    h: RootNode;
+    expandItem: JSRootHierarchy["expandItem"];
     no_select: boolean;
     show_overflow: boolean;
 };
@@ -48,10 +45,7 @@ type DrawnObject = {
 };
 
 function getExistingPadIds(configValue: ConfigWithPads | null | undefined): Set<string> {
-    const pads =
-        configValue?.config?.environment?.histogramPads ??
-        configValue?.environment?.histogramPads ??
-        [];
+    const pads = configValue?.config?.environment?.histogramPads ?? [];
 
     return new Set(
         pads
@@ -65,8 +59,8 @@ function removeDuplicateHistogramPads(
 ): ConfigWithPads | null | undefined {
     if (!configValue) return configValue;
 
-    const rootConfig = configValue.config as ConfigRootWithPads | undefined;
-    const environment = rootConfig?.environment ?? configValue.environment;
+    const rootConfig = configValue.config;
+    const environment = rootConfig?.environment;
     const pads = environment?.histogramPads;
 
     if (!Array.isArray(pads)) return configValue;
@@ -86,29 +80,20 @@ function removeDuplicateHistogramPads(
         histogramPads: uniquePads,
     };
 
-    if (rootConfig?.environment) {
-        return {
-            ...configValue,
-            config: {
-                ...rootConfig,
-                environment: nextEnvironment,
-            },
-        };
-    }
-
     return {
         ...configValue,
-        environment: nextEnvironment,
+        config: {
+            ...rootConfig,
+            environment: nextEnvironment,
+        },
     };
 }
 
 export interface NdmspcDefaultBrowserEnvProps {
     children?: React.ReactNode;
     config?: NdmvrConfig | null;
-    onConfigChange?: ((config: NdmspcConfig) => void) | null;
     renderer?: "jsroot" | "ndmvr";
     vr?: boolean;
-    menu?: boolean;
     file?: string | null;
     item?: string | null;
     opt?: string | null;
@@ -121,7 +106,6 @@ export interface NdmspcDefaultBrowserEnvProps {
 export default function NdmspcDefaultBrowserEnv({
     children = null,
     config = null,
-    onConfigChange = null,
     renderer = "jsroot",
     vr = true,
     file = null,
@@ -134,16 +118,20 @@ export default function NdmspcDefaultBrowserEnv({
 }: NdmspcDefaultBrowserEnvProps) {
     const [vrMode, setVRMode] = useState(vr);
     const initializedRef = useRef(false);
-    const [appConfig, setAppConfig] = useState(null);
     const painterRef = useRef<BrowserPainter | null>(null);
     const pads = useRef<string[]>([]);
     const padsCounter = useRef(0);
     const [itemState, setItemState] = useState(item);
     const [optState, setOptState] = useState(opt);
+    const displayedSelectionRef = useRef<{
+        painter: BrowserPainter;
+        item: string;
+        opt: string | null;
+    } | null>(null);
     const hiddenTreeDivRef = useRef<HTMLDivElement>(document.createElement("div"));
 
     const [hierarchy, setHierarchy] = useState<BrowserPainter | null>(null);
-    const [rootNode, setRootNode] = useState<unknown>(null);
+    const [rootNode, setRootNode] = useState<RootNode | null>(null);
 
     const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
     const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
@@ -157,23 +145,6 @@ export default function NdmspcDefaultBrowserEnv({
     );
 
 
-
-    console.log(
-        "NdmspcDefaultBrowserEnv render, config:",
-        appConfig,
-        "onConfigChange:",
-        typeof onConfigChange
-    );
-
-    const applyConfig = useCallback(
-        (newConfig) => {
-            console.log("Config changed from SettingsPanel:", newConfig);
-            setAppConfig(newConfig);
-            configSubjectGet().next(newConfig);
-            onConfigChange?.(newConfig);
-        },
-        [onConfigChange]
-    );
 
     useEffect(() => {
         if (!initializedRef.current) return;
@@ -198,7 +169,6 @@ export default function NdmspcDefaultBrowserEnv({
         if (config) {
             configSubjectGet().next(config);
         }
-        setAppConfig(configSubjectGet().getValue());
     }, [config]);
 
     useEffect(() => {
@@ -337,6 +307,14 @@ export default function NdmspcDefaultBrowserEnv({
         if (!initializedRef.current) return;
         if (itemState === null) return;
 
+        const displayedSelection = displayedSelectionRef.current;
+        displayedSelectionRef.current = null;
+        if (
+            displayedSelection?.painter === painterRef.current &&
+            displayedSelection.item === itemState &&
+            displayedSelection.opt === optState
+        ) return;
+
         const painter = painterRef.current;
         const painterDisplay = async () => {
             await painter.display(itemState, optState);
@@ -347,8 +325,10 @@ export default function NdmspcDefaultBrowserEnv({
     const handleSelect = async (path: string) => {
         // console.log("call handelerSelect");
         // console.log("handlerSelect path: ", path);
-        if (!painterRef.current) return;
-        await painterRef.current.display(path, optState ?? "");
+        const painter = painterRef.current;
+        if (!painter) return;
+        await painter.display(path, optState ?? "");
+        displayedSelectionRef.current = { painter, item: path, opt: optState };
         setItemState(path);
     };
 
@@ -359,6 +339,7 @@ export default function NdmspcDefaultBrowserEnv({
         drawnObjectsRef.current = {};
         pads.current = [];
         padsCounter.current = 0;
+        displayedSelectionRef.current = null;
 
         setItemState(item);
         setOptState(opt);
@@ -458,26 +439,30 @@ export default function NdmspcDefaultBrowserEnv({
                 >
 
                     <NdmvrEnv
-                        currentConfig={appConfig}
-                        onConfigChange={applyConfig}
-                        hierarchy={hierarchy}
-                        rootNode={rootNode}
-                        hierarchyDocRef={hiddenTreeDivRef}
-                        onSelectItem={handleSelect}
-                        setBrowser={setBrowser}
-                        browser={fileBrowserReady}
-                        setRendererMode={setRendererMode}
-                        rendererMode={rendererMode}
                         menuDefaultOpen={false}
-                        browserInputMenu={rootFileMenu}
+                        browserConfig={{
+                            hierarchy,
+                            rootNode,
+                            hierarchyDocRef: hiddenTreeDivRef,
+                            onSelectItem: handleSelect,
+                            setBrowser,
+                            browser: fileBrowserReady,
+                            setRendererMode,
+                            rendererMode,
+                            inputMenu: rootFileMenu,
+                        }}
                     >
                         {children}
                     </NdmvrEnv>
                 </div>
 
 
-            <UIToggleButton />
-            <FullscreenButton />
+            {!vrMode && (
+                <>
+                    <UIToggleButton />
+                    <FullscreenButton />
+                </>
+            )}
 
 
                 <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />

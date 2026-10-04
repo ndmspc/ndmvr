@@ -1,16 +1,15 @@
-import type { MutableRefObject, RefObject } from "react";
+import type { MutableRefObject } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import type * as THREE from "three";
 
 export interface UseMoveAndRotationOptions {
-    originRef: RefObject<THREE.Group> | null;
     offset?: { x: number; y: number; z: number };
     faceUser?: boolean;
     storageKey?: string;
 }
 
 export type MoveAndRotationCtx = {
-    originRef: RefObject<THREE.Group> | null;
+    getOrigin: () => THREE.Object3D | undefined;
     offset: { x: number; y: number; z: number };
     faceUser: boolean;
 

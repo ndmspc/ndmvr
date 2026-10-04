@@ -27,9 +27,17 @@ Histogram workspace behavior is owned by neutral modules under
   modes.
 - An internal facade is the only histogram-workspace import boundary for the rest of the
   application. It is not part of the package's public barrel.
-- Adapter lifecycle is reference counted. The first consumer starts the shared subscriptions;
-  the final consumer schedules their teardown and workspace reset for the next task. An
-  immediate remount cancels that teardown, and release functions are idempotent.
+- `NdmvrContent` is the sole production owner of histogram workspace lifetime. It retains the
+  adapter while mounted and releases it on cleanup. `HistogramWrapper`, `DrawOptions`, and
+  `ModeToolsPanel` consume the workspace without independently retaining it; histogram-dependent
+  UI expects Content to be mounted in the same composition.
+- Adapter lifecycle remains internally reference counted. The first Content mount starts the
+  shared subscriptions; the final release schedules their teardown and workspace reset for the
+  next event-loop task. An immediate remount cancels that teardown, and release functions are idempotent.
+  This supports Strict Mode replay without making standalone workspace consumers a public API.
+- Core remains the canonical configuration and drawing-state source. Each drawing-state emission
+  creates a fresh shallow workspace envelope, even when Core emits the same object, while nested
+  data references are retained.
 
 The first configured pad is active initially. Histogram and pad-state emissions never alter
 the active pad. If configuration removes the active pad, the first remaining configured pad
@@ -52,6 +60,12 @@ scene / UI / scene-mode consumers
 
 ## Alternatives considered
 
+### Give every workspace-related component its own retention effect
+
+This would complicate ownership to support theoretically standalone components. The supported
+composition mounts the complete histogram feature through `NdmvrContent`, so one production
+lifetime owner is sufficient. Generic runtime and keyboard input instead belong to `NdmvrBase`.
+
 ### Keep a React context in `NdmvrContent`
 
 This would preserve scene ownership and require non-component scene-mode actions to use a
@@ -73,8 +87,8 @@ until a concrete external API is required.
 
 - Active-pad selection is explicit and independent of histogram arrival order.
 - Draw options and pad-specific scene actions consistently target the same pad.
-- Multiple workspace consumers share subscriptions safely, including across React Strict Mode
-  setup and cleanup cycles.
+- Workspace readers share the subscriptions owned by Content, including across React Strict Mode
+  setup and cleanup cycles. Removing Content ends those subscriptions even if a Menu remains.
 - Components no longer access histogram or state subjects directly for workspace behavior.
 - Single-pad behavior remains unchanged, and no active-pad highlighting or data-routing change
   is introduced.
