@@ -19,13 +19,6 @@ declare module "@ndmspc/ndmvr-core" {
         getStream(id: string): Subject<any>;
     }
 
-    export class NdmvrRaycaster {
-        constructor(scene: THREE.Scene, domElement: HTMLElement);
-        scene: THREE.Scene;
-        raycaster: THREE.Raycaster & { _triggerSource?: string };
-        handleRaycast(): void;
-    }
-
     export interface HistogramData {
         id: string;
         obj: any;

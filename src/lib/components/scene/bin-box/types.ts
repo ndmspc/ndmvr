@@ -1,9 +1,7 @@
 import * as THREE from "three";
 
 export type Vector3Like =
-    | THREE.Vector3
-    | { x: number; y: number; z: number }
-    | [number, number, number];
+    THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number];
 
 export interface BinBoxAxisRange {
     axis: "x" | "y" | "z" | string;

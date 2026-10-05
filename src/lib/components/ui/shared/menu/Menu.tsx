@@ -36,11 +36,7 @@ export default function Menu({ defaultOpen = false, ...props }: MenuProps) {
     return showMenu ? <MenuContent {...props} /> : null;
 }
 
-function MenuContent({
-    children,
-    offset = DEFAULT_OFFSET,
-    scale = 1,
-}: MenuProps) {
+function MenuContent({ children, offset = DEFAULT_OFFSET, scale = 1 }: MenuProps) {
     const [activeTab, setActiveTab] = useState<string | null>(null);
     const session = useXR((state) => state.session);
     const items = Children.toArray(children)

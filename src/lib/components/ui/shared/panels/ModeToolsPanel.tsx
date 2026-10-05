@@ -14,9 +14,7 @@ export default function ModeToolsPanel() {
     const modesConfig = useSceneModeStore((s) => s.modesConfig);
     const getOnClickEvent = useSceneModeStore((s) => s.getOnClickEvent);
     const getOnHoverEvent = useSceneModeStore((s) => s.getOnHoverEvent);
-    const modeToolsNotification = useSceneModeStore(
-        (s) => s.modeToolsNotification
-    );
+    const modeToolsNotification = useSceneModeStore((s) => s.modeToolsNotification);
 
     const resolveIcon = (mode: string) => {
         let iconName = modesConfig[mode]?.icon;

@@ -74,9 +74,18 @@ const VERTEX_SIGNS: Corner[] = [
 ];
 
 const EDGE_PAIRS: [number, number][] = [
-    [4, 5], [6, 7], [0, 1], [2, 3],
-    [2, 6], [3, 7], [0, 4], [1, 5],
-    [1, 2], [5, 6], [0, 3], [4, 7],
+    [4, 5],
+    [6, 7],
+    [0, 1],
+    [2, 3],
+    [2, 6],
+    [3, 7],
+    [0, 4],
+    [1, 5],
+    [1, 2],
+    [5, 6],
+    [0, 3],
+    [4, 7],
 ];
 
 function axisVector(axis: Axis): THREE.Vector3 {
@@ -168,34 +177,40 @@ export default function BoundingFrameBox({
         savedCursor.current = null;
     }, []);
 
-    const showHover = useCallback((handle: Handle | null) => {
-        if (hoveredHandle.current === handle) return;
-        hoveredHandle.current = handle;
+    const showHover = useCallback(
+        (handle: Handle | null) => {
+            if (hoveredHandle.current === handle) return;
+            hoveredHandle.current = handle;
 
-        edgeHandles.current.forEach(({ line, ...edge }) => {
-            const material = line.material as LineMaterial;
-            const active = edge.picker === handle?.picker;
-            material.linewidth = active ? HOVER_LINE_WIDTH : NORMAL_LINE_WIDTH;
-            material.color.set(active ? 0xffff00 : 0xffffff);
-        });
-        cornerHandles.current.forEach(({ marker, ...corner }) => {
-            const material = marker.material as THREE.MeshBasicMaterial;
-            material.color.set(corner.picker === handle?.picker ? 0xffff00 : 0x000000);
-        });
+            edgeHandles.current.forEach(({ line, ...edge }) => {
+                const material = line.material as LineMaterial;
+                const active = edge.picker === handle?.picker;
+                material.linewidth = active ? HOVER_LINE_WIDTH : NORMAL_LINE_WIDTH;
+                material.color.set(active ? 0xffff00 : 0xffffff);
+            });
+            cornerHandles.current.forEach(({ marker, ...corner }) => {
+                const material = marker.material as THREE.MeshBasicMaterial;
+                material.color.set(corner.picker === handle?.picker ? 0xffff00 : 0x000000);
+            });
 
-        if (handle) setCursor("pointer");
-        else restoreCursor();
-    }, [restoreCursor, setCursor]);
+            if (handle) setCursor("pointer");
+            else restoreCursor();
+        },
+        [restoreCursor, setCursor]
+    );
 
     const applyFrame = useCallback((nextPosition: THREE.Vector3, nextScale: THREE.Vector3) => {
         const group = groupRef.current;
         if (!group) return;
 
         const half = nextScale.clone().multiplyScalar(0.5);
-        const vertices = VERTEX_SIGNS.map(({ x, y, z }) =>
-            new THREE.Vector3(x * half.x, y * half.y, z * half.z)
+        const vertices = VERTEX_SIGNS.map(
+            ({ x, y, z }) => new THREE.Vector3(x * half.x, y * half.y, z * half.z)
         );
-        const markerRadius = Math.max(0.01, Math.min(nextScale.x, nextScale.y, nextScale.z) * 0.025);
+        const markerRadius = Math.max(
+            0.01,
+            Math.min(nextScale.x, nextScale.y, nextScale.z) * 0.025
+        );
         const cornerPickRadius = Math.max(0.12, markerRadius * 2);
         const edgePickRadius = Math.max(0.12, markerRadius * 1.25);
 
@@ -203,7 +218,9 @@ export default function BoundingFrameBox({
             const a = vertices[from];
             const b = vertices[to];
             const geometry = line.geometry as LineGeometry;
-            const positions = geometry.getAttribute("instanceStart") as THREE.InterleavedBufferAttribute;
+            const positions = geometry.getAttribute(
+                "instanceStart"
+            ) as THREE.InterleavedBufferAttribute;
             const data = positions.data.array;
             data[0] = a.x;
             data[1] = a.y;
@@ -222,11 +239,7 @@ export default function BoundingFrameBox({
             );
         });
         cornerHandles.current.forEach(({ signs, marker, picker }) => {
-            const point = new THREE.Vector3(
-                signs.x * half.x,
-                signs.y * half.y,
-                signs.z * half.z
-            );
+            const point = new THREE.Vector3(signs.x * half.x, signs.y * half.y, signs.z * half.z);
             marker.position.copy(point);
             marker.scale.setScalar(markerRadius);
             picker.position.copy(point);
@@ -239,32 +252,35 @@ export default function BoundingFrameBox({
         appliedBounds.current.scale.copy(nextScale);
     }, []);
 
-    const finishDrag = useCallback((pointerId?: number, notify = true) => {
-        const drag = dragRef.current;
-        if (!drag || (pointerId !== undefined && drag.pointerId !== pointerId)) return;
+    const finishDrag = useCallback(
+        (pointerId?: number, notify = true) => {
+            const drag = dragRef.current;
+            if (!drag || (pointerId !== undefined && drag.pointerId !== pointerId)) return;
 
-        // Clear state first: releasing capture can synchronously raise another end event.
-        dragRef.current = null;
-        const capture = captureRef.current;
-        captureRef.current = null;
-        if (capture?.target.hasPointerCapture?.(capture.pointerId)) {
-            try {
-                capture.target.releasePointerCapture?.(capture.pointerId);
-            } catch {
-                // The browser may already have released a native capture.
+            // Clear state first: releasing capture can synchronously raise another end event.
+            dragRef.current = null;
+            const capture = captureRef.current;
+            captureRef.current = null;
+            if (capture?.target.hasPointerCapture?.(capture.pointerId)) {
+                try {
+                    capture.target.releasePointerCapture?.(capture.pointerId);
+                } catch {
+                    // The browser may already have released a native capture.
+                }
             }
-        }
 
-        showHover(null);
-        restoreCursor();
-        setInteracting(false);
-        if (notify) {
-            onDragEndRef.current?.(
-                appliedBounds.current.position.clone(),
-                appliedBounds.current.scale.clone()
-            );
-        }
-    }, [restoreCursor, setInteracting, showHover]);
+            showHover(null);
+            restoreCursor();
+            setInteracting(false);
+            if (notify) {
+                onDragEndRef.current?.(
+                    appliedBounds.current.position.clone(),
+                    appliedBounds.current.scale.clone()
+                );
+            }
+        },
+        [restoreCursor, setInteracting, showHover]
+    );
 
     // R3F's capture remembers the hit object, so build every pickable object once.
     useLayoutEffect(() => {
@@ -376,11 +392,14 @@ export default function BoundingFrameBox({
         } else {
             // An edge belongs to two faces. Pick the axis most visible to this pointer ray.
             const candidates = AXES.filter((axis) => axis !== handle.direction);
-            const axis = Math.abs(ray.direction[candidates[0]]) <= Math.abs(ray.direction[candidates[1]])
-                ? candidates[0] : candidates[1];
+            const axis =
+                Math.abs(ray.direction[candidates[0]]) <= Math.abs(ray.direction[candidates[1]])
+                    ? candidates[0]
+                    : candidates[1];
             sides = [{ axis, sign: handle.sides[axis] as Sign }];
             // This plane contains the resize axis and meets the initial ray at a stable angle.
-            planeNormal = ray.direction.clone()
+            planeNormal = ray.direction
+                .clone()
                 .addScaledVector(axisVector(axis), -ray.direction[axis])
                 .normalize();
         }
@@ -432,20 +451,22 @@ export default function BoundingFrameBox({
         drag.sides.forEach(({ axis, sign }) => {
             let size = drag.startScale[axis] + sign * delta[axis];
             if (snapPressed) {
-                const defaultStep = shiftScaleStep?.x && shiftScaleStep.x > 0 ? shiftScaleStep.x : 10;
+                const defaultStep =
+                    shiftScaleStep?.x && shiftScaleStep.x > 0 ? shiftScaleStep.x : 10;
                 const configuredStep = shiftScaleStep?.[axis];
                 const step = configuredStep && configuredStep > 0 ? configuredStep : defaultStep;
                 size = Math.round(size / step) * step;
             }
             nextScale[axis] = Math.max(MIN_SCALE, size);
             nextPosition[axis] =
-                drag.startPosition[axis] + sign * (nextScale[axis] - drag.startScale[axis]) / 2;
+                drag.startPosition[axis] + (sign * (nextScale[axis] - drag.startScale[axis])) / 2;
         });
 
         if (
             nextPosition.equals(appliedBounds.current.position) &&
             nextScale.equals(appliedBounds.current.scale)
-        ) return;
+        )
+            return;
 
         applyFrame(nextPosition, nextScale);
         onChange?.(nextPosition.clone(), nextScale.clone());
@@ -496,8 +517,12 @@ export default function BoundingFrameBox({
         <group
             ref={groupRef}
             onPointerMove={onPointerMove}
-            onPointerOut={() => { if (!dragRef.current) showHover(null); }}
-            onPointerLeave={() => { if (!dragRef.current) showHover(null); }}
+            onPointerOut={() => {
+                if (!dragRef.current) showHover(null);
+            }}
+            onPointerLeave={() => {
+                if (!dragRef.current) showHover(null);
+            }}
             onPointerDown={onPointerDown}
             onPointerUp={(event) => finishDrag(event.pointerId)}
             onPointerCancel={(event) => finishDrag(event.pointerId)}

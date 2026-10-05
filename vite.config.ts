@@ -17,9 +17,8 @@ export default defineConfig(({ mode }) => ({
         lib: {
             entry: resolve(__dirname, "src/lib/index.ts"),
             name: "NDMVR R3F React Library Vite",
-            // Build only ESM to avoid generating a UMD bundle that requires
-            // providing global names for many subpath externals (react/jsx-runtime, etc.)
-            formats: ['es'],
+            // The package entry points expose this ESM build.
+            formats: ["es"],
             fileName: (format) => `ndmvr.${format}.js`,
         },
         rollupOptions: {
@@ -27,31 +26,16 @@ export default defineConfig(({ mode }) => ({
             // they are not bundled into the library. Use regexes to cover subpath imports
             // like `react/jsx-runtime` or `react/cjs/*` which otherwise leak CJS shims.
             external: (id) => {
-                return !!id && (
-                    /^react($|\/)/.test(id) ||
-                    /^react-dom($|\/)/.test(id) ||
-                    /^three($|\/)/.test(id) ||
-                    /^@ndmspc\/ndmvr-core($|\/)/.test(id) ||
-                    /^@react-three\//.test(id) ||
-                    /^@pmndrs\/uikit($|\/)/.test(id) ||
-                    /^jsroot($|\/)/.test(id)
+                return (
+                    !!id &&
+                    (/^react($|\/)/.test(id) ||
+                        /^react-dom($|\/)/.test(id) ||
+                        /^three($|\/)/.test(id) ||
+                        /^@ndmspc\/ndmvr-core($|\/)/.test(id) ||
+                        /^@react-three\//.test(id) ||
+                        /^@pmndrs\/uikit($|\/)/.test(id) ||
+                        /^jsroot($|\/)/.test(id))
                 );
-            },
-            output: {
-                globals: {
-                    react: "React",
-                    three: "THREE",
-                    jsroot: "JSROOT",
-                    "@ndmspc/ndmvr-core": "ndmvrAframe",
-                    "@pmndrs/uikit": "uikit",
-                    "@react-three/fiber": "fiber",
-                    "@react-three/drei": "drei",
-                    "@react-three/xr": "xr",
-                    "@react-three/uikit": "uikit$1",
-                    "@react-three/uikit-default": "uikitDefault",
-                    "@react-three/uikit-lucide": "uikitLucide",
-                    "@react-three/uikit-horizon": "uikitHorizon",
-                }
             },
         },
     },

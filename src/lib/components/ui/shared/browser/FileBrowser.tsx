@@ -2,11 +2,12 @@ import { Container } from "@react-three/uikit";
 import InteractionContainer from "../common/InteractionContainer.tsx";
 import { useState } from "react";
 import TreeViewer from "./TreeViewer.tsx";
+import type { JSRootHierarchy, RootNode } from "./TreeViewer.tsx";
 import RendererModeSwitch from "./RendererModeSwitch.tsx";
 
 interface FileBrowserProps {
-    hierarchy: any;
-    root: any;
+    hierarchy: JSRootHierarchy | null;
+    root: RootNode | null;
     doc: React.RefObject<HTMLDivElement | null> | null;
     onSelect?: (path: string) => void;
     rendererMode?: "jsroot" | "ndmvr";
@@ -14,16 +15,13 @@ interface FileBrowserProps {
 }
 
 export default function FileBrowser({
-hierarchy,
-root,
-doc,
-onSelect,
-rendererMode = "jsroot",
-setRendererMode,
-
-                                    }: FileBrowserProps) {
-
-    // console.log(" FileBrowser Slelect: ", onSelect);
+    hierarchy,
+    root,
+    doc,
+    onSelect,
+    rendererMode = "jsroot",
+    setRendererMode,
+}: FileBrowserProps) {
     const [selectedPath, setSelectedPath] = useState("");
     return (
         <InteractionContainer
@@ -37,10 +35,7 @@ setRendererMode,
             alignItems="flex-start"
             justifyContent="flex-start"
         >
-            <RendererModeSwitch
-                rendererMode={rendererMode}
-                setRendererMode={setRendererMode}
-            />
+            <RendererModeSwitch rendererMode={rendererMode} setRendererMode={setRendererMode} />
 
             <Container gap={8} display="flex" flexDirection="column">
                 {root && doc?.current && (

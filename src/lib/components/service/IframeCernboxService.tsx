@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 interface IframeMessage {
     data: {
@@ -12,46 +12,41 @@ interface IframeServiceProps {
     onConfigLoad?: (config: unknown) => void;
 }
 
-const IframeCernboxService = ({ targetOrigin = "*", onConfigLoad = null }: IframeServiceProps) => {
-    const [config, setConfig] = useState(null);
-
-    const handlePostMessage = (event: IframeMessage) => {
-        // console.log("Event: ", event)
-
-        if (event?.data?.action === "load") {
-            // console.log(event.data)
-            const ndmspcConfigString = event.data.content;
-            console.log(
-                "IframeCernboxService: Configuration string from iframe parent : ",
-                ndmspcConfigString
-            );
-            try {
-                const ndmspcConfig = JSON.parse(ndmspcConfigString);
-                console.log(
-                    "IframeCernboxService: Configuration from iframe parent : ",
-                    ndmspcConfig
-                );
-                setConfig(ndmspcConfig);
-            } catch (e) {
-                console.error(
-                    "IframeCernboxService: Error parsing configuration JSON string from iframe parent : ",
-                    e
-                );
-            }
-        } else if (event?.data?.action === "init_save") {
-            console.log("IframeCernboxService: save:", JSON.stringify(config));
-            window.parent.postMessage(
-                { event: "upload", content: JSON.stringify(config) },
-                targetOrigin
-            );
-        }
-    };
+const IframeCernboxService = ({
+    targetOrigin = "*",
+    onConfigLoad = null,
+}: IframeServiceProps): null => {
+    const [config, setConfig] = useState<unknown>(null);
+    const latest = useRef({ targetOrigin, config });
+    useLayoutEffect(() => {
+        latest.current.targetOrigin = targetOrigin;
+    }, [targetOrigin]);
 
     useEffect(() => {
         if (!window.parent) return;
 
-        console.log("IframeCernboxService: Sending init message to iframe parent ...");
-        window.parent.postMessage({ event: "init" }, targetOrigin);
+        const handlePostMessage = (event: IframeMessage) => {
+            if (event?.data?.action === "load") {
+                const ndmspcConfigString = event.data.content;
+                try {
+                    const ndmspcConfig: unknown = JSON.parse(ndmspcConfigString);
+                    // Save requests can arrive before React commits the loaded configuration.
+                    latest.current.config = ndmspcConfig;
+                    setConfig(ndmspcConfig);
+                } catch (e) {
+                    console.error(
+                        "IframeCernboxService: Error parsing configuration JSON string from iframe parent : ",
+                        e
+                    );
+                }
+            } else if (event?.data?.action === "init_save") {
+                window.parent.postMessage(
+                    { event: "upload", content: JSON.stringify(latest.current.config) },
+                    latest.current.targetOrigin
+                );
+            }
+        };
+        window.parent.postMessage({ event: "init" }, latest.current.targetOrigin);
         window.addEventListener("message", handlePostMessage);
         return () => {
             window.removeEventListener("message", handlePostMessage);
@@ -60,10 +55,6 @@ const IframeCernboxService = ({ targetOrigin = "*", onConfigLoad = null }: Ifram
 
     useEffect(() => {
         if (config === null || onConfigLoad === null) return;
-        console.log(
-            "IframeCernboxService: Calling onConfigLoad callback on ndmspc config ",
-            config
-        );
         onConfigLoad(config);
     }, [config, onConfigLoad]);
 

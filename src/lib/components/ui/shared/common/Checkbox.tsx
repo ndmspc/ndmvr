@@ -44,7 +44,6 @@ export default function Checkbox({
                 classList={["checkboxBox", checked ? "checkboxBoxChecked" : "foobar"]}
                 alignItems="center"
                 justifyContent="center"
-                // hover={{borderColor: '#10b981'}}
             >
                 {checked && <Check width={size * 0.7} height={size * 0.7} color={"#10b981"} />}
             </Container>

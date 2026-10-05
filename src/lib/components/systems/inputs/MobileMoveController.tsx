@@ -250,20 +250,40 @@ export default function MobileMoveController({
 
             <ControllerWrapper $visible={controlsVisible}>
                 <div />
-                <DirectionButton dir="forward" active={active.forward} onPress={press} onRelease={release}>
+                <DirectionButton
+                    dir="forward"
+                    active={active.forward}
+                    onPress={press}
+                    onRelease={release}
+                >
                     <ArrowIcon src={arrowUp} $rotate={0} />
                 </DirectionButton>
                 <div />
 
-                <DirectionButton dir="left" active={active.left} onPress={press} onRelease={release}>
+                <DirectionButton
+                    dir="left"
+                    active={active.left}
+                    onPress={press}
+                    onRelease={release}
+                >
                     <ArrowIcon src={arrowUp} $rotate={-90} />
                 </DirectionButton>
 
-                <DirectionButton dir="back" active={active.back} onPress={press} onRelease={release}>
+                <DirectionButton
+                    dir="back"
+                    active={active.back}
+                    onPress={press}
+                    onRelease={release}
+                >
                     <ArrowIcon src={arrowUp} $rotate={180} />
                 </DirectionButton>
 
-                <DirectionButton dir="right" active={active.right} onPress={press} onRelease={release}>
+                <DirectionButton
+                    dir="right"
+                    active={active.right}
+                    onPress={press}
+                    onRelease={release}
+                >
                     <ArrowIcon src={arrowUp} $rotate={90} />
                 </DirectionButton>
 
@@ -277,7 +297,12 @@ export default function MobileMoveController({
                     <ArrowIconBig src={arrowBig} $rotate={0} />
                 </DirectionButton>
 
-                <DirectionButton dir="down" active={active.down} onPress={press} onRelease={release}>
+                <DirectionButton
+                    dir="down"
+                    active={active.down}
+                    onPress={press}
+                    onRelease={release}
+                >
                     <ArrowIconBig src={arrowBig} $rotate={180} />
                 </DirectionButton>
             </RightControllerWrapper>

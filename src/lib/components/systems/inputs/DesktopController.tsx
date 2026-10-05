@@ -76,8 +76,8 @@ function listenDesktopLook(
 }
 
 export interface DesktopControllerProps {
-    originRef: React.RefObject<THREE.Group>;
-    cameraRef: React.RefObject<THREE.Camera>;
+    originRef: React.RefObject<THREE.Group | null>;
+    cameraRef: React.RefObject<THREE.Camera | null>;
     speed?: number;
 }
 
@@ -85,7 +85,7 @@ export default function DesktopController({
     originRef,
     cameraRef,
     speed = 5,
-}: DesktopControllerProps) {
+}: DesktopControllerProps): null {
     const element = useThree((state) => state.gl.domElement);
 
     const yaw = useRef(0);

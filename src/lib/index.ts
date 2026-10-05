@@ -15,7 +15,10 @@ import DrawOptions from "./components/ui/shared/menu/panels/DrawOptions.tsx";
 import SettingsPanel from "./components/ui/shared/menu/panels/settings/SettingsPanel.tsx";
 import Demo from "./components/ui/shared/menu/panels/Demo.tsx";
 import ModeToolsPanel from "./components/ui/shared/panels/ModeToolsPanel.tsx";
-import { WsConnectionMenu, HttpConnectionMenu } from "./components/ui/shared/menu/panels/ConnectionMenu.tsx";
+import {
+    WsConnectionMenu,
+    HttpConnectionMenu,
+} from "./components/ui/shared/menu/panels/ConnectionMenu.tsx";
 import Menu from "./components/ui/shared/menu/Menu.tsx";
 import IframeService from "./components/service/IframeService.tsx";
 import IframeCernboxService from "./components/service/IframeCernboxService.tsx";
@@ -33,7 +36,6 @@ import {
     functionSubjectGet,
     stateSubjectGet,
 } from "@ndmspc/ndmvr-core";
-
 
 export {
     NdmspcNavigator,
@@ -59,7 +61,6 @@ export {
     Controllers,
     IframeService,
     IframeCernboxService,
-    // useNdmspcConfig,
     histogramSubjectGet,
     brokerManagerGet,
     binInfoSubjectGet,
@@ -69,7 +70,7 @@ export {
     useNdmspcConfig,
     useNdmspcWebsocket,
     useSceneModeStore,
-    defaultSceneModesConfig
+    defaultSceneModesConfig,
 };
 
 // Export types for component props

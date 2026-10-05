@@ -223,4 +223,3 @@ StyleSheet["ToolButtonIcon"] = {
     height: 20,
     color: "rgba(255, 255, 255, 0.74)",
 };
-

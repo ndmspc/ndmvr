@@ -97,7 +97,9 @@ export function getObjectBounds(object: THREE.Object3D | null | undefined): Obje
 }
 
 // Derives frame limits from any rendered Three.js object hierarchy.
-export function getObjectPainterLimits(object: THREE.Object3D | null | undefined): PainterLimits | null {
+export function getObjectPainterLimits(
+    object: THREE.Object3D | null | undefined
+): PainterLimits | null {
     const bounds = getObjectBounds(object);
     if (!bounds) return null;
 
@@ -112,7 +114,10 @@ export function getObjectPainterLimits(object: THREE.Object3D | null | undefined
     return clonePainterLimits(bounds.center, size);
 }
 
-export function getHistogramPadBounds(config: HistogramConfig | null | undefined, id: string): PainterLimits | null {
+export function getHistogramPadBounds(
+    config: HistogramConfig | null | undefined,
+    id: string
+): PainterLimits | null {
     const pad = config?.config?.environment?.histogramPads?.find((p) => p.id === id);
     if (!pad?.position || !pad?.scale) return null;
 

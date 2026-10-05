@@ -1,3 +1,5 @@
-export function Tab({ children, name }: { children: any; name?: string }) {
+import type { ReactNode } from "react";
+
+export function Tab({ children }: { children: ReactNode; name?: string }) {
     return <>{children}</>;
 }

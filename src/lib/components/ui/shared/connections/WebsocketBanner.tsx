@@ -15,19 +15,13 @@ interface WebsocketBannerProps {
     showTransient?: boolean;
 }
 
-export default function WebsocketBanner({ showTransient = true }: WebsocketBannerProps) {
-    const wsUrl = useBrokerStore((s) => s.wsUrl);
-    const status = useBrokerStore((s) => s.connectionStatus);
-    const error = useBrokerStore((s) => s.error);
-    const disconnect = useBrokerStore((s) => s.disconnect);
-    const clearError = useBrokerStore((s) => s.clearError);
+interface BannerProps {
+    color?: string;
+    children: React.ReactNode;
+}
 
-    interface BannerProps {
-        color?: string;
-        children: React.ReactNode;
-    }
-
-    const Banner = ({ color = "gray", children }: BannerProps) => (
+function Banner({ color = "gray", children }: BannerProps) {
+    return (
         <Container
             flexDirection="row"
             justifyContent="space-evenly"
@@ -41,6 +35,14 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
             {children}
         </Container>
     );
+}
+
+export default function WebsocketBanner({ showTransient = true }: WebsocketBannerProps) {
+    const wsUrl = useBrokerStore((s) => s.wsUrl);
+    const status = useBrokerStore((s) => s.connectionStatus);
+    const error = useBrokerStore((s) => s.error);
+    const disconnect = useBrokerStore((s) => s.disconnect);
+    const clearError = useBrokerStore((s) => s.clearError);
 
     if (status === STAT.CONNECTED) {
         return (
@@ -69,7 +71,6 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                     <Text paddingLeft={10} fontSize={12}>
                         Connecting to {trimUrl(wsUrl)} ...
                     </Text>
-                    {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button hover={{ backgroundColor: "#059669" }} onClick={disconnect}>
                         <Text>Disconnect</Text>
                     </Button>
@@ -84,7 +85,6 @@ export default function WebsocketBanner({ showTransient = true }: WebsocketBanne
                     <Text paddingLeft={10} fontSize={12} color="orange">
                         Reconnecting to {trimUrl(wsUrl)} ...
                     </Text>
-                    {/*<Loading alignSelf="center" size="lg"/>*/}
                     <Button hover={{ backgroundColor: "#059669" }} onClick={disconnect}>
                         <Text>Disconnect</Text>
                     </Button>

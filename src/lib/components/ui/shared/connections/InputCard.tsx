@@ -2,7 +2,7 @@ import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-de
 import { Text, Input } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
 import { STAT, ConnectionStatus } from "../../../../stores/broker/constants.ts";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 interface InputCardProps {
     type: "http" | "ws";
@@ -39,12 +39,11 @@ export default function InputCard({
         "ws://ndmspc.cern.ch/ws/root.websocket",
     ];
 
-    const radioGroupValue = useRef(predefined.includes(firstValue) ? firstValue : "");
+    const radioGroupValue = predefined.includes(value) ? value : "";
 
     const handleChangeForWs = (v) => {
         setValue(v);
         onChange(v);
-        radioGroupValue.current = predefined.includes(v) ? v : "";
     };
 
     return (
@@ -56,14 +55,12 @@ export default function InputCard({
                         minWidth={350}
                         value={value}
                         onValueChange={handleChangeForWs}
-                        // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                        multiline={false}
                         wordBreak="keep-all"
                         placeholder={placeholder}
                     />
 
                     <RadioGroup
-                        value={radioGroupValue.current}
+                        value={radioGroupValue}
                         defaultValue={firstValue}
                         onValueChange={handleChangeForWs}
                     >
@@ -114,8 +111,6 @@ export default function InputCard({
                             setValue(v);
                             onChange(v);
                         }}
-                        // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                        multiline={false}
                         wordBreak="keep-all"
                         placeholder={placeholder}
                     />
@@ -140,7 +135,6 @@ export default function InputCard({
             )}
 
             <Button
-                // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types
                 classList={["buttonPrimary"]}
                 hover={{ backgroundColor: "#059669" }}
                 onClick={onSubmit}

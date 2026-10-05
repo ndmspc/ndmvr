@@ -117,24 +117,46 @@ export function getAxisMarkerPlacementCandidates(
 // Chooses the axis label edge that is closest to the camera.
 export function getNearestAxisEdgeIndices(
     boxScale: THREE.Vector3,
-    localCameraPosition: THREE.Vector3
+    localCameraPosition: THREE.Vector3,
+    result: AxisEdgeIndices = { x: 0, y: 0, z: 0 }
 ): AxisEdgeIndices {
-    const getNearestIndex = (axis: AxisKey): 0 | 1 => {
-        const candidates = getAxisMarkerPlacementCandidates(axis, boxScale);
-        const distances = candidates.map((candidate) => {
-            const [x, y, z] = candidate.position;
+    const x = boxScale.x / 2;
+    const y = boxScale.y / 2;
+    const z = boxScale.z / 2;
+    const cameraX = localCameraPosition.x;
+    const cameraY = localCameraPosition.y;
+    const cameraZ = localCameraPosition.z;
+    const negativeXDelta = cameraX + x;
+    const positiveXDelta = cameraX - x;
+    const negativeYDelta = cameraY + y;
+    const negativeZDelta = cameraZ + z;
+    const positiveZDelta = cameraZ - z;
+    const cameraXSquared = cameraX * cameraX;
+    const cameraYSquared = cameraY * cameraY;
+    const cameraZSquared = cameraZ * cameraZ;
+    const negativeXSquared = negativeXDelta * negativeXDelta;
+    const positiveXSquared = positiveXDelta * positiveXDelta;
+    const negativeYSquared = negativeYDelta * negativeYDelta;
+    const negativeZSquared = negativeZDelta * negativeZDelta;
+    const positiveZSquared = positiveZDelta * positiveZDelta;
 
-            return localCameraPosition.distanceToSquared(new THREE.Vector3(x, y, z));
-        });
+    result.x =
+        cameraXSquared + negativeYSquared + positiveZSquared <=
+        cameraXSquared + negativeYSquared + negativeZSquared
+            ? 0
+            : 1;
+    result.y =
+        negativeXSquared + negativeYSquared + cameraZSquared <=
+        positiveXSquared + negativeYSquared + cameraZSquared
+            ? 0
+            : 1;
+    result.z =
+        positiveXSquared + cameraYSquared + positiveZSquared <=
+        negativeXSquared + cameraYSquared + negativeZSquared
+            ? 0
+            : 1;
 
-        return distances[0] <= distances[1] ? 0 : 1;
-    };
-
-    return {
-        x: getNearestIndex("x"),
-        y: getNearestIndex("y"),
-        z: getNearestIndex("z"),
-    };
+    return result;
 }
 
 // Creates the text lines shown in the center info block.

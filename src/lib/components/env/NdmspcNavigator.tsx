@@ -1,5 +1,3 @@
-// import { useRef, useState } from "react";
-// import { parse as jsrootParse } from "jsroot";
 import NdmspcEnv from "./NdmspcEnv";
 import NdmspcDefaultBrowserEnv from "./NdmspcDefaultBrowserEnv";
 import useNdmspcConfig from "../../hooks/useNdmspcConfig";
@@ -56,11 +54,13 @@ function NdmspcNavigator({
                 <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
             )}
             {localConfig?.type === "browser" && (
-                <NdmspcDefaultBrowserEnv file={localConfig?.file} layout="simple" setBrowser={setBrowserConfig}/>
+                <NdmspcDefaultBrowserEnv
+                    file={localConfig?.file}
+                    layout="simple"
+                    setBrowser={setBrowserConfig}
+                />
             )}
-            {!localConfig?.type && (
-                <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
-            )}
+            {!localConfig?.type && <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />}
         </>
     );
 }

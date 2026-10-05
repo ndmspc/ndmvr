@@ -9,7 +9,7 @@ import {
 } from "../../../interactions/input/useInputBinding";
 
 export interface VRControllerProps {
-    originRef: React.RefObject<THREE.Group>;
+    originRef: React.RefObject<THREE.Group | null>;
     speed?: number;
     snapAngle?: number;
     snapDelay?: number;
@@ -20,7 +20,7 @@ export default function VRController({
     speed = 2,
     snapAngle = Math.PI / 6,
     snapDelay = 0.3,
-}: VRControllerProps) {
+}: VRControllerProps): null {
     const session = useXR((s) => s.session);
     const left = useXRInputSourceState("controller", "left");
     const right = useXRInputSourceState("controller", "right");

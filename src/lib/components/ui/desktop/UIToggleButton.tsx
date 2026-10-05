@@ -3,11 +3,7 @@ import showMenuIcon from "../../../assets/icons/show_menu.svg";
 import closeMenuIcon from "../../../assets/icons/close_menu.svg";
 import { useMenuStore } from "../../../stores/menu/store";
 
-interface ToggleButtonWrapperProps {
-    $isActive: boolean;
-}
-
-const ToggleButtonWrapper = styled.div<ToggleButtonWrapperProps>`
+const ToggleButtonWrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,8 +16,7 @@ const ToggleButtonWrapper = styled.div<ToggleButtonWrapperProps>`
     border-radius: 4px;
     transition: background 0.3s ease;
     &:hover {
-        background: ${(props) =>
-            props.$isActive ? "rgba(0, 150, 255, 0.7)" : "rgba(0, 150, 255, 0.7)"};
+        background: rgba(0, 150, 255, 0.7);
     }
 `;
 
@@ -44,7 +39,7 @@ export default function UIToggleButton() {
 
     if (!menuExists) return null;
     return (
-        <ToggleButtonWrapper $isActive={showMenu} onClick={toggleMenu}>
+        <ToggleButtonWrapper onClick={toggleMenu}>
             {showMenu ? (
                 <CloseMenuImage src={closeMenuIcon} alt={"Close menu"} />
             ) : (

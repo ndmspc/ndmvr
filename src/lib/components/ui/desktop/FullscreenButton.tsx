@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import icon from "../../../assets/icons/fullscreen.svg";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface SafariDocument extends Document {
     webkitFullscreenElement?: Element | null;
@@ -41,8 +41,6 @@ const FullscreenImage = styled.img`
 `;
 
 export default function FullscreenButton() {
-    const [isFullscreen, setIsFullscreen] = useState(false);
-
     const getFullscreenElement = () => {
         const safariDocument = document as SafariDocument;
 
@@ -86,23 +84,15 @@ export default function FullscreenButton() {
     };
 
     useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(Boolean(getFullscreenElement()));
-        };
-
         const handleFullscreenError = (event: Event) => {
             console.error("Fullscreen event error:", event);
         };
 
-        document.addEventListener("fullscreenchange", handleFullscreenChange);
         document.addEventListener("fullscreenerror", handleFullscreenError);
-        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
         document.addEventListener("webkitfullscreenerror", handleFullscreenError);
 
         return () => {
-            document.removeEventListener("fullscreenchange", handleFullscreenChange);
             document.removeEventListener("fullscreenerror", handleFullscreenError);
-            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
             document.removeEventListener("webkitfullscreenerror", handleFullscreenError);
         };
     }, []);

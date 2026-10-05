@@ -10,7 +10,6 @@ export interface UseMoveAndRotationOptions {
 
 export type MoveAndRotationCtx = {
     getOrigin: () => THREE.Object3D | undefined;
-    offset: { x: number; y: number; z: number };
     faceUser: boolean;
 
     session: XRSession | null;

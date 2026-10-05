@@ -10,9 +10,7 @@ export interface StoredRotation {
 }
 
 export type StoredJsonResult<T> =
-    | { status: "missing" }
-    | { status: "invalid" }
-    | { status: "value"; value: T };
+    { status: "missing" } | { status: "invalid" } | { status: "value"; value: T };
 
 export function getSpatialStorageKeys(storageKey: string) {
     return {
@@ -29,9 +27,7 @@ export function readStoredJson<T>(key: string): StoredJsonResult<T> {
 
     try {
         const value = JSON.parse(stored) as T;
-        return value === null
-            ? { status: "invalid" }
-            : { status: "value", value };
+        return value === null ? { status: "invalid" } : { status: "value", value };
     } catch {
         return { status: "invalid" };
     }

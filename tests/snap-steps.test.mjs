@@ -48,10 +48,11 @@ test("missing schema-defined snap axes use the existing default", () => {
         }),
         { x: 2, y: 10, z: 10 }
     );
-    assert.deepEqual(
-        getShiftScaleStep({ config: { environment: { shiftScale: {} } } }),
-        { x: 10, y: 10, z: 10 }
-    );
+    assert.deepEqual(getShiftScaleStep({ config: { environment: { shiftScale: {} } } }), {
+        x: 10,
+        y: 10,
+        z: 10,
+    });
     assert.deepEqual(getShiftScaleStep({}), { x: 10, y: 10, z: 10 });
 });
 

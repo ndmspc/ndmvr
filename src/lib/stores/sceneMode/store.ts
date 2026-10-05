@@ -8,33 +8,18 @@ import {
 } from "../histogramWorkspace";
 
 export type HistogramEventName =
-    | "mouseclick"
-    | "mousedbclick"
-    | "shiftmouseclick"
-    | "shiftmousedbclick"
-    | "mousemove";
+    "mouseclick" | "mousedbclick" | "shiftmouseclick" | "shiftmousedbclick" | "mousemove";
 
-export type BaseEventName =
-    | "onEnter"
-    | "onClick"
-    | "onHover"
-    | "onExit";
+export type BaseEventName = "onEnter" | "onClick" | "onHover" | "onExit";
 
 export type HistogramEventFunction = (event: unknown, context?: unknown) => void;
 
 export type BaseEventFunction = () => void;
 
 export type HistogramEventFunctionConfig =
-    | HistogramEventFunction
-    | HistogramEventFunction[]
-    | "default"
-    | null;
+    HistogramEventFunction | HistogramEventFunction[] | "default" | null;
 
-export type BaseEventFunctionConfig =
-    | BaseEventFunction
-    | BaseEventFunction[]
-    | "default"
-    | null;
+export type BaseEventFunctionConfig = BaseEventFunction | BaseEventFunction[] | "default" | null;
 
 export const histogramEvents: HistogramEventName[] = [
     "mouseclick",
@@ -62,13 +47,9 @@ export interface SceneModeConfig {
     ariaLabel?: string;
     icon?: ModeToolIcon;
 
-    histogramEvents?: Partial<
-        Record<HistogramEventName, HistogramEventFunctionConfig>
-    >;
+    histogramEvents?: Partial<Record<HistogramEventName, HistogramEventFunctionConfig>>;
 
-    baseEvents?: Partial<
-        Record<BaseEventName, BaseEventFunctionConfig>
-    >;
+    baseEvents?: Partial<Record<BaseEventName, BaseEventFunctionConfig>>;
 }
 
 export type SceneModesConfig = Record<string, SceneModeConfig>;
@@ -111,13 +92,15 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                useSceneModeStore.getState().showModeToolsNotification("Normal mode activated", 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification("Normal mode activated", 2000);
             },
             onHover: () => {
                 useSceneModeStore.getState().clearModeToolsNotification();
             },
             onExit: "default",
-        }
+        },
     },
 
     modify: {
@@ -134,13 +117,15 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                useSceneModeStore.getState().showModeToolsNotification("Modify mode activated", 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification("Modify mode activated", 2000);
             },
             onHover: () => {
                 useSceneModeStore.getState().clearModeToolsNotification();
             },
             onExit: "default",
-        }
+        },
     },
 
     scaleBy: {
@@ -157,19 +142,19 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-
-                // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
-                // console.log("Current state: ", cfg);
                 if (!cfg?.config?.histogram?.scale?.scaleBy) return;
                 if (cfg.config.histogram.scale.scaleBy === "value") {
                     cfg.config.histogram.scale.scaleBy = "error";
-                    useSceneModeStore.getState().showModeToolsNotification("Scale By error activated", 2000);
+                    useSceneModeStore
+                        .getState()
+                        .showModeToolsNotification("Scale By error activated", 2000);
                 } else {
                     cfg.config.histogram.scale.scaleBy = "value";
-                    useSceneModeStore.getState().showModeToolsNotification("Scale By value activated", 2000);
+                    useSceneModeStore
+                        .getState()
+                        .showModeToolsNotification("Scale By value activated", 2000);
                 }
-                console.log("Updated config: cfg=", cfg);
                 configSubjectGet().next(cfg);
             },
             onHover: () => {
@@ -179,7 +164,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                 useSceneModeStore.getState().showModeToolsNotification(`Scale By ${scaleBy}`, 2000);
             },
             onExit: "default",
-        }
+        },
     },
 
     colorBy: {
@@ -197,18 +182,19 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
-                // console.log("Current state: ", cfg);
                 if (!cfg?.config?.histogram?.color?.colorBy) return;
                 if (cfg.config.histogram.color.colorBy === "error") {
                     cfg.config.histogram.color.colorBy = "value";
-                    useSceneModeStore.getState().showModeToolsNotification("Color By value activated", 2000);
+                    useSceneModeStore
+                        .getState()
+                        .showModeToolsNotification("Color By value activated", 2000);
                 } else {
                     cfg.config.histogram.color.colorBy = "error";
-                    useSceneModeStore.getState().showModeToolsNotification("Color By error activated", 2000);
+                    useSceneModeStore
+                        .getState()
+                        .showModeToolsNotification("Color By error activated", 2000);
                 }
-                // console.log("Updated config: cfg=", cfg);
                 configSubjectGet().next(cfg);
             },
             onHover: () => {
@@ -218,7 +204,7 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                 useSceneModeStore.getState().showModeToolsNotification(`Color By ${colorBy}`, 2000);
             },
             onExit: "default",
-        }
+        },
     },
 
     layers: {
@@ -235,10 +221,8 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                // console.log("Clicked in layers mode");
                 const activePadId = getActiveHistogramPadId();
                 const state = getActiveHistogramPadState();
-                // console.log("Current state: ", state);
                 if (!activePadId || !state) return;
 
                 let currentLayer: number;
@@ -255,14 +239,20 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                         key: currentLayer.toString(),
                         code: "Numpad" + currentLayer.toString(),
                         bubbles: true,
-                        cancelable: true
-                    }));
+                        cancelable: true,
+                    })
+                );
                 // Core still exposes layer selection through keyboard input; release the synthetic key.
-                window.dispatchEvent(new KeyboardEvent("keyup", {
-                    key: currentLayer.toString(), code: "Numpad" + currentLayer.toString(),
-                }));
+                window.dispatchEvent(
+                    new KeyboardEvent("keyup", {
+                        key: currentLayer.toString(),
+                        code: "Numpad" + currentLayer.toString(),
+                    })
+                );
 
-                useSceneModeStore.getState().showModeToolsNotification(`Layer ${currentLayer - 1} shown`, 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification(`Layer ${currentLayer - 1} shown`, 2000);
                 updateHistogramPadState(activePadId, { currentLayer });
             },
             onHover: () => {
@@ -275,10 +265,12 @@ export const defaultSceneModesConfig: SceneModesConfig = {
                     currentLayer = 1;
                     updateHistogramPadState(activePadId, { currentLayer });
                 }
-                useSceneModeStore.getState().showModeToolsNotification(`Current layer ${currentLayer - 1}`, 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification(`Current layer ${currentLayer - 1}`, 2000);
             },
             onExit: "default",
-        }
+        },
     },
 
     outline: {
@@ -295,31 +287,41 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         baseEvents: {
             onEnter: "default",
             onClick: () => {
-                // console.log("Clicked in outline mode");
                 const cfg = configSubjectGet().getValue();
                 const state = getActiveHistogramPadState();
-                // console.log("Current config: ", cfg);
                 if (!state || !cfg?.config?.histogram?.wireframe) return;
-                cfg.config.histogram.wireframe.display.start = cfg.config.histogram.wireframe.display.start + 1;
-                if (state?.availableAxes) cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
-                if (cfg.config.histogram.wireframe.display.start > cfg.config.histogram.wireframe.display.end) {
+                cfg.config.histogram.wireframe.display.start =
+                    cfg.config.histogram.wireframe.display.start + 1;
+                if (state?.availableAxes)
+                    cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
+                if (
+                    cfg.config.histogram.wireframe.display.start >
+                    cfg.config.histogram.wireframe.display.end
+                ) {
                     cfg.config.histogram.wireframe.display.start = 0;
                     cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
                 }
-
-                // console.log("Updated config: start=", cfg.config.histogram.wireframe.display.start, "end=", cfg.config.histogram.wireframe.display.end);
-                useSceneModeStore.getState().showModeToolsNotification(`Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`, 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification(
+                        `Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`,
+                        2000
+                    );
                 configSubjectGet().next(cfg);
             },
             onHover: () => {
                 const cfg = configSubjectGet().getValue();
                 if (!cfg?.config?.histogram?.wireframe) return;
-                useSceneModeStore.getState().showModeToolsNotification(`Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`, 2000);
+                useSceneModeStore
+                    .getState()
+                    .showModeToolsNotification(
+                        `Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`,
+                        2000
+                    );
             },
             onExit: "default",
-        }
+        },
     },
-
 };
 
 interface SceneModeStore {
@@ -339,10 +341,7 @@ interface SceneModeStore {
     toggleBinBoxEnabled: () => void;
     setUIHover: (state: boolean) => void;
     setVrEnabled: (state: boolean) => void;
-    showModeToolsNotification: (
-        content: ReactNode,
-        lifetimeMs?: number
-    ) => void;
+    showModeToolsNotification: (content: ReactNode, lifetimeMs?: number) => void;
     clearModeToolsNotification: () => void;
 
     shouldDisableRaycaster: () => boolean;
@@ -359,26 +358,30 @@ export const useSceneModeStore = create<SceneModeStore>((set, get) => ({
 
     modesConfig: defaultSceneModesConfig,
 
-    setActiveMode: (mode) => set((state) => {
-        if (!state.modesConfig[mode]) {
-            console.warn(`Scene mode "${mode}" does not exist in modesConfig.`);
-            return state;
-        }
+    setActiveMode: (mode) =>
+        set((state) => {
+            if (!state.modesConfig[mode]) {
+                console.warn(`Scene mode "${mode}" does not exist in modesConfig.`);
+                return state;
+            }
 
-        if (state.activeMode === mode) return state;
+            if (state.activeMode === mode) return state;
 
-        runBaseEvent(state.activeMode, "onExit", state.modesConfig[state.activeMode]?.baseEvents?.onExit);
-        runBaseEvent(mode, "onEnter", state.modesConfig[mode]?.baseEvents?.onEnter);
+            runBaseEvent(
+                state.activeMode,
+                "onExit",
+                state.modesConfig[state.activeMode]?.baseEvents?.onExit
+            );
+            runBaseEvent(mode, "onEnter", state.modesConfig[mode]?.baseEvents?.onEnter);
 
-        return { activeMode: mode };
-    }),
+            return { activeMode: mode };
+        }),
 
-    setModesConfig: (config) => set({
-        modesConfig:
-            config && Object.keys(config).length > 0
-                ? config
-                : defaultSceneModesConfig,
-    }),
+    setModesConfig: (config) =>
+        set({
+            modesConfig:
+                config && Object.keys(config).length > 0 ? config : defaultSceneModesConfig,
+        }),
 
     getOnClickEvent: (mode: string, config: SceneModesConfig) => {
         const handlers = resolveBaseEventHandlers(config[mode]?.baseEvents?.onClick);

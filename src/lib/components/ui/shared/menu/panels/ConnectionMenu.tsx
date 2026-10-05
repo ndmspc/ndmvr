@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Checkbox from "../../common/Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
@@ -38,8 +38,17 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
     const [selectedSets, setSelectedSets] = useState([]);
 
     const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
+    const selectedRendererRef = useRef(selectedRenderer);
+    const httpRequestRef = useRef<AbortController | null>(null);
 
     const idHistogram = "pad1";
+
+    useLayoutEffect(() => {
+        return () => {
+            httpRequestRef.current?.abort();
+            httpRequestRef.current = null;
+        };
+    }, []);
 
     useEffect(() => {
         const stateSubject = stateSubjectGet(idHistogram)
@@ -93,6 +102,7 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
     };
 
     const handleRendererSelect = (value) => {
+        selectedRendererRef.current = value;
         setSelectedRenderer(value);
 
         if (selectedHistogram) {
@@ -138,68 +148,45 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
 
         if (type === "ws") {
             connect(value);
-
-            // const checkConnection = setInterval(() => {
-            //     if (connectionStatus === 'connected') {
-            //         clearInterval(checkConnection);
-            //         if (onClose) onClose();
-            //     }
-            // }, 100);
-            //
-            // setTimeout(() => clearInterval(checkConnection), 5000);
         }
 
         if (type === "http") {
-            if (httpLoading) return;
+            if (httpRequestRef.current) return;
+
+            const request = new AbortController();
+            httpRequestRef.current = request;
+            const isCurrentRequest = () => httpRequestRef.current === request;
 
             setHttpLoading(true);
             setHttpLoaded(false);
 
             try {
-                const res = await fetch(value);
+                const res = await fetch(value, { signal: request.signal });
+                if (!isCurrentRequest()) return;
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                 const obj = await res.json();
+                if (!isCurrentRequest()) return;
                 const rootObj = parse(obj);
-
-                // histogramSubjectGet().next({
-                //     id: "histogram1",
-                //     opts: {
-                //         render: "ndmvr",
-                //         config: {
-                //             TH1ZScale: {
-                //                 default: 0.8,
-                //                 layer: [0.08, 1, 1, 1],
-                //                 set: 0.1,
-                //             },
-                //             color: {
-                //                 default: {
-                //                     min: "0x0033ff",
-                //                     max: "0xff3300",
-                //                 },
-                //             }
-                //         }
-                //     },
-                //     obj: rootObj.arr?.[0] ?? rootObj,
-                // });
 
                 setSelectedHistogram(rootObj.arr?.[0] ?? rootObj);
 
                 histogramSubjectGet().next({
                     id: idHistogram,
-                    opts: { render: selectedRenderer },
+                    opts: { render: selectedRendererRef.current },
                     obj: rootObj.arr?.[0] ?? rootObj,
                 });
 
                 setHttpLoaded(true);
-                // if (onClose) {
-                //     setTimeout(() => onClose(), 500);
-                // }
             } catch (err) {
+                if (!isCurrentRequest()) return;
                 console.error("Failed to load:", err);
                 setValidationStatus((prev) => ({ ...prev, [type]: "error" }));
             } finally {
-                setHttpLoading(false);
+                if (isCurrentRequest()) {
+                    httpRequestRef.current = null;
+                    setHttpLoading(false);
+                }
             }
         }
     };
@@ -218,6 +205,11 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
                         placeholder="http://"
                         firstValue={inputValues.http}
                         onChange={(v) => {
+                            if (v !== inputValues.http) {
+                                httpRequestRef.current?.abort();
+                                httpRequestRef.current = null;
+                                setHttpLoading(false);
+                            }
                             setInputValues((p) => ({ ...p, http: v }));
                             setValidationStatus((p) => ({ ...p, http: null }));
                         }}
@@ -247,7 +239,6 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
                         <>
                             <Divider />
                             <Container gap={12} alignItems="center" flexDirection={"column"}>
-                                {/*<Container gap={12} flexDirection="column">*/}
                                 <Dropdown
                                     placeholder={"Select array"}
                                     options={availableArrays}
@@ -306,7 +297,6 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
                         </>
                     )}
                 </Container>
-                {/*</Container>*/}
             </DropdownProvider>
         </Container>
     );

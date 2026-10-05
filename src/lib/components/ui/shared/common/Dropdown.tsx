@@ -96,7 +96,7 @@ export default function Dropdown({
                     <Container
                         classList={["dropdownList"]}
                         flexDirection="column"
-                        // @ts-ignore - overflowY prop exists at runtime but is missing from @react-three/uikit types
+                        // @ts-expect-error Preserve existing per-axis scroll props; UIKit types declare only overflow.
                         overflowY="scroll"
                         overflowX="scroll"
                         height="100%"
@@ -111,7 +111,6 @@ export default function Dropdown({
                                 hover={{ backgroundColor: "#059669" }}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    console.log("Clicked:", opt);
                                     setSelected(opt);
                                     setOpenDropdownId(null);
                                     onSelect?.(opt);

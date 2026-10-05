@@ -20,13 +20,12 @@
     ],
     "type": "module",
     "types": "./dist/ndmvr.d.ts",
-    "main": "./dist/ndmvr.umd.js",
+    "main": "./dist/ndmvr.es.js",
     "module": "./dist/ndmvr.es.js",
     "exports": {
         ".": {
             "types": "./dist/ndmvr.d.ts",
-            "import": "./dist/ndmvr.es.js",
-            "require": "./dist/ndmvr.umd.js"
+            "import": "./dist/ndmvr.es.js"
         },
         "./style.css": "./dist/ndmvr.css"
     },
@@ -36,11 +35,11 @@
         "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
         "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
         "watch": "vite build --watch",
-        "lint": "eslint ./src --ext js,jsx,ts,tsx --report-unused-disable-directives .gitignore",
-        "preview": "vite -c vite.config.app.ts",
+        "lint": "eslint src tests eslint.config.js vite.config.ts vite.config.app.ts --report-unused-disable-directives",
+        "preview": "vite preview -c vite.config.app.ts",
         "type-check": "tsc --noEmit",
-        "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
-        "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\""
+        "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\" \"tests/**/*.mjs\" package.json eslint.config.js tsconfig.json vite.config.ts vite.config.app.ts .gitlab-ci.yml",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\" \"tests/**/*.mjs\" package.json eslint.config.js tsconfig.json vite.config.ts vite.config.app.ts .gitlab-ci.yml"
     },
     "peerDependencies": {
         "react": ">=19 <20",
@@ -57,10 +56,7 @@
         "@react-three/uikit-lucide": "^1.0.73",
         "@react-three/xr": "^6.6.30",
         "ajv": "^8.20.0",
-        "d3-selection": "^3.0.0",
         "jsroot": "^7.11.0",
-        "lucide-react": "^1.17.0",
-        "react-compiler-runtime": "^1.0.0",
         "rxjs": "^7.8.2",
         "styled-components": "^6.4.2",
         "three": "^0.184.0",
@@ -70,9 +66,9 @@
         "@babel/core": "^7.29.7",
         "@eslint/js": "^10.0.1",
         "@microsoft/api-extractor": "^7.57.0",
+        "@pmndrs/xr": "6.6.31",
         "@rolldown/plugin-babel": "^0.2.3",
         "@types/babel__core": "^7.20.5",
-        "@types/d3-selection": "^3.0.11",
         "@types/node": "^25.9.1",
         "@types/react": "^19.2.15",
         "@types/react-dom": "^19.2.3",
@@ -85,6 +81,7 @@
         "eslint-plugin-react-hooks": "^7.1.1",
         "eslint-plugin-react-refresh": "^0.5.2",
         "globals": "^17.6.0",
+        "jsdom": "29.1.1",
         "prettier": "^3.8.3",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.60.0",
