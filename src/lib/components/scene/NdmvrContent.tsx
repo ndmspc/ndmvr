@@ -3,10 +3,7 @@ import HistogramWrapper from "./HistogramWrapper.tsx";
 import ModeToolsPanel from "../ui/shared/panels/ModeToolsPanel.tsx";
 import { useInputBinding } from "../../interactions/input/useInputBinding";
 import { selectSceneMode, useSceneModeStore } from "../../stores/sceneMode/store";
-import {
-    retainHistogramWorkspace,
-    useHistogramWorkspace,
-} from "../../stores/histogramWorkspace";
+import { retainHistogramWorkspace, useHistogramWorkspace } from "../../stores/histogramWorkspace";
 
 /** The standard histogram feature: rendering, workspace lifetime, shortcuts, and mode tools. */
 export default function NdmvrContent() {

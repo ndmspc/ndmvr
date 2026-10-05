@@ -368,7 +368,9 @@ test("Env forwards browserConfig and preserves browser scene and input placement
     assert.equal(dom().querySelector("[data-file-browser]"), null);
     assert.deepEqual(browserActions(), ["open-browser"]);
     assert.ok(dom().textContent.includes("Browser"));
-    await environment.rerender({ props: { browserConfig: { ...browserConfig, setBrowser: undefined } } });
+    await environment.rerender({
+        props: { browserConfig: { ...browserConfig, setBrowser: undefined } },
+    });
     assert.deepEqual(browserActions(), [], "scene data alone does not enable browser actions");
     assert.ok(dom().querySelector("[data-file-browser]"));
 });
@@ -392,7 +394,8 @@ test("partial browserConfig keeps controls usable and waits for a real tree docu
     const inputPanel = [...environment.ui].find(
         ({ props }) => props.classList?.includes("menuContainer") && props.ref
     );
-    const hasTree = () => [...dom().querySelectorAll("span")].some((text) => text.textContent === rootNode._name);
+    const hasTree = () =>
+        [...dom().querySelectorAll("span")].some((text) => text.textContent === rootNode._name);
     for (const data of [
         { hierarchy, rootNode },
         { hierarchy, rootNode, hierarchyDocRef: { current: null } },
@@ -403,8 +406,16 @@ test("partial browserConfig keeps controls usable and waits for a real tree docu
         await environment.rerender({ props: { browserConfig: { ...controls, ...data } } });
         await environment.flushOverlay();
         assert.equal(hasTree(), false, "incomplete tree data never mounts TreeViewer");
-        assert.equal(dom().querySelector("[data-file-browser]"), browser, "renderer controls remain mounted");
-        assert.equal(environment.browserProps.doc, data.hierarchyDocRef ?? null, "no substitute document ref is manufactured");
+        assert.equal(
+            dom().querySelector("[data-file-browser]"),
+            browser,
+            "renderer controls remain mounted"
+        );
+        assert.equal(
+            environment.browserProps.doc,
+            data.hierarchyDocRef ?? null,
+            "no substitute document ref is manufactured"
+        );
         assert.ok(dom().textContent.includes("Renderer:"));
         assert.ok(dom().textContent.includes("Independent browser input"));
         assert.ok(environment.ui.has(inputPanel));
@@ -420,7 +431,11 @@ test("partial browserConfig keeps controls usable and waits for a real tree docu
     assert.equal(hasTree(), true, "the same ref becomes usable when its real document is attached");
     assert.equal(environment.browserProps.doc, hierarchyDocRef);
     await environment.rerender({ props: { browserConfig: { ...browserConfig, hierarchy: null } } });
-    assert.equal(hasTree(), true, "a static root with a document does not require an expandable hierarchy");
+    assert.equal(
+        hasTree(),
+        true,
+        "a static root with a document does not require an expandable hierarchy"
+    );
     await environment.act(() => useMenuStore.getState().setShowMenu(false));
     assert.equal(hasTree(), true);
     assert.ok(environment.ui.has(inputPanel));
@@ -495,7 +510,9 @@ test("BrowserMenu changes the owner config only when selected and keeps distinct
             type: browser ? "object" : "browser",
         });
         assert.deepEqual(updates[0](null), { type: browser ? "object" : "browser" });
-        await environment.rerender({ props: { browserConfig: { ...browserConfig, browser: !browser } } });
+        await environment.rerender({
+            props: { browserConfig: { ...browserConfig, browser: !browser } },
+        });
         assert.equal(updates.length, 1, "changing browser state unmounts the completed action");
         await environment.act(() => useMenuStore.getState().setShowMenu(false));
         await environment.act(() => useMenuStore.getState().setShowMenu(true));
@@ -505,7 +522,10 @@ test("BrowserMenu changes the owner config only when selected and keeps distinct
     }
 });
 
-for (const [browser, outcome] of [[false, "resolves"], [true, "rejects"]]) {
+for (const [browser, outcome] of [
+    [false, "resolves"],
+    [true, "rejects"],
+]) {
     test(`BrowserMenu waits for XR session ending and switches when it ${outcome}`, async (t) => {
         configure(t);
         const updates = [];
@@ -526,7 +546,9 @@ for (const [browser, outcome] of [[false, "resolves"], [true, "rejects"]]) {
         assert.equal(updates.length, 0);
         await environment.rerender({ props: { browserConfig: { ...browserConfig } } });
         assert.equal(endCalls, 1, "a new config object does not restart the pending action");
-        await environment.act(() => finish(outcome === "rejects" ? new Error("end failed") : undefined));
+        await environment.act(() =>
+            finish(outcome === "rejects" ? new Error("end failed") : undefined)
+        );
         assert.equal(updates.length, 1);
         assert.deepEqual(updates[0](null), { type: browser ? "object" : "browser" });
         await environment.exit();
@@ -542,7 +564,10 @@ test("closing Menu cancels a browser switch while XR session ending is pending",
     });
     await environment.enter();
     let finish;
-    environment.session.end = () => new Promise((resolve) => { finish = resolve; });
+    environment.session.end = () =>
+        new Promise((resolve) => {
+            finish = resolve;
+        });
     await selectMenuAction("open-browser");
     await environment.act(() => useMenuStore.getState().setShowMenu(false));
     await environment.act(() => finish());
@@ -606,25 +631,53 @@ test("browser selection displays once per click and preserves pad rotation and r
     const displayCount = environment.browserDisplays.length;
     const emissionCount = emissions.length;
     await environment.act(() => environment.browserProps.onSelect("h1"));
-    assert.deepEqual(environment.browserDisplays.slice(displayCount), ["h1"], "a changed selection allocates one display");
-    assert.deepEqual(emissions.slice(emissionCount).map(({ id }) => id), ["pad1"]);
+    assert.deepEqual(
+        environment.browserDisplays.slice(displayCount),
+        ["h1"],
+        "a changed selection allocates one display"
+    );
+    assert.deepEqual(
+        emissions.slice(emissionCount).map(({ id }) => id),
+        ["pad1"]
+    );
     await environment.act(() => environment.browserProps.onSelect("h1"));
     await environment.act(() => environment.browserProps.onSelect("h2"));
-    await environment.act(() => Promise.all([
-        environment.browserProps.onSelect("h3"),
-        environment.browserProps.onSelect("h4"),
-    ]));
-    assert.deepEqual(environment.browserDisplays.slice(displayCount), ["h1", "h1", "h2", "h3", "h4"]);
-    assert.deepEqual(emissions.slice(emissionCount).map(({ id }) => id), ["pad1", "pad2", "pad3", "pad4", "pad1"]);
-    assert.deepEqual(environment.browserDisplayCalls.slice(displayCount).map(({ opt }) => opt), Array(5).fill("hist"));
+    await environment.act(() =>
+        Promise.all([
+            environment.browserProps.onSelect("h3"),
+            environment.browserProps.onSelect("h4"),
+        ])
+    );
+    assert.deepEqual(environment.browserDisplays.slice(displayCount), [
+        "h1",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+    ]);
+    assert.deepEqual(
+        emissions.slice(emissionCount).map(({ id }) => id),
+        ["pad1", "pad2", "pad3", "pad4", "pad1"]
+    );
+    assert.deepEqual(
+        environment.browserDisplayCalls.slice(displayCount).map(({ opt }) => opt),
+        Array(5).fill("hist")
+    );
     assert.deepEqual(
         ["pad1", "pad2", "pad3", "pad4"].map((id) => workspace().histogramsByPad[id].obj.name),
         ["h4", "h1", "h2", "h3"]
     );
     const beforeRenderer = emissions.length;
     await environment.act(() => environment.browserProps.setRendererMode("ndmvr"));
-    assert.equal(environment.browserDisplays.length - displayCount, 5, "renderer changes re-publish pads without another display");
-    assert.deepEqual(emissions.slice(beforeRenderer).map(({ id }) => id), ["pad1", "pad2", "pad3", "pad4"]);
+    assert.equal(
+        environment.browserDisplays.length - displayCount,
+        5,
+        "renderer changes re-publish pads without another display"
+    );
+    assert.deepEqual(
+        emissions.slice(beforeRenderer).map(({ id }) => id),
+        ["pad1", "pad2", "pad3", "pad4"]
+    );
     assert.ok(emissions.slice(beforeRenderer).every(({ opts }) => opts.render === "ndmvr"));
     await environment.act(() => environment.browserProps.onSelect("h5"));
     assert.equal(emissions.at(-1).id, "pad2", "renderer changes do not reset pad rotation");
@@ -644,7 +697,9 @@ test("default browser preserves mounted VR/renderer switching and visible contro
     assert.equal(environment.browserProps.hierarchy, environment.browserPainters[0]);
     assert.equal(workspace().histogramsByPad.pad1.opts.render, "jsroot");
     assert.ok(environment.browserDisplayCalls.length > 0, "the initial item still displays");
-    assert.ok(environment.browserDisplayCalls.every(({ path, opt }) => path === "h1" && opt === null));
+    assert.ok(
+        environment.browserDisplayCalls.every(({ path, opt }) => path === "h1" && opt === null)
+    );
     const initialDisplays = environment.browserDisplays.length;
     await environment.act(() => environment.browserPainters[0].display("programmatic", "lego"));
     assert.equal(environment.browserDisplays.length, initialDisplays + 1);
@@ -652,7 +707,11 @@ test("default browser preserves mounted VR/renderer switching and visible contro
     assert.deepEqual(environment.browserDisplayCalls.at(-1), { path: "programmatic", opt: "lego" });
     await environment.act(() => environment.browserProps.onSelect("h2"));
     assert.equal(environment.browserDisplays.length, initialDisplays + 2);
-    assert.deepEqual(environment.browserDisplayCalls.at(-1), { path: "h2", opt: "" }, "clicks retain the initial null-option fallback");
+    assert.deepEqual(
+        environment.browserDisplayCalls.at(-1),
+        { path: "h2", opt: "" },
+        "clicks retain the initial null-option fallback"
+    );
     assert.equal(images("Fullscreen Button").length, 1);
     assert.equal(images("Show menu").length, 1);
     const canvas = dom().querySelector("[data-canvas]");
@@ -689,7 +748,7 @@ test("JsrootEnv retains its ordinary histogram Canvas without the cinema tab/str
     const histogram = { id: "pad1", obj: { _typename: "TH1F", title: "ordinary" } };
     await environment.act(() => histogramSubjectGet().next(histogram));
     assert.equal(environment.redraws.length, 1);
-    assert.equal(environment.redraws[0][0], "pad1");
+    assert.equal(environment.redraws[0][0], pad);
     assert.equal(environment.redraws[0][1], histogram.obj);
 });
 

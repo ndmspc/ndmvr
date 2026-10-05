@@ -59,10 +59,7 @@ const extractMinMaxForm = (selectedArrayMinMax): MinMaxFieldValues => {
         selectedArrayMinMax.val ??
         selectedArrayMinMax;
     const errorSource =
-        selectedArrayMinMax.error ??
-        selectedArrayMinMax.errors ??
-        selectedArrayMinMax.err ??
-        null;
+        selectedArrayMinMax.error ?? selectedArrayMinMax.errors ?? selectedArrayMinMax.err ?? null;
 
     const [valueMin, valueMax] = readMinMaxPair(valueSource);
     const [errorMin, errorMax] = readMinMaxPair(errorSource);
@@ -87,7 +84,7 @@ export default function DrawOptions() {
     const pads = useHistogramWorkspace((state) => state.pads);
     const activePadId = useHistogramWorkspace((state) => state.activePadId);
     const histogram = useHistogramWorkspace((state) =>
-        state.activePadId ? state.histogramsByPad[state.activePadId] ?? null : null
+        state.activePadId ? (state.histogramsByPad[state.activePadId] ?? null) : null
     );
     const activePadState = useHistogramWorkspace((state) =>
         state.activePadId ? state.statesByPad[state.activePadId] : undefined
@@ -108,11 +105,8 @@ export default function DrawOptions() {
         }
 
         const latestMinMax = minMaxValue[minMaxValue.length - 1]?.[selectedArray];
-        console.log("MinMaxValue updated:", latestMinMax);
         setMinMaxForm(extractMinMaxForm(latestMinMax));
     }, [minMaxValue, selectedArray]);
-
-
 
     const updateStateSubject = (updates) => {
         if (!activePadId) return;
@@ -162,7 +156,7 @@ export default function DrawOptions() {
             error: {
                 min: toNumberOrNull(minMaxForm.errorMin),
                 max: toNumberOrNull(minMaxForm.errorMax),
-            }
+            },
         };
 
         const previousMinMaxValue = Array.isArray(minMaxValue) ? minMaxValue : [];
@@ -170,7 +164,6 @@ export default function DrawOptions() {
         if (previousMinMaxValue.length === 0) {
             const initializedMinMaxValue = [{ [selectedArray]: payload }];
             updateStateSubject({ minMaxValue: initializedMinMaxValue });
-            console.log("Submitted min/max payload:", payload);
             return;
         }
 
@@ -184,7 +177,6 @@ export default function DrawOptions() {
         };
 
         updateStateSubject({ minMaxValue: updatedMinMaxValue });
-        console.log("Submitted min/max payload:", payload);
     };
 
     return (
@@ -207,7 +199,9 @@ export default function DrawOptions() {
                         key={`array-${activePadId ?? "none"}-${selectedArray}`}
                         placeholder={"Select array"}
                         options={availableArrays}
-                        defaultValue={selectedArray || (availableArrays.length > 0 ? availableArrays[0] : "")}
+                        defaultValue={
+                            selectedArray || (availableArrays.length > 0 ? availableArrays[0] : "")
+                        }
                         onSelect={(value) => {
                             handleArraySelect(value);
                         }}
@@ -221,8 +215,6 @@ export default function DrawOptions() {
                                 minWidth={140}
                                 value={minMaxForm.valueMin}
                                 onValueChange={(value) => handleMinMaxChange("valueMin", value)}
-                                // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                                multiline={false}
                                 placeholder="min"
                             />
                             <Input
@@ -230,8 +222,6 @@ export default function DrawOptions() {
                                 minWidth={140}
                                 value={minMaxForm.valueMax}
                                 onValueChange={(value) => handleMinMaxChange("valueMax", value)}
-                                // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                                multiline={false}
                                 placeholder="max"
                             />
                         </Container>
@@ -243,8 +233,6 @@ export default function DrawOptions() {
                                 minWidth={140}
                                 value={minMaxForm.errorMin}
                                 onValueChange={(value) => handleMinMaxChange("errorMin", value)}
-                                // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                                multiline={false}
                                 placeholder="min"
                             />
                             <Input
@@ -252,14 +240,11 @@ export default function DrawOptions() {
                                 minWidth={140}
                                 value={minMaxForm.errorMax}
                                 onValueChange={(value) => handleMinMaxChange("errorMax", value)}
-                                // @ts-ignore - multiline prop exists at runtime but is missing from @react-three/uikit types
-                                multiline={false}
                                 placeholder="max"
                             />
                         </Container>
 
                         <Button
-                            // @ts-ignore - classList prop exists at runtime but is missing from @react-three/uikit-default types
                             classList={["buttonPrimary"]}
                             hover={{ backgroundColor: "#059669" }}
                             onClick={handleSubmitMinMax}
@@ -312,8 +297,6 @@ export default function DrawOptions() {
                             </Container>
                         )}
                     </Container>
-
-
                 </Container>
             </DropdownProvider>
         </Container>

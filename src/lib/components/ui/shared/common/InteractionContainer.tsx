@@ -1,15 +1,31 @@
 import { Container as UIKitContainer } from "@react-three/uikit";
 import { useUIInteractionOwner } from "../../../../stores/interaction/uiInteraction";
 import { useCallback, useEffect, useRef } from "react";
+import type { ComponentProps } from "react";
 
-export const InteractionContainer = (props) => {
+type PointerHandler = Extract<
+    ComponentProps<typeof UIKitContainer>["onPointerDown"],
+    (event: never) => void
+>;
+
+type InteractionContainerProps = ComponentProps<typeof UIKitContainer> & {
+    onPointerDown?: PointerHandler;
+    onPointerUp?: PointerHandler;
+    onPointerCancel?: PointerHandler;
+    onPointerLeave?: PointerHandler;
+};
+
+export const InteractionContainer = (props: InteractionContainerProps) => {
     const pointers = useRef(new Set<number>());
     const setInteracting = useUIInteractionOwner();
-    const release = useCallback((event: { pointerId: number }) => {
-        if (pointers.current.delete(event.pointerId) && pointers.current.size === 0) {
-            setInteracting(false);
-        }
-    }, [setInteracting]);
+    const release = useCallback(
+        (event: { pointerId: number }) => {
+            if (pointers.current.delete(event.pointerId) && pointers.current.size === 0) {
+                setInteracting(false);
+            }
+        },
+        [setInteracting]
+    );
     useEffect(() => {
         const cancel = () => {
             pointers.current.clear();

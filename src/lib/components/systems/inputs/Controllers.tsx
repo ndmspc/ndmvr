@@ -5,8 +5,8 @@ import VRController from "./VRController.tsx";
 import DesktopController from "./DesktopController.tsx";
 
 export interface ControllersProps {
-    originRef: React.RefObject<THREE.Group>;
-    cameraRef: React.RefObject<THREE.Camera>;
+    originRef: React.RefObject<THREE.Group | null>;
+    cameraRef: React.RefObject<THREE.Camera | null>;
     desktopSpeed?: number;
     vrSpeed?: number;
 }

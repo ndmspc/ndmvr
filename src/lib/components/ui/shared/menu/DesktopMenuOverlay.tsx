@@ -28,20 +28,20 @@ type OverlayState = {
 
 type InteractionState =
     | {
-        type: "drag";
-        startClientX: number;
-        startClientY: number;
-        startLeft: number;
-        startTop: number;
-    }
+          type: "drag";
+          startClientX: number;
+          startClientY: number;
+          startLeft: number;
+          startTop: number;
+      }
     | {
-        type: "scale";
-        startClientX: number;
-        startClientY: number;
-        startScale: number;
-        startLeft: number;
-        startTop: number;
-    };
+          type: "scale";
+          startClientX: number;
+          startClientY: number;
+          startScale: number;
+          startLeft: number;
+          startTop: number;
+      };
 
 type UIKitPointerEventLike = {
     nativeEvent?: unknown;
@@ -128,20 +128,13 @@ function stopDesktopPointerEvent(event: unknown) {
 }
 
 function getViewportSize(canvasSize: { width: number; height: number }) {
-    const width =
-        canvasSize.width ||
-        (typeof window !== "undefined" ? window.innerWidth : 1024);
-    const height =
-        canvasSize.height ||
-        (typeof window !== "undefined" ? window.innerHeight : 768);
+    const width = canvasSize.width || (typeof window !== "undefined" ? window.innerWidth : 1024);
+    const height = canvasSize.height || (typeof window !== "undefined" ? window.innerHeight : 768);
 
     return { width, height };
 }
 
-function clampOverlayState(
-    state: OverlayState,
-    canvasSize: { width: number; height: number }
-) {
+function clampOverlayState(state: OverlayState, canvasSize: { width: number; height: number }) {
     const viewport = getViewportSize(canvasSize);
     const scale = clampNumber(state.scale, MIN_SCALE, MAX_SCALE);
     const estimatedWidth = ESTIMATED_WIDTH * scale;
@@ -309,8 +302,10 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
             if (!interaction || interaction.type !== "scale") return;
 
             const scaleDelta =
-                (moveEvent.clientX - interaction.startClientX +
-                    moveEvent.clientY - interaction.startClientY) /
+                (moveEvent.clientX -
+                    interaction.startClientX +
+                    moveEvent.clientY -
+                    interaction.startClientY) /
                 SCALE_SENSITIVITY;
 
             const next = clampOverlayState(
@@ -395,12 +390,7 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
                     cursor="grab"
                     onPointerDown={beginDrag}
                 >
-                    <Container
-                        width={42}
-                        height={4}
-                        borderRadius={2}
-                        backgroundColor="#64748b"
-                    />
+                    <Container width={42} height={4} borderRadius={2} backgroundColor="#64748b" />
                 </Container>
 
                 {children}

@@ -37,11 +37,7 @@ function BrowserMenu({ browserConfig }: BrowserMenuProps) {
     return null;
 }
 
-BrowserMenu.getMenuMetadata = ({
-    browserConfig,
-}: {
-    browserConfig?: BrowserConfig;
-}) => {
+BrowserMenu.getMenuMetadata = ({ browserConfig }: { browserConfig?: BrowserConfig }) => {
     if (!browserConfig?.setBrowser) return null;
     return browserConfig.browser
         ? { menuName: "close-browser", menuLabel: "Back to Object" }

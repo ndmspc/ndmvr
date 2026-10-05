@@ -11,7 +11,7 @@ function GradientSky() {
             horizonColor: { value: new THREE.Color(SKY_HORIZON_COLOR) },
             exponent: { value: 0.75 },
         }),
-        [],
+        []
     );
 
     return (

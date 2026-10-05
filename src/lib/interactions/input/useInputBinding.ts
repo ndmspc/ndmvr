@@ -4,11 +4,7 @@ import { useXR, type XRControllerState } from "@react-three/xr";
 import { useKeyboardStore } from "../../stores/keyboard/store";
 
 type XRButton =
-    | "a-button"
-    | "b-button"
-    | "x-button"
-    | "xr-standard-trigger"
-    | "xr-standard-squeeze";
+    "a-button" | "b-button" | "x-button" | "xr-standard-trigger" | "xr-standard-squeeze";
 
 export function isInputBlocked(target: EventTarget | null = null) {
     const editable = (element: EventTarget | null) =>
@@ -72,38 +68,45 @@ export function useInputBinding(binding: InputBinding) {
         latest.current = { binding, session, controller };
     });
 
-    const sample = useCallback((suppressPress = false) => {
-        const { binding: b, session, controller } = latest.current;
-        const keys = useKeyboardStore.getState().keys;
-        const keyBinding = typeof keyboard === "string" ? { code: keyboard } : keyboard;
-        const codes = keyBinding
-            ? typeof keyBinding.code === "string"
-                ? [keyBinding.code]
-                : keyBinding.code
-            : [];
-        const key = codes.some((code) => keys[code]);
-        const ctrl = !!(keys.ControlLeft || keys.ControlRight);
-        const keyMatches = key && (keyBinding?.ctrl === undefined || keyBinding.ctrl === ctrl);
-        const pad = ended.current ? undefined : controllerGamepad(session, controller);
-        const vrPressed = vr
-            ? vr.chord
-                ? vr.chord.every((button) => buttonPressed(pad, button))
-                : buttonPressed(pad, vr.button)
-            : false;
-        const vrMatches =
-            vrPressed &&
-            (vr?.grip === undefined || vr.grip === buttonPressed(pad, "xr-standard-squeeze"));
-        const blocked = blurred.current || document.hidden || isInputBlocked();
-        const held = !blocked && (keyMatches || vrMatches);
-        const old = previous.current;
-        previous.current = { key, vr: vrPressed, held };
-        if (old.held !== held) b.onChange?.(held);
-        // A modifier becoming valid cannot manufacture a primary-button press.
-        // A chord deliberately uses the whole combination as its primary edge.
-        if (!blocked && !suppressPress && ((keyMatches && !old.key) || (vrMatches && !old.vr))) {
-            b.onPress?.();
-        }
-    }, [keyboard, vr]);
+    const sample = useCallback(
+        (suppressPress = false) => {
+            const { binding: b, session, controller } = latest.current;
+            const keys = useKeyboardStore.getState().keys;
+            const keyBinding = typeof keyboard === "string" ? { code: keyboard } : keyboard;
+            const codes = keyBinding
+                ? typeof keyBinding.code === "string"
+                    ? [keyBinding.code]
+                    : keyBinding.code
+                : [];
+            const key = codes.some((code) => keys[code]);
+            const ctrl = !!(keys.ControlLeft || keys.ControlRight);
+            const keyMatches = key && (keyBinding?.ctrl === undefined || keyBinding.ctrl === ctrl);
+            const pad = ended.current ? undefined : controllerGamepad(session, controller);
+            const vrPressed = vr
+                ? vr.chord
+                    ? vr.chord.every((button) => buttonPressed(pad, button))
+                    : buttonPressed(pad, vr.button)
+                : false;
+            const vrMatches =
+                vrPressed &&
+                (vr?.grip === undefined || vr.grip === buttonPressed(pad, "xr-standard-squeeze"));
+            const blocked = blurred.current || document.hidden || isInputBlocked();
+            const held = !blocked && (keyMatches || vrMatches);
+            const old = previous.current;
+            previous.current = { key, vr: vrPressed, held };
+            if (old.held !== held) b.onChange?.(held);
+            // A modifier becoming valid cannot manufacture a primary-button press.
+            // A chord deliberately uses the whole combination as its primary edge.
+            if (
+                !blocked &&
+                !suppressPress &&
+                ((keyMatches && !old.key) || (vrMatches && !old.vr))
+            ) {
+                b.onPress?.();
+            }
+        },
+        [keyboard, vr]
+    );
 
     useEffect(() => {
         // Initialize held state, but never fire a toggle just because a feature mounted.

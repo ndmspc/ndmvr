@@ -1,16 +1,14 @@
 import InteractionContainer from "./InteractionContainer";
 import { useMoveAndRotation } from "../../../../interactions/spatial/useMoveAndRotation";
+import type { ComponentProps } from "react";
 
-interface FloatingContainerProps {
-    children?: React.ReactNode;
+type ContainerProps = ComponentProps<typeof InteractionContainer>;
+
+type FloatingContainerProps = ContainerProps & {
     offset?: { x: number; y: number; z: number };
-    classList?: string[];
-    smoothFollow?: boolean;
-    lerpFactor?: number;
     faceUser?: boolean;
     storageKey?: string;
-    [key: string]: unknown;
-}
+};
 
 export default function FloatingContainer({
     children,
@@ -28,12 +26,12 @@ export default function FloatingContainer({
 
     return (
         <InteractionContainer
-            ref={groupRef as any}
+            ref={groupRef as unknown as ContainerProps["ref"]}
             classList={classList}
-            onPointerDown={handlePointerDown as any}
-            onPointerMove={handlePointerMove as any}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
+            onPointerDown={handlePointerDown as ContainerProps["onPointerDown"]}
+            onPointerMove={handlePointerMove as ContainerProps["onPointerMove"]}
+            onPointerUp={handlePointerUp as ContainerProps["onPointerUp"]}
+            onPointerCancel={handlePointerUp as ContainerProps["onPointerCancel"]}
             {...containerProps}
         >
             {children}

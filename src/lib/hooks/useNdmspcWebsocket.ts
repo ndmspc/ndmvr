@@ -1,21 +1,17 @@
 import { useLayoutEffect } from "react";
 import { parse as jsrootParse } from "jsroot";
 import { brokerManagerGet, histogramSubjectGet } from "@ndmspc/ndmvr-core";
-import { NdmspcConfig } from "../interfaces/NdmspcConfig";
 
-const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeout = 60) => {
+const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeout = 60): null => {
     useLayoutEffect(() => {
         brokerManagerGet().createWs(url, false, timeout);
         const sub = brokerManagerGet()
             .getSubject()
             .subscribe((v: unknown) => {
-                console.log("Received data:", v);
                 // skip it string does not contain a valid JSROOT object
                 if (typeof v !== "string" || !v.startsWith("{")) return;
                 const obj = jsrootParse(v);
-                console.log("Received object:", obj);
                 if (obj.arr && obj.arr.length > 0) {
-                    // setHistos(obj.arr);
                     for (let i = 0; i < obj.arr.length; i++) {
                         if (
                             obj.arr[i]._typename.startsWith("TH1") ||
@@ -27,12 +23,9 @@ const useNdmspcWebsocket = (url = "ws://localhost:8080/ws/root.websocket", timeo
                                 obj: obj.arr[i],
                             });
                         } else {
-                            let r = "jsroot";
-                            r = "nested";
-
                             histogramSubjectGet().next({
                                 id: `pad${i + 1}`,
-                                opts: { render: r },
+                                opts: { render: "nested" },
                                 obj: obj.arr[i],
                             });
                         }

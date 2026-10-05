@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Text } from "@react-three/uikit";
 import { Container } from "@react-three/uikit";
-//
 export interface RootNode {
     _name: string;
     _childs?: RootNode[] | Record<string, RootNode>;
@@ -17,13 +16,12 @@ interface TreeViewerProps {
     hierarchy: JSRootHierarchy | null;
     root: RootNode;
     path?: string;
-    doc: React.MutableRefObject<HTMLDivElement>;
+    doc: React.RefObject<HTMLDivElement | null>;
     expandable?: boolean;
     onSelect?: (path_: string) => void;
-    selSetNodeHook: any;
+    selSetNodeHook: (path: string) => void;
     selNodeHook: string;
 }
-//
 function Line({
     type,
     color = "#7c7c7c",
@@ -55,7 +53,6 @@ function Line({
             return <Container />;
     }
 }
-//
 export default function TreeViewer({
     hierarchy,
     root,
@@ -67,7 +64,6 @@ export default function TreeViewer({
     selNodeHook = "",
 }: TreeViewerProps) {
     const [show, setShow] = useState(false);
-    // const [isExpanded, setExpand] = useState(false);
     const [nodeName, setNodeName] = useState("");
     const [childs, setChilds] = useState<RootNode[]>([]);
     const [path_, setPath] = useState("");
@@ -87,15 +83,12 @@ export default function TreeViewer({
 
         const childsArray: RootNode[] = Array.isArray(raw) ? raw : Object.values(raw || {});
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         const normName = norm(root._name);
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setNodeName(normName);
         const nextPath = path ? `${path}/${normName}` : normName;
         setPath(nextPath);
         setChilds(childsArray);
-
-        // console.log("DOC in Tree: ", doc.current );
 
         // elements with + or - can be expanded
         const pluses =
@@ -134,14 +127,12 @@ export default function TreeViewer({
     const handler = async () => {
         if (!show) {
             if (hierarchy && !isOpenIn2D(nodeName)) {
-                // console.log("expand: ", path_);
                 await hierarchy.expandItem(path_);
             }
 
             const raw = root._childs;
             const childsArray: RootNode[] = Array.isArray(raw) ? raw : Object.values(raw || {});
             setChilds(childsArray);
-            // setExpand(true);
         }
 
         setShow((v) => !v);
@@ -163,15 +154,10 @@ export default function TreeViewer({
             const childsArray: RootNode[] = Array.isArray(raw) ? raw : Object.values(raw || {});
             setChilds(childsArray);
 
-            // setExpand(true);
             setShow(true);
 
             //set seleced node. for ui
-            if( selSetNodeHook!== null)
-                selSetNodeHook(path_);
-
-
-
+            if (selSetNodeHook !== null) selSetNodeHook(path_);
         })();
     }, [root, hierarchy, path, path_, nodeName]);
 
@@ -193,21 +179,11 @@ export default function TreeViewer({
                             borderRadius={4}
                         >
                             {show ? (
-                                <Text
-                                    fontSize={35}
-                                    // weight="bold"
-                                    color="#000"
-                                    marginTop={-4}
-                                >
+                                <Text fontSize={35} color="#000" marginTop={-4}>
                                     -
                                 </Text>
                             ) : (
-                                <Text
-                                    fontSize={30}
-                                    // weight="bold"
-                                    color="#000"
-                                    marginTop={-5}
-                                >
+                                <Text fontSize={30} color="#000" marginTop={-5}>
                                     +
                                 </Text>
                             )}
@@ -218,15 +194,17 @@ export default function TreeViewer({
                         </Text>
                     </Container>
                 ) : (
-
-                    <Text onClick={() => {
-                        onSelect?.(path_);
-                        selSetNodeHook(path_);
-                    }}
-                          minWidth={10}
-                          borderRadius={3}
-                          backgroundColor={isSelected ? "#00bfd3" : "transparent"}
-                    >{nodeName}</Text>
+                    <Text
+                        onClick={() => {
+                            onSelect?.(path_);
+                            selSetNodeHook(path_);
+                        }}
+                        minWidth={10}
+                        borderRadius={3}
+                        backgroundColor={isSelected ? "#00bfd3" : "transparent"}
+                    >
+                        {nodeName}
+                    </Text>
                 )}
 
                 {show && childs.length > 0 ? (
@@ -250,7 +228,6 @@ export default function TreeViewer({
                                     root={child}
                                     path={path_}
                                     doc={doc}
-                                    // expandable={canOpen.includes(child._name)}
                                     expandable={canOpen.includes(norm(child._name))}
                                     onSelect={onSelect}
                                     selNodeHook={selNodeHook}

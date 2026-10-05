@@ -213,7 +213,6 @@ export function useMoveAndRotation({
 
     const ctx: MoveAndRotationCtx = {
         getOrigin,
-        offset,
         faceUser,
 
         session,
@@ -294,7 +293,7 @@ export function useMoveAndRotation({
         if (!isRightGripPressed.current) cancelInteraction();
 
         if (!session) {
-            updateDesktopFrame(ctx, delta);
+            updateDesktopFrame(ctx);
             return;
         }
 

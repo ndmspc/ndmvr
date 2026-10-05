@@ -7,9 +7,9 @@ interface RendererModeSwitchProps {
 }
 
 export default function RendererModeSwitch({
-                                               rendererMode,
-                                               setRendererMode,
-                                           }: RendererModeSwitchProps) {
+    rendererMode,
+    setRendererMode,
+}: RendererModeSwitchProps) {
     return (
         <Container
             width="100%"
@@ -29,12 +29,7 @@ export default function RendererModeSwitch({
                 Renderer:
             </Text>
 
-            <Container
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                gap={8}
-            >
+            <Container display="flex" flexDirection="row" alignItems="center" gap={8}>
                 <Container
                     paddingX={10}
                     paddingY={6}

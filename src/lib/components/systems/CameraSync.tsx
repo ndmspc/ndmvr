@@ -3,11 +3,11 @@ import { useXR } from "@react-three/xr";
 import * as THREE from "three";
 
 export interface CameraSyncProps {
-    cameraRef: React.RefObject<THREE.Camera>;
-    originRef: React.RefObject<THREE.Group>;
+    cameraRef: React.RefObject<THREE.Camera | null>;
+    originRef: React.RefObject<THREE.Group | null>;
 }
 
-export default function CameraSync({ cameraRef, originRef }: CameraSyncProps) {
+export default function CameraSync({ cameraRef, originRef }: CameraSyncProps): null {
     const session = useXR((state) => state.session);
 
     useEffect(() => {

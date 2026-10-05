@@ -11,20 +11,33 @@ type SetState = (partial: Partial<BrokerStoreState>) => void;
 type GetState = () => BrokerStoreState;
 
 interface BrokerWithWs {
-    ws?: WebSocket & { __handlersAttached?: boolean };
-    __wsIntercepted?: boolean;
+    ws?: WebSocket | null;
 }
+
+const wsInterceptors = new WeakMap<BrokerWithWs, () => void>();
 
 export function interceptWsProperty(
     broker: BrokerWithWs,
     url: string,
     set: SetState,
     get: GetState
-): void {
-    if (broker.__wsIntercepted) return;
-    broker.__wsIntercepted = true;
+): () => void {
+    wsInterceptors.get(broker)?.();
 
-    let _ws = broker.ws || null;
+    let _ws = broker.ws ?? null;
+    let active = true;
+    let detachHandlers: (() => void) | undefined;
+    const attach = () => {
+        const ws = _ws;
+        detachHandlers = attachWsHandlers(
+            ws,
+            url,
+            set,
+            get,
+            () => active,
+            () => broker.ws === ws
+        );
+    };
 
     Object.defineProperty(broker, "ws", {
         configurable: true,
@@ -33,19 +46,38 @@ export function interceptWsProperty(
             return _ws;
         },
         set(value) {
+            if (_ws === value) return;
+            detachHandlers?.();
             _ws = value;
-            attachWsHandlers(_ws, url, set, get);
+            attach();
         },
     });
+    const dispose = () => {
+        if (!active) return;
+        active = false;
+        detachHandlers?.();
+        Object.defineProperty(broker, "ws", {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: _ws,
+        });
+        wsInterceptors.delete(broker);
+    };
+    wsInterceptors.set(broker, dispose);
+    attach();
+    return dispose;
 }
 
-function startReconnectTimer(set: SetState, get: GetState): void {
+function startReconnectTimer(set: SetState, get: GetState, isActive: () => boolean): void {
+    if (!isActive()) return;
     const { reconnectTimeoutId, isManualDisconnect, connectionStatus } = get();
 
     if (reconnectTimeoutId) return;
     if (isManualDisconnect || connectionStatus === STAT.ERROR) return;
 
     const tempReconnectTimeoutId = setTimeout(() => {
+        if (!isActive() || get().reconnectTimeoutId !== tempReconnectTimeoutId) return;
         if (get().connectionStatus !== STAT.CONNECTED) {
             set({
                 connectionStatus: STAT.ERROR,
@@ -60,15 +92,18 @@ function startReconnectTimer(set: SetState, get: GetState): void {
 }
 
 function attachWsHandlers(
-    ws: (WebSocket & { __handlersAttached?: boolean }) | null | undefined,
+    ws: WebSocket | null | undefined,
     url: string,
     set: SetState,
-    get: GetState
-): void {
-    if (!ws || ws.__handlersAttached) return;
-    ws.__handlersAttached = true;
+    get: GetState,
+    isActive: () => boolean,
+    isCurrentSocket: () => boolean
+): (() => void) | undefined {
+    if (!ws) return;
+    const isCurrent = () => isActive() && isCurrentSocket();
 
     const onOpen = () => {
+        if (!isCurrent()) return;
         const { reconnectTimeoutId } = get();
         if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
         set({
@@ -81,14 +116,16 @@ function attachWsHandlers(
     };
 
     const onError = () => {
+        if (!isCurrent()) return;
         const { isManualDisconnect, connectionStatus } = get();
         if (!isManualDisconnect) {
             set({ connectionStatus: STAT.RECONNECTING, error: ERR.WS_ERROR });
         }
-        if (connectionStatus !== STAT.ERROR) startReconnectTimer(set, get);
+        if (connectionStatus !== STAT.ERROR) startReconnectTimer(set, get, isActive);
     };
 
     const onClose = () => {
+        if (!isCurrent()) return;
         const { isManualDisconnect, connectionStatus } = get();
         if (isManualDisconnect) {
             set({ connectionStatus: STAT.IDLE });
@@ -97,11 +134,20 @@ function attachWsHandlers(
                 connectionStatus: STAT.RECONNECTING,
                 error: ERR.WS_CLOSED,
             });
-            if (connectionStatus !== STAT.ERROR) startReconnectTimer(set, get);
+            if (connectionStatus !== STAT.ERROR) startReconnectTimer(set, get, isActive);
         }
     };
 
-    ws.addEventListener("open", onOpen);
-    ws.addEventListener("error", onError);
-    ws.addEventListener("close", onClose);
+    // Observe close before Core's property handler clears broker.ws, including
+    // sockets that were already connected when the store took ownership.
+    ws.addEventListener("open", onOpen, true);
+    ws.addEventListener("error", onError, true);
+    ws.addEventListener("close", onClose, true);
+    if (ws.readyState === WebSocket.OPEN) onOpen();
+
+    return () => {
+        ws.removeEventListener("open", onOpen, true);
+        ws.removeEventListener("error", onError, true);
+        ws.removeEventListener("close", onClose, true);
+    };
 }

@@ -275,6 +275,7 @@ const modules = new Map([
         "jsroot",
         `
         export const redraw=(...args)=>{h.current.redraws.push(args);return Promise.resolve({configureUserClickHandler(){}});};
+        export const cleanup=()=>{};
         export const setDefaultDrawOpt=()=>{};
         export class HierarchyPainter {
             constructor(){this.h={_name:'test-file'};h.current.browserPainters.push(this);this.resizeCalls=0;}

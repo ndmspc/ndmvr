@@ -15,7 +15,9 @@ export function shouldUseMobileControls() {
     const shortSide = Math.min(width, height);
     const phoneSized = shortSide <= 900;
 
-    const uaMobile = (navigator as any).userAgentData?.mobile === true;
+    const uaMobile =
+        (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData
+            ?.mobile === true;
 
     return uaMobile || (hasTouch && noHover && coarse && phoneSized);
 }

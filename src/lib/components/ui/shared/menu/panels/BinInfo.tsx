@@ -7,21 +7,28 @@ import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 import NotoRegular from "../../../../../assets/fonts/NotoSans-Regular.json";
 import NotoBold from "../../../../../assets/fonts/NotoSans-Bold.json";
 
-function formatSmartNumber(
-    val: number | undefined | null,
-    precision: number
-): string {
+function formatSmartNumber(val: number | undefined | null, precision: number): string {
     if (val === undefined || val === null || Number.isNaN(val)) return "-";
     const num = Number.parseFloat(String(val));
-    const abs = Math.abs(num);
-    // if (num !== 0 && (abs >= 1e3 || (abs > 0 && abs < 1e-3))) {
-        return num.toExponential(precision);
-    // }
-    // return num.toFixed(precision);
+    return num.toExponential(precision);
 }
 
 export interface BinInfoProps {
     precision?: number;
+}
+
+function DotIcon({ color = "#fff" }) {
+    return (
+        <Container
+            width={12}
+            height={12}
+            borderRadius={9999}
+            zIndex={10}
+            backgroundColor={color}
+            borderWidth={1}
+            borderColor={"#fff"}
+        />
+    );
 }
 
 export default function BinInfo({ precision = 2 }: BinInfoProps) {
@@ -39,23 +46,10 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
         return () => sub.unsubscribe();
     }, []);
 
-    const DotIcon = ({ color = "#fff" }) => {
-        return (
-            <Container
-                width={12}
-                height={12}
-                borderRadius={9999}
-                zIndex={10}
-                backgroundColor={color}
-                borderWidth={1}
-                borderColor={"#fff"}
-            />
-        );
-    };
-
-    const contentText = binInfo?.content !== undefined
-        ? `${formatSmartNumber(binInfo.content, 5)} +/- ${formatSmartNumber(binInfo.error, 5)}`
-        : "-";
+    const contentText =
+        binInfo?.content !== undefined
+            ? `${formatSmartNumber(binInfo.content, 5)} +/- ${formatSmartNumber(binInfo.error, 5)}`
+            : "-";
 
     return (
         <Container
@@ -80,7 +74,6 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
                     <Text fontSize={12} fontWeight="bold">
                         Level:
                     </Text>
-                    {/*<Text fontSize={12}>{binInfo?.level ?? 0}</Text>*/}
                     <Text fontSize={12}>{binInfo?.coords?.length ?? 0}</Text>
                 </Container>
 
@@ -88,9 +81,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
                     <Text fontSize={12} fontWeight="bold">
                         Content:
                     </Text>
-                    <Text fontSize={12}>
-                        {contentText}
-                    </Text>
+                    <Text fontSize={12}>{contentText}</Text>
                 </Container>
             </Container>
 

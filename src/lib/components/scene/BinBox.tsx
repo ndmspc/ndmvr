@@ -48,6 +48,7 @@ export default function BinBox({
         y: 0,
         z: 0,
     });
+    const nearestAxisEdgeIndicesRef = useRef<AxisEdgeIndices>({ x: 0, y: 0, z: 0 });
 
     const shouldShow = showOnlyOnHover ? internalHovered : true;
     const needsInternalHoverHitbox = showOnlyOnHover;
@@ -138,27 +139,24 @@ export default function BinBox({
 
         const distance = cameraPositionRef.current.distanceTo(boxPositionRef.current);
         const nextMultiplier = getDistanceLabelSizeMultiplier(distance, normalizedScale);
-        const nextNearestAxisEdgeIndices = getNearestAxisEdgeIndices(
-            normalizedScale,
-            localCameraPositionRef.current
-        );
+        const currentIndices = nearestAxisEdgeIndicesRef.current;
+        const previousX = currentIndices.x;
+        const previousY = currentIndices.y;
+        const previousZ = currentIndices.z;
+        getNearestAxisEdgeIndices(normalizedScale, localCameraPositionRef.current, currentIndices);
 
         if (Math.abs(distanceLabelSizeMultiplierRef.current - nextMultiplier) > 0.03) {
             distanceLabelSizeMultiplierRef.current = nextMultiplier;
             setDistanceLabelSizeMultiplier(nextMultiplier);
         }
 
-        setNearestAxisEdgeIndices((currentIndices) => {
-            if (
-                currentIndices.x === nextNearestAxisEdgeIndices.x &&
-                currentIndices.y === nextNearestAxisEdgeIndices.y &&
-                currentIndices.z === nextNearestAxisEdgeIndices.z
-            ) {
-                return currentIndices;
-            }
-
-            return nextNearestAxisEdgeIndices;
-        });
+        if (
+            previousX !== currentIndices.x ||
+            previousY !== currentIndices.y ||
+            previousZ !== currentIndices.z
+        ) {
+            setNearestAxisEdgeIndices({ ...currentIndices });
+        }
     });
 
     return (
