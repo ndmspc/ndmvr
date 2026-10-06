@@ -13,6 +13,7 @@ import {
     functionSubjectGet,
     THnPainter,
     binInfoSubjectGet,
+    stateSubjectGet,
 } from "@ndmspc/ndmvr-core";
 import { vector3ToArray } from "../../utils/vector3-to-array.ts";
 import { histogramEvents, useSceneModeStore } from "../../stores/sceneMode/store.ts";
@@ -71,6 +72,7 @@ type HistogramCleanup = Partial<
         | "keyDownHandler"
         | "keyUpHandler"
         | "wireframe"
+        | "axes"
         | "mesh"
         | "remove"
     >
@@ -131,12 +133,14 @@ function cleanupHistogramFallbacks(
     attempt(() => binInfo?.dispose?.());
     attempt(() => binInfo?.queueSub?.unsubscribe?.());
     attempt(() => histogram.wireframe?.stateSub?.unsubscribe?.());
+    attempt(() => histogram.axes?.configSub?.unsubscribe?.());
 
     const disposed = new Set<object>();
     for (const object of [
         histogram.histogramGroup,
         histogram.mesh,
         histogram.wireframe?.wireframe,
+        histogram.axes?.axes,
         binInfo?.group,
     ]) {
         attempt(() => object?.parent?.remove(object));
@@ -216,6 +220,12 @@ function clearNestedHistogramFunctions(id: string) {
     });
 }
 
+function syncHistogramAxesVisibility(painter: THnPainter) {
+    const config = configSubjectGet().mergeHistogramConfig(painter.opts?.config);
+    const axes = config.axes as { enabled?: boolean } | undefined;
+    painter.axes.axes.visible = axes?.enabled !== false;
+}
+
 export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const { scene, camera, raycaster } = useThree();
     const jsrootHistogram = useRef<HistogramJsrootClass | null>(null);
@@ -224,6 +234,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     const nestedHistogram = useRef<SyncablePainter | null>(null);
     const retiredPainters = useRef(new WeakSet<object>());
     const pendingPainters = useRef(new WeakSet<object>());
+    const pendingAxes = useRef(new WeakSet<object>());
     const jsrootMeshObject = useRef<THREE.Object3D | null>(null);
 
     const activeMode = useSceneModeStore((state) => state.activeMode);
@@ -244,6 +255,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
     const [nestedMesh, setNestedMesh] = useState<THREE.InstancedMesh | null>(null);
     const [wireframeObj, setWireframeObj] = useState<THREE.Object3D | null>(null);
+    const [axesObj, setAxesObj] = useState<THREE.Object3D | null>(null);
     const [painterLimits, setPainterLimits] = useState<PainterLimits | null>(null);
     const nestedMeshObject = useRef<THREE.Object3D | null>(null);
     const wireframeObject = useRef<THREE.Object3D | null>(null);
@@ -334,6 +346,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             }
 
             setPainterLimits(painter?.limits ?? null);
+            // Core keeps this group stable while its asynchronous builds replace children.
+            syncHistogramAxesVisibility(painter);
+            setAxesObj(painter.axes?.axes ?? null);
         },
         [isCurrentNestedPainter]
     );
@@ -352,6 +367,39 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                 return result;
             };
             painter._ndmvrMeshSyncInstalled = true;
+
+            const axes = painter.axes;
+            if (!axes) return;
+            const originalBuildAxes = axes.buildAxes.bind(axes);
+            axes.buildAxes = (...args) => {
+                if (!isCurrentNestedPainter(painter)) return;
+                const previousChildren = [...axes.axes.children];
+                const result = originalBuildAxes(...args);
+                const buildPromise = axes.axesBuildPromise;
+                pendingAxes.current.add(painter);
+                Promise.resolve(buildPromise)
+                    .then(() => {
+                        for (const child of previousChildren) {
+                            if (child.parent !== axes.axes) disposeThree(child);
+                        }
+                    })
+                    .catch((error: unknown) => {
+                        if (isCurrentNestedPainter(painter)) {
+                            console.warn(
+                                "[HistogramWrapper] Failed to build histogram axes:",
+                                error
+                            );
+                        }
+                    })
+                    .finally(() => {
+                        if (axes.axesBuildPromise === buildPromise)
+                            pendingAxes.current.delete(painter);
+                        if (retiredPainters.current.has(painter)) {
+                            cleanupHistogramFallbacks(painter, "retired histogram axes");
+                        }
+                    });
+                return result;
+            };
         },
         [isCurrentNestedPainter, syncNestedPainterObjects]
     );
@@ -359,7 +407,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     useEffect(() => {
         const subscription = configSubjectGet()
             .getObservable()
-            .subscribe((config) => setCurrentShiftStep(getShiftScaleStep(config)));
+            .subscribe((config) => {
+                setCurrentShiftStep(getShiftScaleStep(config));
+                if (nestedHistogram.current) syncHistogramAxesVisibility(nestedHistogram.current);
+            });
 
         return () => subscription.unsubscribe();
     }, []);
@@ -480,6 +531,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         wireframeObject.current = null;
         setNestedMesh(null);
         setWireframeObj(null);
+        setAxesObj(null);
         setPainterLimits(null);
     }, []);
 
@@ -762,6 +814,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         if (
                             nestedHistogram.current &&
                             (pendingPainters.current.has(nestedHistogram.current) ||
+                                pendingAxes.current.has(nestedHistogram.current) ||
                                 !nestedHistogram.current.mesh?.parent ||
                                 !nestedHistogram.current.wireframe?.wireframe?.parent)
                         ) {
@@ -771,8 +824,19 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                         if (!updating) {
                             // Core subscribes to retained pad state before creating its mesh.
                             // Clear constructor-unsafe state while retaining valid draw choices.
-                            prepareHistogramPadState(id, histo);
-                            nestedHistogram.current = new THnPainter(histo, id, histo?.opts);
+                            const preparedState = prepareHistogramPadState(id, histo);
+                            const painter = new THnPainter(histo, id, histo?.opts);
+                            if (preparedState) {
+                                painter.selectedArray = preparedState.selectedArray;
+                                if (preparedState.selectedSet.length > 0) {
+                                    painter.selectedSet = preparedState.selectedSet;
+                                }
+                                Object.assign(stateSubjectGet(id).getValue(), {
+                                    selectedArray: painter.selectedArray,
+                                    selectedSet: painter.selectedSet,
+                                });
+                            }
+                            nestedHistogram.current = painter;
                         }
                         const painter = nestedHistogram.current!;
                         installNestedPainterMeshSync(painter);
@@ -899,6 +963,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             )}
 
             {wireframeObj && <primitive object={wireframeObj} />}
+            {axesObj && <primitive object={axesObj} />}
 
             {painterLimits && activeMode === "modify" && (
                 <BoundingFrameBox

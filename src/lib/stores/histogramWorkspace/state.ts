@@ -23,6 +23,7 @@ export interface HistogramPadState {
     minMaxValue?: Array<Record<string, unknown>>;
     currentLayer?: number;
     availableAxes?: unknown[];
+    axisRanges?: unknown[][];
     [key: string]: unknown;
 }
 

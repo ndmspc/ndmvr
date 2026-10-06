@@ -1,22 +1,24 @@
 declare module "@ndmspc/ndmvr-core" {
-    import { Subject, Subscription } from "rxjs";
+    import { Observable, Subject, Subscription } from "rxjs";
     import * as THREE from "three";
 
     export interface Broker {
-        ws?: WebSocket;
-        connect(): void;
+        ws?: WebSocket | null;
+        connect(): Broker;
+        disconnect(): void;
     }
 
     export interface BrokerManager {
-        createWs(url: string, flag: boolean, timeout: number): void;
-        getBrokerByUrl(url: string, flag: boolean): Broker | undefined;
-        disconnectWsByUrl(url: string): void;
+        createWs(url: string, flag?: boolean, timeout?: number): void;
+        getBrokerByUrl(url: string, flag?: boolean): Broker | undefined;
+        disconnectWsByUrl(url?: string): void;
         getSubject(): Subject<any>;
     }
 
     export interface HistogramSubject {
-        next(data: any): void;
-        getStream(id: string): Subject<any>;
+        next(data: any): Promise<void>;
+        getStream(id: string): Observable<any>;
+        getCurrentHistogram(id: string): Promise<HistogramData | null>;
     }
 
     export interface HistogramData {
@@ -42,6 +44,12 @@ declare module "@ndmspc/ndmvr-core" {
             stateSub: Subscription;
             dispose(): void;
         };
+        axes: {
+            axes: THREE.Object3D;
+            configSub: Subscription;
+            axesBuildPromise?: Promise<void>;
+            buildAxes(obj: unknown, limits: unknown, opts?: unknown): void;
+        };
         BVHTree: any;
         maxInstancesPerLayer: number;
         maxContentPerLayer: number;
@@ -50,6 +58,9 @@ declare module "@ndmspc/ndmvr-core" {
         matrixCache: any;
         selectedSet: string[];
         selectedArray: string;
+        opts?: {
+            config?: Record<string, unknown>;
+        };
         availableSets: string[];
         renderHistory: string[];
         dirtyInstance: string[];
@@ -90,30 +101,37 @@ declare module "@ndmspc/ndmvr-core" {
     }
 
     export interface ConfigSubject {
-        next(config: any): Record<string, unknown>;
+        next(config: any): ReturnType<ConfigSubject["getValue"]>;
         getValue(): any;
-        getObservable(): Subject<any>;
+        getObservable(): Observable<any>;
         appendPads(ids: string[], disp_kind: string, settings: Record<string, unknown>): void;
+        mergeHistogramConfig(
+            config?: Parameters<ConfigSubject["next"]>[0],
+            defaults?: ReturnType<ConfigSubject["getValue"]>
+        ): ReturnType<ConfigSubject["getValue"]>;
     }
 
     export interface FunctionSubject {
         addFunctions(config: any): void;
         removeFunctions(config: any): void;
+        setFunctions(config: Parameters<FunctionSubject["addFunctions"]>[0]): void;
+        getObservable(): Observable<Parameters<FunctionSubject["addFunctions"]>[0]>;
     }
 
     export interface BinInfoSubject {
-        getObservable(): Subject<any>;
+        next(info: unknown): void;
+        getObservable(): Observable<any>;
     }
 
     export interface StateSubject {
         next(state: any): void;
         getValue(): any;
-        getObservable(): Subject<any>;
+        getObservable(): Observable<any>;
     }
 
     export interface DispatchSubject {
         next(data: any): void;
-        getObservable(): Subject<any>;
+        getObservable(): Observable<any>;
     }
 
     export function brokerManagerGet(): BrokerManager;

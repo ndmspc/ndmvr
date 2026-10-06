@@ -79,12 +79,8 @@ export default function NdmvrBase({ children }: NdmvrBaseProps) {
                 {...canvasInputProps}
                 style={{ touchAction: "none" }}
                 shadows
+                flat
                 gl={{ localClippingEnabled: true }}
-                onCreated={({ gl }) => {
-                    gl.toneMapping = THREE.NoToneMapping;
-                    gl.outputColorSpace = THREE.SRGBColorSpace;
-                    gl.toneMappingExposure = 1;
-                }}
             >
                 <color attach="background" args={["#c7e8f6"]} />
                 <PerspectiveCamera ref={cameraRef} makeDefault position={[x, y, z]} fov={75} />
