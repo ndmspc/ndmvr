@@ -19,13 +19,6 @@
         "./src/lib/styles/uikit-styles.ts"
     ],
     "type": "module",
-    "devEngines": {
-        "runtime": {
-            "name": "node",
-            "version": "^22.22.2 || ^24.15.0 || >=26.0.0",
-            "onFail": "error"
-        }
-    },
     "types": "./dist/ndmvr.d.ts",
     "main": "./dist/ndmvr.es.js",
     "module": "./dist/ndmvr.es.js",
