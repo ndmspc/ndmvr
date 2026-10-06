@@ -32,7 +32,11 @@ export function updateHistogramPadState(padId: string, updates: Partial<Histogra
     if (!hasPad(padId)) return false;
 
     const currentState = getCorePadState(padId) ?? {};
-    publishPadState(padId, { ...currentState, ...updates });
+    // Core normalizes ranges asynchronously. Keep accepted changes in its mutable
+    // canonical value so a second edit also includes the first pending patch.
+    Object.assign(currentState, updates);
+    currentState.axisRanges ??= [[]];
+    publishPadState(padId, { ...currentState });
     return true;
 }
 
@@ -67,7 +71,7 @@ function getAvailableHistogramSets(histogram: HistogramData) {
 }
 
 export function prepareHistogramPadState(padId: string, histogram: HistogramData) {
-    if (!hasPad(padId)) return false;
+    if (!hasPad(padId)) return null;
 
     const currentState = getCorePadState(padId) ?? {};
     const arrays = getAvailableHistogramArrays(histogram);
@@ -81,16 +85,20 @@ export function prepareHistogramPadState(padId: string, histogram: HistogramData
             ? currentState.selectedSet
             : [];
 
-    publishPadState(padId, {
-        ...currentState,
-        sets,
-        selectedSet,
-        arrays,
-        selectedArray,
+    // The constructor immediately replays this mutable value before creating its
+    // mesh. Core 1.3 next() is asynchronous and cannot make that replay safe.
+    // Let the constructor initialize and publish the normalized histogram state;
+    // its caller restores the valid draw choices before the first render.
+    Object.assign(currentState, {
+        sets: [],
+        selectedSet: [],
+        arrays: ["content"],
+        selectedArray: "content",
         minMaxValue: [],
         availableAxes: [],
+        axisRanges: undefined,
     });
-    return true;
+    return { selectedArray: selectedArray ?? "content", selectedSet };
 }
 
 export function setHistogramPadRenderer(padId: string, renderer: "jsroot" | "ndmvr") {
