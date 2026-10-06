@@ -73,8 +73,8 @@ been removed, along with unused controller Menu/Help
 callbacks and old spatial window-event adapters. Menu tabs are local; only visibility and mount
 status are shared with the external menu button.
 
-Run `npm test`, `npm run type-check`, `npm run build`, and `npm run build-app`, plus lint and
+<!-- Run `npm test`, `npm run type-check`, `npm run build`, and `npm run build-app`, plus lint and
 formatting checks scoped to the changed files. [Regression coverage](../tests/README.md)
 includes mounted spatial and component-composition checks for input ownership, mobile routing,
 XR entry/exit, and follow/drag/reset. These use rendering/session substitutes; real touch,
-pointer capture, headset input and histogram rendering still require browser/device validation.
+pointer capture, headset input and histogram rendering still require browser/device validation. -->
