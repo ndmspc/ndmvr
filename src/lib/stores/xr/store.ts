@@ -1,4 +1,4 @@
-import { createXRStore } from "@react-three/xr";
+import { createXRStore, type XRStore } from "@react-three/xr";
 
 const XR_CURSOR_RENDER_ORDER = 10000;
 
@@ -12,7 +12,7 @@ const xrRayPointer = {
     },
 };
 
-export const store = createXRStore({
+export const store: XRStore = createXRStore({
     emulate: true,
     offerSession: "immersive-vr",
     domOverlay: false,
