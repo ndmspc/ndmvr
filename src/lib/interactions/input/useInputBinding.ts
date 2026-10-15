@@ -20,7 +20,7 @@ export function isInputBlocked(target: EventTarget | null = null) {
 export function controllerGamepad(
     session: XRSession | null | undefined,
     controller?: XRControllerState
-) {
+): XRControllerState["gamepad"] | undefined {
     if (!session || (session.visibilityState && session.visibilityState !== "visible")) return;
     if (!controller || !Array.from(session.inputSources).includes(controller.inputSource)) return;
     return controller.gamepad;
