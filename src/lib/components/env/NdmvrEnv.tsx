@@ -12,31 +12,31 @@ import BrowserContent from "../ui/shared/browser/BrowserContent.tsx";
 import type { BrowserConfig } from "../ui/shared/browser/BrowserContent.tsx";
 
 export interface NdmvrEnvProps {
-    children?: React.ReactNode;
-    menuDefaultOpen?: boolean;
-    browserConfig?: BrowserConfig;
+  children?: React.ReactNode;
+  menuDefaultOpen?: boolean;
+  browserConfig?: BrowserConfig;
 }
 
 export default function NdmvrEnv({
-    children,
-    menuDefaultOpen = true,
-    browserConfig,
+  children,
+  menuDefaultOpen = true,
+  browserConfig,
 }: NdmvrEnvProps) {
-    return (
-        <NdmvrBase>
-            <SceneDecorations />
-            <NdmvrContent />
-            <Menu defaultOpen={menuDefaultOpen}>
-                <Demo />
-                <HttpConnectionMenu />
-                <WsConnectionMenu />
-                <BrowserMenu browserConfig={browserConfig} />
-                <BinInfo />
-                <DrawOptions />
-                <SettingsPanel />
-            </Menu>
-            <BrowserContent browserConfig={browserConfig} />
-            {children}
-        </NdmvrBase>
-    );
+  return (
+    <NdmvrBase>
+      <SceneDecorations />
+      <NdmvrContent />
+      <Menu defaultOpen={menuDefaultOpen}>
+        <Demo />
+        <HttpConnectionMenu />
+        <WsConnectionMenu />
+        <BrowserMenu browserConfig={browserConfig} />
+        <BinInfo />
+        <DrawOptions />
+        <SettingsPanel />
+      </Menu>
+      <BrowserContent browserConfig={browserConfig} />
+      {children}
+    </NdmvrBase>
+  );
 }

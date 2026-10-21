@@ -4,71 +4,71 @@ import { useCallback, useEffect, useRef } from "react";
 import type { ComponentProps } from "react";
 
 type PointerHandler = Extract<
-    ComponentProps<typeof UIKitContainer>["onPointerDown"],
-    (event: never) => void
+  ComponentProps<typeof UIKitContainer>["onPointerDown"],
+  (event: never) => void
 >;
 
 type InteractionContainerProps = ComponentProps<typeof UIKitContainer> & {
-    onPointerDown?: PointerHandler;
-    onPointerUp?: PointerHandler;
-    onPointerCancel?: PointerHandler;
-    onPointerLeave?: PointerHandler;
+  onPointerDown?: PointerHandler;
+  onPointerUp?: PointerHandler;
+  onPointerCancel?: PointerHandler;
+  onPointerLeave?: PointerHandler;
 };
 
 export const InteractionContainer = (props: InteractionContainerProps) => {
-    const pointers = useRef(new Set<number>());
-    const setInteracting = useUIInteractionOwner();
-    const release = useCallback(
-        (event: { pointerId: number }) => {
-            if (pointers.current.delete(event.pointerId) && pointers.current.size === 0) {
-                setInteracting(false);
-            }
-        },
-        [setInteracting]
-    );
-    useEffect(() => {
-        const cancel = () => {
-            pointers.current.clear();
-            setInteracting(false);
-        };
-        const visibility = () => {
-            if (document.hidden) cancel();
-        };
-        window.addEventListener("pointerup", release);
-        window.addEventListener("pointercancel", release);
-        window.addEventListener("blur", cancel);
-        document.addEventListener("visibilitychange", visibility);
-        return () => {
-            window.removeEventListener("pointerup", release);
-            window.removeEventListener("pointercancel", release);
-            window.removeEventListener("blur", cancel);
-            document.removeEventListener("visibilitychange", visibility);
-            cancel();
-        };
-    }, [release, setInteracting]);
+  const pointers = useRef(new Set<number>());
+  const setInteracting = useUIInteractionOwner();
+  const release = useCallback(
+    (event: { pointerId: number }) => {
+      if (pointers.current.delete(event.pointerId) && pointers.current.size === 0) {
+        setInteracting(false);
+      }
+    },
+    [setInteracting],
+  );
+  useEffect(() => {
+    const cancel = () => {
+      pointers.current.clear();
+      setInteracting(false);
+    };
+    const visibility = () => {
+      if (document.hidden) cancel();
+    };
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    window.addEventListener("blur", cancel);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+      window.removeEventListener("blur", cancel);
+      document.removeEventListener("visibilitychange", visibility);
+      cancel();
+    };
+  }, [release, setInteracting]);
 
-    return (
-        <UIKitContainer
-            {...props}
-            onPointerDown={(event) => {
-                pointers.current.add(event.pointerId);
-                setInteracting(true);
-                props.onPointerDown?.(event);
-            }}
-            onPointerUp={(event) => {
-                release(event);
-                props.onPointerUp?.(event);
-            }}
-            onPointerCancel={(event) => {
-                release(event);
-                props.onPointerCancel?.(event);
-            }}
-            onPointerLeave={(event) => {
-                release(event);
-                props.onPointerLeave?.(event);
-            }}
-        />
-    );
+  return (
+    <UIKitContainer
+      {...props}
+      onPointerDown={(event) => {
+        pointers.current.add(event.pointerId);
+        setInteracting(true);
+        props.onPointerDown?.(event);
+      }}
+      onPointerUp={(event) => {
+        release(event);
+        props.onPointerUp?.(event);
+      }}
+      onPointerCancel={(event) => {
+        release(event);
+        props.onPointerCancel?.(event);
+      }}
+      onPointerLeave={(event) => {
+        release(event);
+        props.onPointerLeave?.(event);
+      }}
+    />
+  );
 };
 
 export default InteractionContainer;

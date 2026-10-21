@@ -13,291 +13,290 @@ import InputCard from "../../connections/InputCard.tsx";
 import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 
 interface ConnectionMenuProps {
-    type?: "http" | "ws" | null;
+  type?: "http" | "ws" | null;
 }
 
 export function WsConnectionMenu() {
-    return <ConnectionMenu type="ws" />;
+  return <ConnectionMenu type="ws" />;
 }
 WsConnectionMenu.menuName = "ws";
 WsConnectionMenu.menuLabel = "Live Stream (WebSocket)";
 
 export function HttpConnectionMenu() {
-    return <ConnectionMenu type="http" />;
+  return <ConnectionMenu type="http" />;
 }
 HttpConnectionMenu.menuName = "http";
 HttpConnectionMenu.menuLabel = "Fetch via HTTP";
 
 function ConnectionMenu({ type }: ConnectionMenuProps) {
-    const [selectedHistogram, setSelectedHistogram] = useState(null);
+  const [selectedHistogram, setSelectedHistogram] = useState(null);
 
-    const [availableArrays, setAvailableArrays] = useState([]);
-    const [selectedArray, setSelectedArray] = useState("content");
+  const [availableArrays, setAvailableArrays] = useState([]);
+  const [selectedArray, setSelectedArray] = useState("content");
 
-    const [availableSets, setAvailableSets] = useState(["content"]);
-    const [selectedSets, setSelectedSets] = useState([]);
+  const [availableSets, setAvailableSets] = useState(["content"]);
+  const [selectedSets, setSelectedSets] = useState([]);
 
-    const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
-    const selectedRendererRef = useRef(selectedRenderer);
-    const httpRequestRef = useRef<AbortController | null>(null);
+  const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
+  const selectedRendererRef = useRef(selectedRenderer);
+  const httpRequestRef = useRef<AbortController | null>(null);
 
-    const idHistogram = "pad1";
+  const idHistogram = "pad1";
 
-    useLayoutEffect(() => {
-        return () => {
-            httpRequestRef.current?.abort();
-            httpRequestRef.current = null;
-        };
-    }, []);
-
-    useEffect(() => {
-        const stateSubject = stateSubjectGet(idHistogram)
-            .getObservable()
-            .subscribe((e) => {
-                if (e.sets) setAvailableSets(e.sets);
-                if (e.selectedSet) setSelectedSets(e.selectedSet);
-                if (e.arrays) setAvailableArrays(e.arrays);
-                if (e.selectedArray) setSelectedArray(e.selectedArray);
-            });
-
-        setAvailableSets([]);
-        setSelectedSets([]);
-        setAvailableArrays(["content"]);
-        setSelectedArray("content");
-
-        return () => {
-            stateSubject.unsubscribe();
-        };
-    }, []);
-
-    const updateStateSubject = (updates) => {
-        const currentVal = stateSubjectGet(idHistogram).getValue();
-        stateSubjectGet(idHistogram).next({ ...currentVal, ...updates });
+  useLayoutEffect(() => {
+    return () => {
+      httpRequestRef.current?.abort();
+      httpRequestRef.current = null;
     };
+  }, []);
 
-    const handleArraySelect = (value) => {
-        setSelectedArray(value);
+  useEffect(() => {
+    const stateSubject = stateSubjectGet(idHistogram)
+      .getObservable()
+      .subscribe((e) => {
+        if (e.sets) setAvailableSets(e.sets);
+        if (e.selectedSet) setSelectedSets(e.selectedSet);
+        if (e.arrays) setAvailableArrays(e.arrays);
+        if (e.selectedArray) setSelectedArray(e.selectedArray);
+      });
 
-        if (selectedHistogram) {
-            updateStateSubject({
-                selectedSet: selectedSets,
-                selectedArray: value,
-            });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAvailableSets([]);
+    setSelectedSets([]);
+    setAvailableArrays(["content"]);
+    setSelectedArray("content");
+
+    return () => {
+      stateSubject.unsubscribe();
+    };
+  }, []);
+
+  const updateStateSubject = (updates) => {
+    const currentVal = stateSubjectGet(idHistogram).getValue();
+    stateSubjectGet(idHistogram).next({ ...currentVal, ...updates });
+  };
+
+  const handleArraySelect = (value) => {
+    setSelectedArray(value);
+
+    if (selectedHistogram) {
+      updateStateSubject({
+        selectedSet: selectedSets,
+        selectedArray: value,
+      });
+    }
+  };
+
+  const handleSetsSelect = (setValue, isChecked) => {
+    const newSelectedSets = isChecked
+      ? [...selectedSets, setValue]
+      : selectedSets.filter((v) => v !== setValue);
+
+    setSelectedSets(newSelectedSets);
+
+    if (selectedHistogram) {
+      updateStateSubject({
+        selectedSet: newSelectedSets,
+        selectedArray: selectedArray,
+      });
+    }
+  };
+
+  const handleRendererSelect = (value) => {
+    selectedRendererRef.current = value;
+    setSelectedRenderer(value);
+
+    if (selectedHistogram) {
+      histogramSubjectGet().next({
+        id: idHistogram,
+        opts: { render: value },
+        obj: selectedHistogram,
+      });
+    }
+  };
+
+  const [inputValues, setInputValues] = useState({
+    http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/hp_2026/rsn.json",
+    ws: "ws://localhost:8080/ws/root.websocket",
+  });
+
+  const [validationStatus, setValidationStatus] = useState({
+    http: null,
+    ws: null,
+  });
+
+  const { connectionStatus, error, connect } = useBrokerStore();
+
+  const [httpLoading, setHttpLoading] = useState(false);
+  const [httpLoaded, setHttpLoaded] = useState(false);
+  const [clicked, setClicked] = useState(false);
+
+  const validateUrl = (value, type) => {
+    const regex = type === "http" ? /^https?:\/\// : /^wss?:\/\//;
+    return regex.test(value);
+  };
+
+  const handleLoadClick = async (type) => {
+    setClicked(true);
+    const value = inputValues[type];
+    const isValid = validateUrl(value, type);
+
+    setValidationStatus((prev) => ({
+      ...prev,
+      [type]: isValid ? "success" : "error",
+    }));
+    if (!isValid) return;
+
+    if (type === "ws") {
+      connect(value);
+    }
+
+    if (type === "http") {
+      if (httpRequestRef.current) return;
+
+      const request = new AbortController();
+      httpRequestRef.current = request;
+      const isCurrentRequest = () => httpRequestRef.current === request;
+
+      setHttpLoading(true);
+      setHttpLoaded(false);
+
+      try {
+        const res = await fetch(value, { signal: request.signal });
+        if (!isCurrentRequest()) return;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const obj = await res.json();
+        if (!isCurrentRequest()) return;
+        const rootObj = parse(obj);
+
+        setSelectedHistogram(rootObj.arr?.[0] ?? rootObj);
+
+        histogramSubjectGet().next({
+          id: idHistogram,
+          opts: { render: selectedRendererRef.current },
+          obj: rootObj.arr?.[0] ?? rootObj,
+        });
+
+        setHttpLoaded(true);
+      } catch (err) {
+        if (!isCurrentRequest()) return;
+        console.error("Failed to load:", err);
+        setValidationStatus((prev) => ({ ...prev, [type]: "error" }));
+      } finally {
+        if (isCurrentRequest()) {
+          httpRequestRef.current = null;
+          setHttpLoading(false);
         }
-    };
+      }
+    }
+  };
 
-    const handleSetsSelect = (setValue, isChecked) => {
-        const newSelectedSets = isChecked
-            ? [...selectedSets, setValue]
-            : selectedSets.filter((v) => v !== setValue);
+  return (
+    <Container classList={["menuContainer"]}>
+      <Text classList={["menuHeader"]}>
+        {type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}
+      </Text>
+      <DropdownProvider>
+        <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
+          {type === "http" && <WebsocketBanner />}
 
-        setSelectedSets(newSelectedSets);
+          <InputCard
+            type="http"
+            placeholder="http://"
+            firstValue={inputValues.http}
+            onChange={(v) => {
+              if (v !== inputValues.http) {
+                httpRequestRef.current?.abort();
+                httpRequestRef.current = null;
+                setHttpLoading(false);
+              }
+              setInputValues((p) => ({ ...p, http: v }));
+              setValidationStatus((p) => ({ ...p, http: null }));
+            }}
+            status={validationStatus.http}
+            modeSelected={type}
+            loading={httpLoading}
+            loaded={httpLoaded}
+            onSubmit={() => handleLoadClick("http")}
+          />
 
-        if (selectedHistogram) {
-            updateStateSubject({
-                selectedSet: newSelectedSets,
-                selectedArray: selectedArray,
-            });
-        }
-    };
+          <InputCard
+            type="ws"
+            placeholder="ws://"
+            firstValue={inputValues.ws}
+            onChange={(v) => {
+              setInputValues((p) => ({ ...p, ws: v }));
+              setValidationStatus((p) => ({ ...p, ws: null }));
+            }}
+            status={validationStatus.ws}
+            modeSelected={type}
+            connStatus={connectionStatus}
+            connError={error}
+            onSubmit={() => handleLoadClick("ws")}
+          />
 
-    const handleRendererSelect = (value) => {
-        selectedRendererRef.current = value;
-        setSelectedRenderer(value);
+          {clicked === true && (
+            <>
+              <Divider />
+              <Container gap={12} alignItems="center" flexDirection={"column"}>
+                <Dropdown
+                  placeholder={"Select array"}
+                  options={availableArrays}
+                  defaultValue={"content"}
+                  onSelect={(value) => {
+                    handleArraySelect(value);
+                  }}
+                  width={300}
+                />
 
-        if (selectedHistogram) {
-            histogramSubjectGet().next({
-                id: idHistogram,
-                opts: { render: value },
-                obj: selectedHistogram,
-            });
-        }
-    };
-
-    const [inputValues, setInputValues] = useState({
-        http: "https://eos.ndmspc.io/eos/ndmspc/scratch/ndmspc/hp_2026/rsn.json",
-        ws: "ws://localhost:8080/ws/root.websocket",
-    });
-
-    const [validationStatus, setValidationStatus] = useState({
-        http: null,
-        ws: null,
-    });
-
-    const { connectionStatus, error, connect } = useBrokerStore();
-
-    const [httpLoading, setHttpLoading] = useState(false);
-    const [httpLoaded, setHttpLoaded] = useState(false);
-    const [clicked, setClicked] = useState(false);
-
-    const validateUrl = (value, type) => {
-        const regex = type === "http" ? /^https?:\/\// : /^wss?:\/\//;
-        return regex.test(value);
-    };
-
-    const handleLoadClick = async (type) => {
-        setClicked(true);
-        const value = inputValues[type];
-        const isValid = validateUrl(value, type);
-
-        setValidationStatus((prev) => ({
-            ...prev,
-            [type]: isValid ? "success" : "error",
-        }));
-        if (!isValid) return;
-
-        if (type === "ws") {
-            connect(value);
-        }
-
-        if (type === "http") {
-            if (httpRequestRef.current) return;
-
-            const request = new AbortController();
-            httpRequestRef.current = request;
-            const isCurrentRequest = () => httpRequestRef.current === request;
-
-            setHttpLoading(true);
-            setHttpLoaded(false);
-
-            try {
-                const res = await fetch(value, { signal: request.signal });
-                if (!isCurrentRequest()) return;
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-                const obj = await res.json();
-                if (!isCurrentRequest()) return;
-                const rootObj = parse(obj);
-
-                setSelectedHistogram(rootObj.arr?.[0] ?? rootObj);
-
-                histogramSubjectGet().next({
-                    id: idHistogram,
-                    opts: { render: selectedRendererRef.current },
-                    obj: rootObj.arr?.[0] ?? rootObj,
-                });
-
-                setHttpLoaded(true);
-            } catch (err) {
-                if (!isCurrentRequest()) return;
-                console.error("Failed to load:", err);
-                setValidationStatus((prev) => ({ ...prev, [type]: "error" }));
-            } finally {
-                if (isCurrentRequest()) {
-                    httpRequestRef.current = null;
-                    setHttpLoading(false);
-                }
-            }
-        }
-    };
-
-    return (
-        <Container classList={["menuContainer"]}>
-            <Text classList={["menuHeader"]}>
-                {type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}
-            </Text>
-            <DropdownProvider>
-                <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
-                    {type === "http" && <WebsocketBanner />}
-
-                    <InputCard
-                        type="http"
-                        placeholder="http://"
-                        firstValue={inputValues.http}
-                        onChange={(v) => {
-                            if (v !== inputValues.http) {
-                                httpRequestRef.current?.abort();
-                                httpRequestRef.current = null;
-                                setHttpLoading(false);
-                            }
-                            setInputValues((p) => ({ ...p, http: v }));
-                            setValidationStatus((p) => ({ ...p, http: null }));
+                <Container gap={50}>
+                  {type === "http" && (
+                    <Container flexDirection="column" gap={8}>
+                      <Text>Select Renderer:</Text>
+                      <RadioGroup
+                        defaultValue="ndmvr"
+                        onValueChange={(value) => {
+                          handleRendererSelect(value);
                         }}
-                        status={validationStatus.http}
-                        modeSelected={type}
-                        loading={httpLoading}
-                        loaded={httpLoaded}
-                        onSubmit={() => handleLoadClick("http")}
-                    />
-
-                    <InputCard
-                        type="ws"
-                        placeholder="ws://"
-                        firstValue={inputValues.ws}
-                        onChange={(v) => {
-                            setInputValues((p) => ({ ...p, ws: v }));
-                            setValidationStatus((p) => ({ ...p, ws: null }));
-                        }}
-                        status={validationStatus.ws}
-                        modeSelected={type}
-                        connStatus={connectionStatus}
-                        connError={error}
-                        onSubmit={() => handleLoadClick("ws")}
-                    />
-
-                    {clicked === true && (
-                        <>
-                            <Divider />
-                            <Container gap={12} alignItems="center" flexDirection={"column"}>
-                                <Dropdown
-                                    placeholder={"Select array"}
-                                    options={availableArrays}
-                                    defaultValue={"content"}
-                                    onSelect={(value) => {
-                                        handleArraySelect(value);
-                                    }}
-                                    width={300}
-                                />
-
-                                <Container gap={50}>
-                                    {type === "http" && (
-                                        <Container flexDirection="column" gap={8}>
-                                            <Text>Select Renderer:</Text>
-                                            <RadioGroup
-                                                defaultValue="ndmvr"
-                                                onValueChange={(value) => {
-                                                    handleRendererSelect(value);
-                                                }}
-                                            >
-                                                <RadioGroupItem value="ndmvr">
-                                                    <Label>
-                                                        <Text fontSize={16} fontWeight={"normal"}>
-                                                            ndmvr
-                                                        </Text>
-                                                    </Label>
-                                                </RadioGroupItem>
-                                                <RadioGroupItem value="jsroot">
-                                                    <Label>
-                                                        <Text fontSize={16} fontWeight={"normal"}>
-                                                            jsroot
-                                                        </Text>
-                                                    </Label>
-                                                </RadioGroupItem>
-                                            </RadioGroup>
-                                        </Container>
-                                    )}
-                                    {selectedRenderer === "ndmvr" && (
-                                        <Container flexDirection="column" gap={8}>
-                                            {availableSets.length > 0 && <Text>Select Sets:</Text>}
-                                            {availableSets.map((setValue) => (
-                                                <Checkbox
-                                                    key={setValue}
-                                                    label={setValue}
-                                                    checked={selectedSets.includes(setValue)}
-                                                    onCheck={(isChecked) =>
-                                                        handleSetsSelect(setValue, isChecked)
-                                                    }
-                                                    size={24}
-                                                />
-                                            ))}
-                                        </Container>
-                                    )}
-                                </Container>
-                            </Container>
-                        </>
-                    )}
+                      >
+                        <RadioGroupItem value="ndmvr">
+                          <Label>
+                            <Text fontSize={16} fontWeight={"normal"}>
+                              ndmvr
+                            </Text>
+                          </Label>
+                        </RadioGroupItem>
+                        <RadioGroupItem value="jsroot">
+                          <Label>
+                            <Text fontSize={16} fontWeight={"normal"}>
+                              jsroot
+                            </Text>
+                          </Label>
+                        </RadioGroupItem>
+                      </RadioGroup>
+                    </Container>
+                  )}
+                  {selectedRenderer === "ndmvr" && (
+                    <Container flexDirection="column" gap={8}>
+                      {availableSets.length > 0 && <Text>Select Sets:</Text>}
+                      {availableSets.map((setValue) => (
+                        <Checkbox
+                          key={setValue}
+                          label={setValue}
+                          checked={selectedSets.includes(setValue)}
+                          onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                          size={24}
+                        />
+                      ))}
+                    </Container>
+                  )}
                 </Container>
-            </DropdownProvider>
+              </Container>
+            </>
+          )}
         </Container>
-    );
+      </DropdownProvider>
+    </Container>
+  );
 }

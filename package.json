@@ -1,89 +1,91 @@
 {
-    "name": "@ndmspc/ndmvr",
-    "version": "0.0.1",
-    "description": "NDMVR React three fiber components",
-    "author": "NDMSPC community",
-    "repository": {
-        "type": "git",
-        "url": "https://gitlab.com/ndmspc/ndmvr.git"
+  "name": "@ndmspc/ndmvr",
+  "version": "0.0.1",
+  "description": "NDMVR React three fiber components",
+  "keywords": [],
+  "license": "MIT",
+  "author": "NDMSPC community",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/ndmspc/ndmvr.git"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/uikit-styles.ts",
+    "./src/lib/styles/uikit-styles.ts"
+  ],
+  "main": "./dist/ndmvr.es.js",
+  "module": "./dist/ndmvr.es.js",
+  "types": "./dist/ndmvr.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/ndmvr.d.ts",
+      "import": "./dist/ndmvr.es.js"
     },
-    "license": "MIT",
-    "keywords": [],
-    "files": [
-        "dist",
-        "README.md"
-    ],
-    "sideEffects": [
-        "**/*.css",
-        "**/uikit-styles.ts",
-        "./src/lib/styles/uikit-styles.ts"
-    ],
-    "type": "module",
-    "types": "./dist/ndmvr.d.ts",
-    "main": "./dist/ndmvr.es.js",
-    "module": "./dist/ndmvr.es.js",
-    "exports": {
-        ".": {
-            "types": "./dist/ndmvr.d.ts",
-            "import": "./dist/ndmvr.es.js"
-        },
-        "./style.css": "./dist/ndmvr.css"
-    },
-    "scripts": {
-        "dev": "vite",
-        "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
-        "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
-        "watch": "vite build --watch",
-        "lint": "eslint src tests eslint.config.js vite.config.ts vite.config.app.ts --report-unused-disable-directives",
-        "preview": "vite preview -c vite.config.app.ts",
-        "type-check": "tsc --noEmit",
-        "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\" \"tests/**/*.mjs\" package.json eslint.config.js tsconfig.json vite.config.ts vite.config.app.ts .gitlab-ci.yml",
-        "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\" \"tests/**/*.mjs\" package.json eslint.config.js tsconfig.json vite.config.ts vite.config.app.ts .gitlab-ci.yml"
-    },
-    "peerDependencies": {
-        "react": ">=19 <20",
-        "react-dom": ">=19 <20"
-    },
-    "dependencies": {
-        "@ndmspc/ndmvr-core": "1.4.0-rc.2",
-        "@pmndrs/uikit": "^1.0.76",
-        "@react-three/drei": "^10.7.9",
-        "@react-three/fiber": "^9.8.1",
-        "@react-three/uikit": "^1.0.76",
-        "@react-three/uikit-default": "^1.0.76",
-        "@react-three/uikit-horizon": "^1.0.76",
-        "@react-three/uikit-lucide": "^1.0.76",
-        "@react-three/xr": "^6.6.31",
-        "ajv": "^8.20.0",
-        "jsroot": "^7.11.2",
-        "rxjs": "^7.8.2",
-        "styled-components": "^6.5.3",
-        "three": "^0.184.0",
-        "zustand": "^5.0.15"
-    },
-    "devDependencies": {
-        "@babel/core": "^8.0.6",
-        "@eslint/js": "^10.0.1",
-        "@microsoft/api-extractor": "^7.59.3",
-        "@rolldown/plugin-babel": "^0.2.4",
-        "@types/node": "^24.19.1",
-        "@types/react": "^19.3.0",
-        "@types/react-dom": "^19.3.0",
-        "@types/three": "^0.186.0",
-        "@vitejs/plugin-react": "^6.1.2",
-        "babel-plugin-react-compiler": "^1.0.0",
-        "cross-env": "^10.1.0",
-        "esbuild": "^0.28.2",
-        "eslint": "^10.12.0",
-        "eslint-plugin-react-hooks": "^7.1.1",
-        "eslint-plugin-react-refresh": "^0.5.7",
-        "globals": "^17.13.0",
-        "prettier": "^3.9.9",
-        "react": "^19.3.0",
-        "react-dom": "^19.3.0",
-        "typescript": "~6.0.3",
-        "typescript-eslint": "^8.71.1",
-        "vite": "^8.3.2",
-        "vite-plugin-dts": "^5.1.2"
-    }
+    "./style.css": "./dist/ndmvr.css"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
+    "watch": "vite build --watch",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint .",
+    "preview": "vite preview -c vite.config.app.ts",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@ndmspc/ndmvr-core": "1.4.0-rc.2",
+    "@pmndrs/uikit": "^1.0.76",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "@react-three/uikit": "^1.0.76",
+    "@react-three/uikit-default": "^1.0.76",
+    "@react-three/uikit-horizon": "^1.0.76",
+    "@react-three/uikit-lucide": "^1.0.76",
+    "@react-three/xr": "^6.6.31",
+    "ajv": "^8.20.0",
+    "jsroot": "^7.11.2",
+    "rxjs": "^7.8.2",
+    "styled-components": "^6.5.3",
+    "three": "^0.184.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.6",
+    "@microsoft/api-extractor": "^7.59.3",
+    "@rolldown/plugin-babel": "^0.2.4",
+    "@types/node": "^24.19.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "oxfmt": "^0.68.0",
+    "oxlint": "^1.83.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.2",
+    "vite-plugin-dts": "^5.1.2"
+  },
+  "peerDependencies": {
+    "react": ">=19 <20",
+    "react-dom": ">=19 <20"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx}": "oxlint --fix",
+    "*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc,css,md,html,yml,yaml}": "oxfmt --no-error-on-unmatched-pattern"
+  }
 }

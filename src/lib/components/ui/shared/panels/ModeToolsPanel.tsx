@@ -7,150 +7,144 @@ import { useXR } from "@react-three/xr";
 import FloatingContainer from "../common/FloatingContainer.tsx";
 
 export default function ModeToolsPanel() {
-    const camera = useThree((s) => s.camera);
-    const session = useXR((s) => s.session);
-    const isXR = session !== null && session !== undefined;
-    const activeMode = useSceneModeStore((s) => s.activeMode);
-    const modesConfig = useSceneModeStore((s) => s.modesConfig);
-    const getOnClickEvent = useSceneModeStore((s) => s.getOnClickEvent);
-    const getOnHoverEvent = useSceneModeStore((s) => s.getOnHoverEvent);
-    const modeToolsNotification = useSceneModeStore((s) => s.modeToolsNotification);
+  const camera = useThree((s) => s.camera);
+  const session = useXR((s) => s.session);
+  const isXR = session !== null && session !== undefined;
+  const activeMode = useSceneModeStore((s) => s.activeMode);
+  const modesConfig = useSceneModeStore((s) => s.modesConfig);
+  const getOnClickEvent = useSceneModeStore((s) => s.getOnClickEvent);
+  const getOnHoverEvent = useSceneModeStore((s) => s.getOnHoverEvent);
+  const modeToolsNotification = useSceneModeStore((s) => s.modeToolsNotification);
 
-    const resolveIcon = (mode: string) => {
-        let iconName = modesConfig[mode]?.icon;
+  const resolveIcon = (mode: string) => {
+    let iconName = modesConfig[mode]?.icon;
 
-        if (typeof iconName !== "string" || iconName.length === 0) {
-            return Icons.MousePointer2;
-        }
-
-        iconName = iconName[0].toUpperCase() + iconName.slice(1);
-
-        return Icons[iconName as keyof typeof Icons] ?? Icons.MousePointer2;
-    };
-
-    const renderNotificationContent = () => {
-        const content = modeToolsNotification?.content;
-
-        if (typeof content === "string" || typeof content === "number") {
-            return (
-                <Text
-                    color="rgba(255, 255, 255, 0.95)"
-                    fontSize={13}
-                    lineHeight={1.35}
-                    textAlign="center"
-                    whiteSpace="pre-line"
-                    wordBreak="break-word"
-                >
-                    {content}
-                </Text>
-            );
-        }
-
-        return content;
-    };
-
-    const panelBody = (
-        <>
-            {modeToolsNotification && (
-                <Container
-                    classList={["NotificationBubble"]}
-                    pointerEvents="none"
-                    depthTest={false}
-                    depthWrite={false}
-                >
-                    {renderNotificationContent()}
-                </Container>
-            )}
-            <Container
-                classList={["ModeToolsPanel"]}
-                pointerEvents="listener"
-                pointerEventsType="all"
-                renderOrder={4500}
-                depthTest={false}
-                depthWrite={false}
-            >
-                {Object.keys(modesConfig).map((mode) => (
-                    <Container
-                        classList={["ToolButton"]}
-                        key={mode}
-                        alignItems="center"
-                        justifyContent="center"
-                        pointerEvents="listener"
-                        cursor="pointer"
-                        backgroundColor={
-                            activeMode === mode
-                                ? "rgba(255,255,255,0.18)"
-                                : "rgba(255,255,255,0.08)"
-                        }
-                        borderColor={
-                            activeMode === mode
-                                ? "rgba(255,255,255,0.78)"
-                                : "rgba(255,255,255,0.28)"
-                        }
-                        onClick={() => {
-                            selectSceneMode(mode);
-                            getOnClickEvent(mode, modesConfig).forEach((h) => h());
-                        }}
-                        onPointerOver={() => {
-                            getOnHoverEvent(mode, modesConfig).forEach((h) => h());
-                        }}
-                    >
-                        <Container classList={["ToolButtonIcon"]}>
-                            {(() => {
-                                const Icon = resolveIcon(mode);
-                                return <Icon classList={["ToolButtonIcon"]} />;
-                            })()}
-                        </Container>
-                    </Container>
-                ))}
-            </Container>
-        </>
-    );
-
-    if (isXR) {
-        return (
-            <FloatingContainer
-                offset={{ x: 0, y: -2, z: -4.15 }}
-                faceUser={true}
-                storageKey="modeToolsPanel"
-                classList={["ModeToolsPanelXR"]}
-                pointerEvents="listener"
-                pointerEventsType="all"
-                renderOrder={4500}
-                depthTest={false}
-                depthWrite={false}
-            >
-                <Container
-                    flexDirection="column"
-                    alignItems="center"
-                    gap={6}
-                    pointerEvents="listener"
-                    pointerEventsType="all"
-                    renderOrder={4500}
-                    depthTest={false}
-                    depthWrite={false}
-                >
-                    {panelBody}
-                </Container>
-            </FloatingContainer>
-        );
+    if (typeof iconName !== "string" || iconName.length === 0) {
+      return Icons.MousePointer2;
     }
 
-    return (
-        <Fullscreen
-            key={camera.uuid} // reload when camera changes to rebind events
-            pointerEvents="listener"
+    iconName = iconName[0].toUpperCase() + iconName.slice(1);
+
+    return Icons[iconName as keyof typeof Icons] ?? Icons.MousePointer2;
+  };
+
+  const renderNotificationContent = () => {
+    const content = modeToolsNotification?.content;
+
+    if (typeof content === "string" || typeof content === "number") {
+      return (
+        <Text
+          color="rgba(255, 255, 255, 0.95)"
+          fontSize={13}
+          lineHeight={1.35}
+          textAlign="center"
+          whiteSpace="pre-line"
+          wordBreak="break-word"
         >
-            <Container
-                classList={["ModeToolsPanelWrapper"]}
-                pointerEvents="listener"
-                pointerEventsType="all"
-                renderOrder={10000}
-                depthTest={false}
-                depthWrite={false}
-            >
-                {panelBody}
+          {content}
+        </Text>
+      );
+    }
+
+    return content;
+  };
+
+  const panelBody = (
+    <>
+      {modeToolsNotification && (
+        <Container
+          classList={["NotificationBubble"]}
+          pointerEvents="none"
+          depthTest={false}
+          depthWrite={false}
+        >
+          {renderNotificationContent()}
+        </Container>
+      )}
+      <Container
+        classList={["ModeToolsPanel"]}
+        pointerEvents="listener"
+        pointerEventsType="all"
+        renderOrder={4500}
+        depthTest={false}
+        depthWrite={false}
+      >
+        {Object.keys(modesConfig).map((mode) => (
+          <Container
+            classList={["ToolButton"]}
+            key={mode}
+            alignItems="center"
+            justifyContent="center"
+            pointerEvents="listener"
+            cursor="pointer"
+            backgroundColor={
+              activeMode === mode ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.08)"
+            }
+            borderColor={activeMode === mode ? "rgba(255,255,255,0.78)" : "rgba(255,255,255,0.28)"}
+            onClick={() => {
+              selectSceneMode(mode);
+              getOnClickEvent(mode, modesConfig).forEach((h) => h());
+            }}
+            onPointerOver={() => {
+              getOnHoverEvent(mode, modesConfig).forEach((h) => h());
+            }}
+          >
+            <Container classList={["ToolButtonIcon"]}>
+              {(() => {
+                const Icon = resolveIcon(mode);
+                return <Icon classList={["ToolButtonIcon"]} />;
+              })()}
             </Container>
-        </Fullscreen>
+          </Container>
+        ))}
+      </Container>
+    </>
+  );
+
+  if (isXR) {
+    return (
+      <FloatingContainer
+        offset={{ x: 0, y: -2, z: -4.15 }}
+        faceUser={true}
+        storageKey="modeToolsPanel"
+        classList={["ModeToolsPanelXR"]}
+        pointerEvents="listener"
+        pointerEventsType="all"
+        renderOrder={4500}
+        depthTest={false}
+        depthWrite={false}
+      >
+        <Container
+          flexDirection="column"
+          alignItems="center"
+          gap={6}
+          pointerEvents="listener"
+          pointerEventsType="all"
+          renderOrder={4500}
+          depthTest={false}
+          depthWrite={false}
+        >
+          {panelBody}
+        </Container>
+      </FloatingContainer>
     );
+  }
+
+  return (
+    <Fullscreen
+      key={camera.uuid} // reload when camera changes to rebind events
+      pointerEvents="listener"
+    >
+      <Container
+        classList={["ModeToolsPanelWrapper"]}
+        pointerEvents="listener"
+        pointerEventsType="all"
+        renderOrder={10000}
+        depthTest={false}
+        depthWrite={false}
+      >
+        {panelBody}
+      </Container>
+    </Fullscreen>
+  );
 }

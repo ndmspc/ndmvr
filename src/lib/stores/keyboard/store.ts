@@ -1,28 +1,28 @@
 import { create } from "zustand";
 
 interface KeyboardState {
-    keys: Record<string, boolean>;
-    setKey: (code: string, pressed: boolean) => void;
-    clearKeys: () => void;
+  keys: Record<string, boolean>;
+  setKey: (code: string, pressed: boolean) => void;
+  clearKeys: () => void;
 }
 
 export const useKeyboardStore = create<KeyboardState>((set) => ({
-    keys: {},
+  keys: {},
 
-    setKey: (code, pressed) =>
-        set((state) =>
-            state.keys[code] === pressed
-                ? state
-                : {
-                      keys: {
-                          ...state.keys,
-                          [code]: pressed,
-                      },
-                  }
-        ),
+  setKey: (code, pressed) =>
+    set((state) =>
+      state.keys[code] === pressed
+        ? state
+        : {
+            keys: {
+              ...state.keys,
+              [code]: pressed,
+            },
+          },
+    ),
 
-    clearKeys: () =>
-        set({
-            keys: {},
-        }),
+  clearKeys: () =>
+    set({
+      keys: {},
+    }),
 }));

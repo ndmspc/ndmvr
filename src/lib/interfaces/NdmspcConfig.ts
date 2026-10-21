@@ -1,4 +1,4 @@
 export interface NdmspcConfig {
-    type: string;
-    file?: string;
+  type: string;
+  file?: string;
 }
