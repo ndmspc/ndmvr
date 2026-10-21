@@ -16,197 +16,196 @@ import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 
 export default function Demo() {
-    const [selectedHistogram, setSelectedHistogram] = useState(null);
+  const [selectedHistogram, setSelectedHistogram] = useState(null);
 
-    const [availableArrays, setAvailableArrays] = useState([]);
-    const [selectedArray, setSelectedArray] = useState("content");
+  const [availableArrays, setAvailableArrays] = useState([]);
+  const [selectedArray, setSelectedArray] = useState("content");
 
-    const [availableSets, setAvailableSets] = useState(["content"]);
-    const [selectedSets, setSelectedSets] = useState([]);
+  const [availableSets, setAvailableSets] = useState(["content"]);
+  const [selectedSets, setSelectedSets] = useState([]);
 
-    const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
+  const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
 
-    const idHistogram = "pad1";
-    const histogramOptions = [
-        "h3scat",
-        "cernstaff_145_369",
-        "histo125",
-        "histo12_5",
-        "histo1_25",
-        "histo1_2_5",
-        "histo5_2_1",
-    ];
+  const idHistogram = "pad1";
+  const histogramOptions = [
+    "h3scat",
+    "cernstaff_145_369",
+    "histo125",
+    "histo12_5",
+    "histo1_25",
+    "histo1_2_5",
+    "histo5_2_1",
+  ];
 
-    useEffect(() => {
-        const stateSubject = stateSubjectGet(idHistogram)
-            .getObservable()
-            .subscribe((e) => {
-                if (e.sets) setAvailableSets(e.sets);
-                if (e.selectedSet) setSelectedSets(e.selectedSet);
-                if (e.arrays) setAvailableArrays(e.arrays);
-                if (e.selectedArray) setSelectedArray(e.selectedArray);
-            });
+  useEffect(() => {
+    const stateSubject = stateSubjectGet(idHistogram)
+      .getObservable()
+      .subscribe((e) => {
+        if (e.sets) setAvailableSets(e.sets);
+        if (e.selectedSet) setSelectedSets(e.selectedSet);
+        if (e.arrays) setAvailableArrays(e.arrays);
+        if (e.selectedArray) setSelectedArray(e.selectedArray);
+      });
 
-        setAvailableSets([]);
-        setSelectedSets([]);
-        setAvailableArrays(["content"]);
-        setSelectedArray("content");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAvailableSets([]);
+    setSelectedSets([]);
+    setAvailableArrays(["content"]);
+    setSelectedArray("content");
 
-        return () => {
-            stateSubject.unsubscribe();
-        };
-    }, []);
-
-    const updateStateSubject = (updates) => {
-        const currentVal = stateSubjectGet(idHistogram).getValue();
-        stateSubjectGet(idHistogram).next({ ...currentVal, ...updates });
+    return () => {
+      stateSubject.unsubscribe();
     };
+  }, []);
 
-    const handleHistogramSelect = (value) => {
-        let histogram;
-        switch (value) {
-            case "h3scat":
-                histogram = h3scat;
-                break;
-            case "cernstaff_145_369":
-                histogram = cernstaff_145_369;
-                break;
-            case "histo125":
-                histogram = histo125;
-                break;
-            case "histo12_5":
-                histogram = histo12_5;
-                break;
-            case "histo1_25":
-                histogram = histo1_25;
-                break;
-            case "histo1_2_5":
-                histogram = histo1_2_5;
-                break;
-            case "histo5_2_1":
-                histogram = histo5_2_1;
-                break;
-        }
+  const updateStateSubject = (updates) => {
+    const currentVal = stateSubjectGet(idHistogram).getValue();
+    stateSubjectGet(idHistogram).next({ ...currentVal, ...updates });
+  };
 
-        setSelectedHistogram(histogram);
+  const handleHistogramSelect = (value) => {
+    let histogram;
+    switch (value) {
+      case "h3scat":
+        histogram = h3scat;
+        break;
+      case "cernstaff_145_369":
+        histogram = cernstaff_145_369;
+        break;
+      case "histo125":
+        histogram = histo125;
+        break;
+      case "histo12_5":
+        histogram = histo12_5;
+        break;
+      case "histo1_25":
+        histogram = histo1_25;
+        break;
+      case "histo1_2_5":
+        histogram = histo1_2_5;
+        break;
+      case "histo5_2_1":
+        histogram = histo5_2_1;
+        break;
+    }
 
-        histogramSubjectGet().next({
-            id: idHistogram,
-            opts: { render: selectedRenderer },
-            obj: histogram,
-        });
-    };
+    setSelectedHistogram(histogram);
 
-    const handleArraySelect = (value) => {
-        setSelectedArray(value);
+    histogramSubjectGet().next({
+      id: idHistogram,
+      opts: { render: selectedRenderer },
+      obj: histogram,
+    });
+  };
 
-        if (selectedHistogram) {
-            updateStateSubject({
-                selectedSet: selectedSets,
-                selectedArray: value,
-            });
-        }
-    };
+  const handleArraySelect = (value) => {
+    setSelectedArray(value);
 
-    const handleSetsSelect = (setValue, isChecked) => {
-        const newSelectedSets = isChecked
-            ? [...selectedSets, setValue]
-            : selectedSets.filter((v) => v !== setValue);
+    if (selectedHistogram) {
+      updateStateSubject({
+        selectedSet: selectedSets,
+        selectedArray: value,
+      });
+    }
+  };
 
-        setSelectedSets(newSelectedSets);
+  const handleSetsSelect = (setValue, isChecked) => {
+    const newSelectedSets = isChecked
+      ? [...selectedSets, setValue]
+      : selectedSets.filter((v) => v !== setValue);
 
-        if (selectedHistogram) {
-            updateStateSubject({
-                selectedSet: newSelectedSets,
-                selectedArray: selectedArray,
-            });
-        }
-    };
+    setSelectedSets(newSelectedSets);
 
-    const handleRendererSelect = (value) => {
-        setSelectedRenderer(value);
+    if (selectedHistogram) {
+      updateStateSubject({
+        selectedSet: newSelectedSets,
+        selectedArray: selectedArray,
+      });
+    }
+  };
 
-        if (selectedHistogram) {
-            histogramSubjectGet().next({
-                id: idHistogram,
-                opts: { render: value },
-                obj: selectedHistogram,
-            });
-        }
-    };
+  const handleRendererSelect = (value) => {
+    setSelectedRenderer(value);
 
-    return (
-        <Container classList={["menuContainer"]}>
-            <Text classList={["menuHeader"]}>Demo</Text>
-            <WebsocketBanner />
-            <DropdownProvider>
-                <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
-                    <Dropdown
-                        placeholder={"Select histogram"}
-                        options={histogramOptions}
-                        onSelect={(value) => {
-                            handleHistogramSelect(value);
-                        }}
-                        width={300}
-                    />
+    if (selectedHistogram) {
+      histogramSubjectGet().next({
+        id: idHistogram,
+        opts: { render: value },
+        obj: selectedHistogram,
+      });
+    }
+  };
 
-                    <Dropdown
-                        placeholder={"Select array"}
-                        options={availableArrays}
-                        defaultValue={"content"}
-                        onSelect={(value) => {
-                            handleArraySelect(value);
-                        }}
-                        width={300}
-                    />
+  return (
+    <Container classList={["menuContainer"]}>
+      <Text classList={["menuHeader"]}>Demo</Text>
+      <WebsocketBanner />
+      <DropdownProvider>
+        <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
+          <Dropdown
+            placeholder={"Select histogram"}
+            options={histogramOptions}
+            onSelect={(value) => {
+              handleHistogramSelect(value);
+            }}
+            width={300}
+          />
 
-                    <Container gap={50}>
-                        <Container flexDirection="column" gap={8}>
-                            <Text>Select Renderer:</Text>
-                            <RadioGroup
-                                defaultValue="ndmvr"
-                                onValueChange={(value) => {
-                                    handleRendererSelect(value);
-                                }}
-                            >
-                                <RadioGroupItem value="ndmvr">
-                                    <Label>
-                                        <Text fontSize={16} fontWeight={"normal"}>
-                                            ndmvr
-                                        </Text>
-                                    </Label>
-                                </RadioGroupItem>
-                                <RadioGroupItem value="jsroot">
-                                    <Label>
-                                        <Text fontSize={16} fontWeight={"normal"}>
-                                            jsroot
-                                        </Text>
-                                    </Label>
-                                </RadioGroupItem>
-                            </RadioGroup>
-                        </Container>
+          <Dropdown
+            placeholder={"Select array"}
+            options={availableArrays}
+            defaultValue={"content"}
+            onSelect={(value) => {
+              handleArraySelect(value);
+            }}
+            width={300}
+          />
 
-                        {selectedRenderer === "ndmvr" && (
-                            <Container flexDirection="column" gap={8}>
-                                {availableSets.length > 0 && <Text>Select Sets:</Text>}
-                                {availableSets.map((setValue) => (
-                                    <Checkbox
-                                        key={setValue}
-                                        label={setValue}
-                                        checked={selectedSets.includes(setValue)}
-                                        onCheck={(isChecked) =>
-                                            handleSetsSelect(setValue, isChecked)
-                                        }
-                                        size={24}
-                                    />
-                                ))}
-                            </Container>
-                        )}
-                    </Container>
-                </Container>
-            </DropdownProvider>
+          <Container gap={50}>
+            <Container flexDirection="column" gap={8}>
+              <Text>Select Renderer:</Text>
+              <RadioGroup
+                defaultValue="ndmvr"
+                onValueChange={(value) => {
+                  handleRendererSelect(value);
+                }}
+              >
+                <RadioGroupItem value="ndmvr">
+                  <Label>
+                    <Text fontSize={16} fontWeight={"normal"}>
+                      ndmvr
+                    </Text>
+                  </Label>
+                </RadioGroupItem>
+                <RadioGroupItem value="jsroot">
+                  <Label>
+                    <Text fontSize={16} fontWeight={"normal"}>
+                      jsroot
+                    </Text>
+                  </Label>
+                </RadioGroupItem>
+              </RadioGroup>
+            </Container>
+
+            {selectedRenderer === "ndmvr" && (
+              <Container flexDirection="column" gap={8}>
+                {availableSets.length > 0 && <Text>Select Sets:</Text>}
+                {availableSets.map((setValue) => (
+                  <Checkbox
+                    key={setValue}
+                    label={setValue}
+                    checked={selectedSets.includes(setValue)}
+                    onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                    size={24}
+                  />
+                ))}
+              </Container>
+            )}
+          </Container>
         </Container>
-    );
+      </DropdownProvider>
+    </Container>
+  );
 }
 
 Demo.menuName = "demo";

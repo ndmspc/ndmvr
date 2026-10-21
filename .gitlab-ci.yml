@@ -1,73 +1,179 @@
-variables:
-    PUBLIC_URL: "/ndmvr/"
-    IMAGE: node:24
-    GIT_STRATEGY: clone
+# One pipeline per push. Merge-request pipelines are switched off, so the branch
+# pipeline is the merge gate. Tags publish the npm package and the packaged page.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
 
-image: ${IMAGE}
+variables:
+  PUBLIC_URL: "/ndmvr/" # slash is important
+  IMAGE: node:24
+  # Keep the npm download cache inside the project dir so the `cache:` block
+  # below picks it up.
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
 
 stages:
-    - build
-    - deploy
+  - build
+  - deploy
 
-test-prod:
-    stage: build
-    tags:
-        - ndmspc-hosted
-    script:
-        - npm config set legacy-peer-deps=true
-        - CI=true npm install
-        - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
-        - CI=true npm run build
-        - CI=true npm run build-app
-    except:
-        - main
-        - tags
+# Gate job. Format and lint run first so a cheap oxfmt/oxlint finding fails
+# before the expensive builds. On the default branch only format and lint run:
+# the branch pipeline must already have passed, so the builds would duplicate
+# `pages`/`release-next`. Tags only publish artifacts.
+test:
+  stage: build
+  image: $IMAGE
+  tags:
+    - ndmspc-hosted
+  script:
+    - npm config set legacy-peer-deps=true
+    - CI=true npm ci
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run fmt:check
+    - CI=true npm run lint
+    - if [ -z "$SKIP_BUILD" ]; then CI=true npm run build && CI=true npm run build-app; fi
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+      variables:
+        SKIP_BUILD: "1"
+    - when: on_success
 
 cache:
-    key:
-        files:
-            - package-lock.json
-        prefix: npm
-    paths:
-        - node_modules/
+  key:
+    files:
+      - package-lock.json
+    prefix: npm
+  paths:
+    - .npm/
 
 pages:
-    stage: deploy
-    image: registry.gitlab.com/ndmspc/docs/ndmspc-doc
-    tags:
-        - ndmspc-hosted
-    variables:
-        GIT_DEPTH: 0
-    script:
-        - mkdocs build -d public/docs
-        - npm config set legacy-peer-deps=true
-        - CI=true npm install
-        - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
-        - CI=true npm run build -- -c vite.config.app.ts --mode pages --base=$PUBLIC_URL
-        - cp -a dist/. public/
-    artifacts:
-        paths:
-            - public
-    rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  stage: deploy
+  image: registry.gitlab.com/ndmspc/docs/ndmspc-doc
+  tags:
+    - ndmspc-hosted
+  variables:
+    GIT_DEPTH: 0
+  script:
+    - mkdocs build -d public/docs
+    - npm config set legacy-peer-deps=true
+    - CI=true npm ci
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build-app -- --mode pages --base=$PUBLIC_URL
+    - cp -a dist/. public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
 
 publish:
-    stage: deploy
-    tags:
-        - gitlab-org-docker
-    id_tokens:
-        NPM_ID_TOKEN:
-            aud: "npm:registry.npmjs.org"
-        SIGSTORE_ID_TOKEN:
-            aud: sigstore
-    script:
-        - "sed -i -e 's/^    \\\"version\\\".*/    \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
-        - npm config set legacy-peer-deps=true
-        - CI=true npm install
-        - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
-        - CI=true npm run build
-        - export MY_VER_RELEASE=$(echo ${CI_COMMIT_REF_NAME/v/} | cut -sd '-' -f2)
-        - if [ -z "$MY_VER_RELEASE" ];then CI=true npm publish --access public; fi
-        - if [ -n "$MY_VER_RELEASE" ];then CI=true npm publish --access public --tag rc; fi
-    only:
-        - tags
+  stage: deploy
+  image: $IMAGE
+  tags:
+    - gitlab-org-docker
+  id_tokens:
+    NPM_ID_TOKEN:
+      aud: "npm:registry.npmjs.org"
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  script:
+    - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
+    - npm config set legacy-peer-deps=true
+    - CI=true npm ci
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build
+    - export MY_VER_RELEASE=$(echo ${CI_COMMIT_REF_NAME/v/} | cut -sd '-' -f2)
+    - if [ -z "$MY_VER_RELEASE" ];then CI=true npm publish --access public; fi
+    - if [ -n "$MY_VER_RELEASE" ];then CI=true npm publish --access public --tag rc; fi
+  only:
+    - tags
+
+# Builds the page for a tag and uploads it to the Generic Package Registry under
+# the tag as its version, so a prebuilt page can be downloaded instead of
+# running the npm builds again.
+build-page:
+  stage: deploy
+  image: $IMAGE
+  tags:
+    - ndmspc-hosted
+  script:
+    - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
+    - npm config set legacy-peer-deps=true
+    - CI=true npm ci
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build-app -- --mode pages --base=$PUBLIC_URL
+    - tar -czf ndmvr-page.tar.gz -C dist .
+    - |
+      curl --fail --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file ndmvr-page.tar.gz \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/ndmvr-page/${CI_COMMIT_TAG}/ndmvr-page.tar.gz"
+  only:
+    - tags
+
+# Creates the tag's GitLab Release and links the packaged page. The glab-based
+# image is required: the release step needs either glab or release-cli, and this
+# runner provides neither. The asset points at the package URL rather than a job
+# artifact, so it never expires.
+#
+#   $CI_PROJECT_URL/-/releases/<tag>/downloads/ndmvr-page.tar.gz
+release-page:
+  stage: deploy
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  tags:
+    - ndmspc-hosted
+  needs:
+    - build-page
+  variables:
+    GIT_STRATEGY: none # release is created via the API; no checkout needed
+  script:
+    - echo "Creating release ${CI_COMMIT_TAG}"
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    name: "NDMVR $CI_COMMIT_TAG"
+    description: "Prebuilt NDMVR page ($CI_COMMIT_TAG). Extract and install as the web root."
+    assets:
+      links:
+        - name: "ndmvr-page.tar.gz"
+          url: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/ndmvr-page/${CI_COMMIT_TAG}/ndmvr-page.tar.gz"
+          direct_asset_path: "/ndmvr-page.tar.gz"
+          link_type: "package"
+  only:
+    - tags
+
+# Publishes the page built from the default branch to a single over-writable
+# "next" slot in the Generic Package Registry. Each run deletes the previous
+# "next" package first, so the download URL always serves the newest build:
+#   $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/ndmvr-page/next/ndmvr-page.tar.gz
+release-next:
+  stage: deploy
+  image: $IMAGE
+  tags:
+    - ndmspc-hosted
+  resource_group: release-next
+  script:
+    - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"0.0.0-next.'${CI_PIPELINE_IID}'\\\",/g' package.json"
+    - npm config set legacy-peer-deps=true
+    - CI=true npm ci
+    - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js
+    - CI=true npm run build-app -- --mode pages --base=$PUBLIC_URL
+    - tar -czf ndmvr-page.tar.gz -C dist .
+    # Drop the previous "next" package so the upload replaces it cleanly
+    # (the registry would otherwise keep two files with the same name).
+    - |
+      PACKAGE_ID=$(node -e 'const [u,t]=process.argv.slice(1);fetch(u,{headers:{"JOB-TOKEN":t}}).then(r=>r.json()).then(l=>{const p=(l||[]).find(x=>x.name==="ndmvr-page"&&x.version==="next");if(p)console.log(p.id)})' \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages?package_type=generic&package_name=ndmvr-page&package_version=next" \
+        "${CI_JOB_TOKEN}")
+      if [ -n "$PACKAGE_ID" ]; then
+        curl --fail --silent --request DELETE --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/${PACKAGE_ID}"
+      fi
+    - |
+      curl --fail --location --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file ndmvr-page.tar.gz \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/ndmvr-page/next/ndmvr-page.tar.gz"
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"

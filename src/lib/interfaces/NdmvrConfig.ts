@@ -1,3 +1,3 @@
 export interface NdmvrConfig {
-    config?: object;
+  config?: object;
 }

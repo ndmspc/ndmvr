@@ -202,10 +202,10 @@
 //     if (!imageData) return null;
 
 //     if (svg) {
-//         // @ts-ignore - content prop exists at runtime but is missing from @react-three/uikit types
+//         // @ts-expect-error - content prop exists at runtime but is missing from @react-three/uikit types
 //         return <VRIcon content={imageData} width={dispW} height={dispH} {...rest} />;
 //     } else {
-//         // @ts-ignore - content prop exists at runtime but is missing from @react-three/uikit types
+//         // @ts-expect-error - content prop exists at runtime but is missing from @react-three/uikit types
 //         return <VRImage content={imageData} width={dispW} height={dispH} {...rest} />;
 //     }
 // }

@@ -7,62 +7,62 @@ import type { NdmvrConfig } from "../../interfaces/NdmvrConfig";
 import { useCallback, useRef, useState } from "react";
 
 interface NdmspcNavigatorProps {
-    children?: React.ReactNode;
-    ndmspcConfig?: NdmspcConfig | null;
-    ndmvrConfig?: NdmvrConfig | null;
+  children?: React.ReactNode;
+  ndmspcConfig?: NdmspcConfig | null;
+  ndmvrConfig?: NdmvrConfig | null;
 }
 function NdmspcNavigator({
-    children = null,
-    ndmspcConfig = null,
-    ndmvrConfig = null,
+  children = null,
+  ndmspcConfig = null,
+  ndmvrConfig = null,
 }: NdmspcNavigatorProps) {
-    useNdmspcWebsocket();
-    useNdmspcConfig(ndmspcConfig);
+  useNdmspcWebsocket();
+  useNdmspcConfig(ndmspcConfig);
 
-    const [localConfig, setLocalConfig] = useState<NdmspcConfig | null>(ndmspcConfig);
-    const previousNonBrowserConfigRef = useRef<NdmspcConfig | null>(
-        ndmspcConfig?.type === "browser" ? null : ndmspcConfig
-    );
+  const [localConfig, setLocalConfig] = useState<NdmspcConfig | null>(ndmspcConfig);
+  const previousNonBrowserConfigRef = useRef<NdmspcConfig | null>(
+    ndmspcConfig?.type === "browser" ? null : ndmspcConfig,
+  );
 
-    const setBrowserConfig = useCallback<React.Dispatch<React.SetStateAction<NdmspcConfig | null>>>(
-        (value) => {
-            setLocalConfig((prev) => {
-                const next = typeof value === "function" ? value(prev) : value;
+  const setBrowserConfig = useCallback<React.Dispatch<React.SetStateAction<NdmspcConfig | null>>>(
+    (value) => {
+      setLocalConfig((prev) => {
+        const next = typeof value === "function" ? value(prev) : value;
 
-                if (next?.type === "browser" && prev?.type !== "browser") {
-                    previousNonBrowserConfigRef.current = prev;
-                }
+        if (next?.type === "browser" && prev?.type !== "browser") {
+          previousNonBrowserConfigRef.current = prev;
+        }
 
-                if (prev?.type === "browser" && next?.type === "object") {
-                    return previousNonBrowserConfigRef.current;
-                }
+        if (prev?.type === "browser" && next?.type === "object") {
+          return previousNonBrowserConfigRef.current;
+        }
 
-                if (next?.type !== "browser") {
-                    previousNonBrowserConfigRef.current = next;
-                }
+        if (next?.type !== "browser") {
+          previousNonBrowserConfigRef.current = next;
+        }
 
-                return next;
-            });
-        },
-        []
-    );
+        return next;
+      });
+    },
+    [],
+  );
 
-    return (
-        <>
-            {children}
-            {localConfig?.type === "object" && (
-                <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
-            )}
-            {localConfig?.type === "browser" && (
-                <NdmspcDefaultBrowserEnv
-                    file={localConfig?.file}
-                    layout="simple"
-                    setBrowser={setBrowserConfig}
-                />
-            )}
-            {!localConfig?.type && <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />}
-        </>
-    );
+  return (
+    <>
+      {children}
+      {localConfig?.type === "object" && (
+        <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />
+      )}
+      {localConfig?.type === "browser" && (
+        <NdmspcDefaultBrowserEnv
+          file={localConfig?.file}
+          layout="simple"
+          setBrowser={setBrowserConfig}
+        />
+      )}
+      {!localConfig?.type && <NdmspcEnv config={ndmvrConfig} setBrowser={setBrowserConfig} />}
+    </>
+  );
 }
 
 export default NdmspcNavigator;

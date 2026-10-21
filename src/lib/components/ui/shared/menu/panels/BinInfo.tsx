@@ -8,138 +8,143 @@ import NotoRegular from "../../../../../assets/fonts/NotoSans-Regular.json";
 import NotoBold from "../../../../../assets/fonts/NotoSans-Bold.json";
 
 function formatSmartNumber(val: number | undefined | null, precision: number): string {
-    if (val === undefined || val === null || Number.isNaN(val)) return "-";
-    const num = Number.parseFloat(String(val));
-    return num.toExponential(precision);
+  if (val === undefined || val === null || Number.isNaN(val)) return "-";
+  const num = Number.parseFloat(String(val));
+  return num.toExponential(precision);
 }
 
 export interface BinInfoProps {
-    precision?: number;
+  precision?: number;
 }
 
 function DotIcon({ color = "#fff" }) {
-    return (
-        <Container
-            width={12}
-            height={12}
-            borderRadius={9999}
-            zIndex={10}
-            backgroundColor={color}
-            borderWidth={1}
-            borderColor={"#fff"}
-        />
-    );
+  return (
+    <Container
+      width={12}
+      height={12}
+      borderRadius={9999}
+      zIndex={10}
+      backgroundColor={color}
+      borderWidth={1}
+      borderColor={"#fff"}
+    />
+  );
 }
 
 export default function BinInfo({ precision = 2 }: BinInfoProps) {
-    const [binInfo, setBinInfo] = useState(null);
-    const prev = useRef(null);
+  const [binInfo, setBinInfo] = useState(null);
+  const prev = useRef(null);
 
-    useEffect(() => {
-        const sub = binInfoSubjectGet()
-            .getObservable()
-            .subscribe((next) => {
-                if (!next.instanceId) return;
-                if (prev.current !== next) setBinInfo(next);
-                prev.current = next;
-            });
-        return () => sub.unsubscribe();
-    }, []);
+  useEffect(() => {
+    const sub = binInfoSubjectGet()
+      .getObservable()
+      .subscribe((next) => {
+        if (!next.instanceId) return;
+        if (prev.current !== next) setBinInfo(next);
+        prev.current = next;
+      });
+    return () => sub.unsubscribe();
+  }, []);
 
-    const contentText =
-        binInfo?.content !== undefined
-            ? `${formatSmartNumber(binInfo.content, 5)} +/- ${formatSmartNumber(binInfo.error, 5)}`
-            : "-";
+  const contentText =
+    binInfo?.content !== undefined
+      ? `${formatSmartNumber(binInfo.content, 5)} +/- ${formatSmartNumber(binInfo.error, 5)}`
+      : "-";
 
-    return (
-        <Container
-            classList={["menuContainer"]}
-            fontFamilies={{
-                noto: {
-                    medium: NotoRegular,
-                    bold: NotoBold,
-                },
-            }}
-        >
-            <Text classList={["menuHeader"]}>Bin information</Text>
+  return (
+    <Container
+      classList={["menuContainer"]}
+      fontFamilies={{
+        noto: {
+          medium: NotoRegular,
+          bold: NotoBold,
+        },
+      }}
+    >
+      <Text classList={["menuHeader"]}>Bin information</Text>
 
-            <Container
-                classList={["section", "sectionInner"]}
-                minWidth={250}
-                flexDirection="column"
-                padding={10}
-                borderRadius={8}
-            >
-                <Container flexDirection="row" alignItems="center" gap={4}>
-                    <Text fontSize={12} fontWeight="bold">
-                        Level:
-                    </Text>
-                    <Text fontSize={12}>{binInfo?.coords?.length ?? 0}</Text>
-                </Container>
+      <Container
+        classList={["section", "sectionInner"]}
+        minWidth={250}
+        flexDirection="column"
+        padding={10}
+        borderRadius={8}
+      >
+        <Container flexDirection="row" alignItems="center" gap={4}>
+          <Text fontSize={12} fontWeight="bold">
+            Level:
+          </Text>
+          <Text fontSize={12}>{binInfo?.coords?.length ?? 0}</Text>
+        </Container>
 
-                <Container flexDirection="row" alignItems="center" gap={4}>
-                    <Text fontSize={12} fontWeight="bold">
-                        Content:
-                    </Text>
-                    <Text fontSize={12}>{contentText}</Text>
-                </Container>
+        <Container flexDirection="row" alignItems="center" gap={4}>
+          <Text fontSize={12} fontWeight="bold">
+            Content:
+          </Text>
+          <Text fontSize={12}>{contentText}</Text>
+        </Container>
+      </Container>
+
+      {binInfo?.coords?.map((coord, i) => {
+        const { r, g, b } = coord.color || { r: 255, g: 255, b: 255 };
+        const color = new Color(r, g, b).getStyle();
+
+        const axes = Object.entries(coord).filter(
+          ([, v]) => v && typeof v === "object" && "min" in v && "max" in v,
+        );
+
+        return (
+          <Container
+            classList={["section", "sectionInner"]}
+            minWidth={360}
+            flexDirection="column"
+            key={i}
+            padding={10}
+            borderRadius={8}
+            gap={6}
+          >
+            <Container gap={5}>
+              <DotIcon color={color} />
+              <Text fontSize={13} fontWeight="bold">
+                {coord.name ?? "Unnamed"} [bin={coord.bin}]
+              </Text>
             </Container>
 
-            {binInfo?.coords?.map((coord, i) => {
-                const { r, g, b } = coord.color || { r: 255, g: 255, b: 255 };
-                const color = new Color(r, g, b).getStyle();
-
-                const axes = Object.entries(coord).filter(
-                    ([, v]) => v && typeof v === "object" && "min" in v && "max" in v
-                );
-
-                return (
-                    <Container
-                        classList={["section", "sectionInner"]}
-                        minWidth={360}
-                        flexDirection="column"
-                        key={i}
-                        padding={10}
-                        borderRadius={8}
-                        gap={6}
-                    >
-                        <Container gap={5}>
-                            <DotIcon color={color} />
-                            <Text fontSize={13} fontWeight="bold">
-                                {coord.name ?? "Unnamed"} [bin={coord.bin}]
-                            </Text>
-                        </Container>
-
-                        <Container flexDirection="column" gap={4}>
-                            {axes.map(([key, axis]: [string, any]) => (
-                                <Container
-                                    key={key}
-                                    flexDirection="row"
-                                    alignItems="center"
-                                    gap={8}
-                                >
-                                    <Container minWidth={170}>
-                                        <Text fontSize={12}>
-                                            {axis.title ? axis.title : key} [name={axis.name}]:
-                                        </Text>
-                                    </Container>
-
-                                    {axis.label ? (
-                                        <Text fontSize={12}>[{axis.label}]</Text>
-                                    ) : (
-                                        <Text fontSize={12}>
-                                            [{axis.min.toFixed(precision)},{" "}
-                                            {axis.max.toFixed(precision)}]
-                                        </Text>
-                                    )}
-                                </Container>
-                            ))}
-                        </Container>
+            <Container flexDirection="column" gap={4}>
+              {axes.map(
+                ([key, axis]: [
+                  string,
+                  {
+                    title?: string;
+                    name?: string;
+                    label?: string;
+                    min: number;
+                    max: number;
+                  },
+                ]) => (
+                  <Container key={key} flexDirection="row" alignItems="center" gap={8}>
+                    <Container minWidth={170}>
+                      <Text fontSize={12}>
+                        {axis.title ? axis.title : key} [name={axis.name}]:
+                      </Text>
                     </Container>
-                );
-            })}
-        </Container>
-    );
+
+                    {axis.label ? (
+                      <Text fontSize={12}>[{axis.label}]</Text>
+                    ) : (
+                      <Text fontSize={12}>
+                        [{axis.min.toFixed(precision)}, {axis.max.toFixed(precision)}]
+                      </Text>
+                    )}
+                  </Container>
+                ),
+              )}
+            </Container>
+          </Container>
+        );
+      })}
+    </Container>
+  );
 }
 
 BinInfo.menuName = "bin";

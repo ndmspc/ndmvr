@@ -82,14 +82,14 @@ Example:
 
 ```tsx
 <BinBox
-    position={hoveredBinFrameData.position}
-    scale={hoveredBinFrameData.scale}
-    axisRanges={hoveredBinFrameData.axisRanges}
-    contentLabel={hoveredBinFrameData.contentLabel}
-    color="#ffff00"
-    showOnlyOnHover={false}
-    labelFontSize={64}
-    passThroughPointerEvents={true}
+  position={hoveredBinFrameData.position}
+  scale={hoveredBinFrameData.scale}
+  axisRanges={hoveredBinFrameData.axisRanges}
+  contentLabel={hoveredBinFrameData.contentLabel}
+  color="#ffff00"
+  showOnlyOnHover={false}
+  labelFontSize={64}
+  passThroughPointerEvents={true}
 />
 ```
 
@@ -103,15 +103,15 @@ Example:
 
 ```tsx
 {
-    painterLimits && modifyModeEnabled && !isJsrootRenderer && (
-        <BoundingFrameBox
-            position={getBoundingFramePosition(painterLimits)}
-            scale={getBoundingFrameScale(painterLimits)}
-            shiftScaleStep={currentShiftStep}
-            onChange={onBoundingBoxChange}
-            onDragEnd={onBoundingBoxDragEnd}
-        />
-    );
+  painterLimits && modifyModeEnabled && !isJsrootRenderer && (
+    <BoundingFrameBox
+      position={getBoundingFramePosition(painterLimits)}
+      scale={getBoundingFrameScale(painterLimits)}
+      shiftScaleStep={currentShiftStep}
+      onChange={onBoundingBoxChange}
+      onDragEnd={onBoundingBoxDragEnd}
+    />
+  );
 }
 ```
 

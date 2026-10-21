@@ -17,421 +17,416 @@ import type { JSRootHierarchy, RootNode } from "../ui/shared/browser/TreeViewer.
 type HistogramPadConfig = { id?: string };
 
 type EnvironmentWithPads = Record<string, unknown> & {
-    histogramPads?: HistogramPadConfig[];
+  histogramPads?: HistogramPadConfig[];
 };
 
 type ConfigWithPads = Record<string, unknown> & {
-    config?: {
-        environment?: EnvironmentWithPads;
-    };
+  config?: {
+    environment?: EnvironmentWithPads;
+  };
 };
 
 type BrowserPainter = {
-    display: (obj: unknown, opt?: unknown, dom?: unknown) => unknown;
-    getObject: (obj: unknown) => Promise<{ obj?: unknown }>;
-    openRootFile: (file: string | null) => Promise<{ disp_kind: string }>;
-    setDisplay: (layout: string | null, elementId: string) => void;
-    checkResize: () => void;
-    h: RootNode;
-    expandItem: JSRootHierarchy["expandItem"];
-    no_select: boolean;
-    show_overflow: boolean;
+  display: (obj: unknown, opt?: unknown, dom?: unknown) => unknown;
+  getObject: (obj: unknown) => Promise<{ obj?: unknown }>;
+  openRootFile: (file: string | null) => Promise<{ disp_kind: string }>;
+  setDisplay: (layout: string | null, elementId: string) => void;
+  checkResize: () => void;
+  h: RootNode;
+  expandItem: JSRootHierarchy["expandItem"];
+  no_select: boolean;
+  show_overflow: boolean;
 };
 
 type DrawnObject = {
-    obj: unknown;
-    opt?: unknown;
+  obj: unknown;
+  opt?: unknown;
 };
 
 function getExistingPadIds(configValue: ConfigWithPads | null | undefined): Set<string> {
-    const pads = configValue?.config?.environment?.histogramPads ?? [];
+  const pads = configValue?.config?.environment?.histogramPads ?? [];
 
-    return new Set(
-        pads.map((pad) => pad?.id).filter((id: string | undefined): id is string => Boolean(id))
-    );
+  return new Set(
+    pads.map((pad) => pad?.id).filter((id: string | undefined): id is string => Boolean(id)),
+  );
 }
 
 function removeDuplicateHistogramPads(
-    configValue: ConfigWithPads | null | undefined
+  configValue: ConfigWithPads | null | undefined,
 ): ConfigWithPads | null | undefined {
-    if (!configValue) return configValue;
+  if (!configValue) return configValue;
 
-    const rootConfig = configValue.config;
-    const environment = rootConfig?.environment;
-    const pads = environment?.histogramPads;
+  const rootConfig = configValue.config;
+  const environment = rootConfig?.environment;
+  const pads = environment?.histogramPads;
 
-    if (!Array.isArray(pads)) return configValue;
+  if (!Array.isArray(pads)) return configValue;
 
-    const seen = new Set<string>();
-    const uniquePads = pads.filter((pad) => {
-        if (!pad.id) return true;
-        if (seen.has(pad.id)) return false;
-        seen.add(pad.id);
-        return true;
-    });
+  const seen = new Set<string>();
+  const uniquePads = pads.filter((pad) => {
+    if (!pad.id) return true;
+    if (seen.has(pad.id)) return false;
+    seen.add(pad.id);
+    return true;
+  });
 
-    if (uniquePads.length === pads.length) return configValue;
+  if (uniquePads.length === pads.length) return configValue;
 
-    const nextEnvironment = {
-        ...environment,
-        histogramPads: uniquePads,
-    };
+  const nextEnvironment = {
+    ...environment,
+    histogramPads: uniquePads,
+  };
 
-    return {
-        ...configValue,
-        config: {
-            ...rootConfig,
-            environment: nextEnvironment,
-        },
-    };
+  return {
+    ...configValue,
+    config: {
+      ...rootConfig,
+      environment: nextEnvironment,
+    },
+  };
 }
 
 export interface NdmspcDefaultBrowserEnvProps {
-    children?: React.ReactNode;
-    config?: NdmvrConfig | null;
-    renderer?: "jsroot" | "ndmvr";
-    vr?: boolean;
-    file?: string | null;
-    item?: string | null;
-    opt?: string | null;
-    title?: string | null;
-    layout?: string | null;
-    defaultDrawOpt?: Record<string, string> | null;
-    setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
+  children?: React.ReactNode;
+  config?: NdmvrConfig | null;
+  renderer?: "jsroot" | "ndmvr";
+  vr?: boolean;
+  file?: string | null;
+  item?: string | null;
+  opt?: string | null;
+  title?: string | null;
+  layout?: string | null;
+  defaultDrawOpt?: Record<string, string> | null;
+  setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
 export default function NdmspcDefaultBrowserEnv({
-    children = null,
-    config = null,
-    renderer = "jsroot",
-    vr = true,
-    file = null,
-    item = null,
-    opt = null,
-    layout = "simple",
-    defaultDrawOpt = { TH1: "hist", TH2: "col" },
-    setBrowser,
+  children = null,
+  config = null,
+  renderer = "jsroot",
+  vr = true,
+  file = null,
+  item = null,
+  opt = null,
+  layout = "simple",
+  defaultDrawOpt = { TH1: "hist", TH2: "col" },
+  setBrowser,
 }: NdmspcDefaultBrowserEnvProps) {
-    const [vrMode, setVRMode] = useState(vr);
-    const initializedRef = useRef(false);
-    const painterRef = useRef<BrowserPainter | null>(null);
-    const pads = useRef<string[]>([]);
-    const padsCounter = useRef(0);
-    const [itemState, setItemState] = useState(item);
-    const [optState, setOptState] = useState(opt);
-    const displayedSelectionRef = useRef<{
-        painter: BrowserPainter;
-        item: string;
-        opt: string | null;
-    } | null>(null);
-    const hiddenTreeDivRef = useRef<HTMLDivElement>(document.createElement("div"));
+  const [vrMode, setVRMode] = useState(vr);
+  const initializedRef = useRef(false);
+  const painterRef = useRef<BrowserPainter | null>(null);
+  const pads = useRef<string[]>([]);
+  const padsCounter = useRef(0);
+  const [itemState, setItemState] = useState(item);
+  const [optState, setOptState] = useState(opt);
+  const displayedSelectionRef = useRef<{
+    painter: BrowserPainter;
+    item: string;
+    opt: string | null;
+  } | null>(null);
+  const hiddenTreeDivRef = useRef<HTMLDivElement>(document.createElement("div"));
 
-    const [hierarchy, setHierarchy] = useState<BrowserPainter | null>(null);
-    const [rootNode, setRootNode] = useState<RootNode | null>(null);
+  const [hierarchy, setHierarchy] = useState<BrowserPainter | null>(null);
+  const [rootNode, setRootNode] = useState<RootNode | null>(null);
 
-    const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
-    const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
-    const drawnObjectsRef = useRef<Record<string, DrawnObject>>({});
+  const [rendererMode, setRendererMode] = useState<"jsroot" | "ndmvr">(renderer);
+  const rendererModeRef = useRef<"jsroot" | "ndmvr">(renderer);
+  const drawnObjectsRef = useRef<Record<string, DrawnObject>>({});
 
-    const [fileInputValue, setFileInputValue] = useState(
-        file ?? "https://root.cern/js/files/hsimple.root"
-    );
-    const [activeFile, setActiveFile] = useState<string | null>(file);
+  const [fileInputValue, setFileInputValue] = useState(
+    file ?? "https://root.cern/js/files/hsimple.root",
+  );
+  const [activeFile, setActiveFile] = useState<string | null>(file);
 
-    const [fileStatus, setFileStatus] = useState<"idle" | "loading" | "success" | "error">(
-        file ? "loading" : "idle"
-    );
+  const [fileStatus, setFileStatus] = useState<"idle" | "loading" | "success" | "error">(
+    file ? "loading" : "idle",
+  );
 
-    useEffect(() => {
-        if (!initializedRef.current) return;
+  useEffect(() => {
+    if (!initializedRef.current) return;
 
-        rendererModeRef.current = rendererMode;
+    rendererModeRef.current = rendererMode;
 
-        const entries = Object.entries(drawnObjectsRef.current);
-        for (const [padId, data] of entries) {
-            histogramSubjectGet().next({
-                id: padId,
-                opts: { render: rendererMode },
-                obj: data.obj,
-            });
-        }
-    }, [rendererMode]);
+    const entries = Object.entries(drawnObjectsRef.current);
+    for (const [padId, data] of entries) {
+      histogramSubjectGet().next({
+        id: padId,
+        opts: { render: rendererMode },
+        obj: data.obj,
+      });
+    }
+  }, [rendererMode]);
 
-    useEffect(() => {
-        if (config) {
-            configSubjectGet().next(config);
-        }
-    }, [config]);
+  useEffect(() => {
+    if (config) {
+      configSubjectGet().next(config);
+    }
+  }, [config]);
 
-    useEffect(() => {
-        if (!vrMode && painterRef.current) painterRef.current.checkResize();
-    }, [vrMode]);
+  useEffect(() => {
+    if (!vrMode && painterRef.current) painterRef.current.checkResize();
+  }, [vrMode]);
 
-    useEffect(() => {
-        if (!activeFile) return;
-        if (initializedRef.current) return;
-        initializedRef.current = true;
-        let disposed = false;
+  useEffect(() => {
+    if (!activeFile) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    let disposed = false;
 
-        setFileStatus("loading");
+    setFileStatus("loading");
 
-        const painter = new HierarchyPainter("example", hiddenTreeDivRef.current) as BrowserPainter;
-        const origDisplay = painter.display.bind(painter);
+    const painter = new HierarchyPainter("example", hiddenTreeDivRef.current) as BrowserPainter;
+    const origDisplay = painter.display.bind(painter);
 
-        painter.display = function (
-            this: BrowserPainter,
-            obj: unknown,
-            opt?: unknown,
-            dom?: unknown
-        ) {
-            const padId = `pad${padsCounter.current + 1}`;
+    painter.display = function (this: BrowserPainter, obj: unknown, opt?: unknown, dom?: unknown) {
+      const padId = `pad${padsCounter.current + 1}`;
 
-            this.getObject(obj).then((retValue) => {
-                if (disposed) return;
-                if (!retValue?.obj) return;
+      this.getObject(obj).then((retValue) => {
+        if (disposed) return;
+        if (!retValue?.obj) return;
 
-                drawnObjectsRef.current[padId] = {
-                    obj: retValue.obj,
-                    opt,
-                };
-
-                histogramSubjectGet().next({
-                    id: padId,
-                    opts: { render: rendererModeRef.current },
-                    obj: retValue.obj,
-                });
-            });
-
-            if (pads.current.length > 0) {
-                padsCounter.current = (padsCounter.current + 1) % pads.current.length;
-            }
-
-            return origDisplay(obj, opt, dom);
+        drawnObjectsRef.current[padId] = {
+          obj: retValue.obj,
+          opt,
         };
 
-        painterRef.current = painter;
-        const initPainter = async () => {
-            try {
-                for (const key in defaultDrawOpt) {
-                    setDefaultDrawOpt(key, defaultDrawOpt[key]);
-                }
-                painter.setDisplay(layout, "myMainDiv");
+        histogramSubjectGet().next({
+          id: padId,
+          opts: { render: rendererModeRef.current },
+          obj: retValue.obj,
+        });
+      });
 
-                painter.no_select = true;
-                // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
-                painter.show_overflow = true;
-                // open file and display element
-                const defaultPad = {
-                    scale: { x: 10, y: 5, z: 10 },
-                    padding: { x: 0, y: 0, z: 0 },
-                    origin: { x: -5, y: 0.5, z: 1 },
-                };
+      if (pads.current.length > 0) {
+        padsCounter.current = (padsCounter.current + 1) % pads.current.length;
+      }
 
-                drawnObjectsRef.current = {};
-                padsCounter.current = 0;
-
-                await painter.openRootFile(activeFile).then((v) => {
-                    if (disposed) return;
-                    const ps = getPads(v.disp_kind);
-                    pads.current = ps;
-                    const currentConfig = configSubjectGet().getValue();
-                    const dedupedConfig = removeDuplicateHistogramPads(currentConfig);
-                    if (dedupedConfig && dedupedConfig !== currentConfig) {
-                        configSubjectGet().next(dedupedConfig);
-                    }
-
-                    const existingPadIds = getExistingPadIds(dedupedConfig);
-                    const padsToAppend = ps.filter((padId) => !existingPadIds.has(padId));
-                    if (padsToAppend.length > 0) {
-                        configSubjectGet().appendPads(padsToAppend, v.disp_kind, defaultPad);
-                    }
-                    setHierarchy(painter);
-                    setRootNode(painter.h);
-                });
-
-                if (disposed) return;
-
-                if (item) {
-                    await painter.display(item, opt);
-                    if (disposed) return;
-                    setItemState(item);
-                    setOptState(opt);
-                }
-            } catch (err) {
-                if (disposed) return;
-
-                console.error("Failed to open ROOT file:", err);
-
-                setFileStatus("error");
-
-                setHierarchy(null);
-                setRootNode(null);
-
-                drawnObjectsRef.current = {};
-                pads.current = [];
-                padsCounter.current = 0;
-
-                painterRef.current = null;
-                initializedRef.current = false;
-
-                setActiveFile(null);
-            }
-        };
-        initPainter();
-
-        return () => {
-            disposed = true;
-            initializedRef.current = false;
-            drawnObjectsRef.current = {};
-            painterRef.current = null;
-        };
-    }, [activeFile]);
-
-    useEffect(() => {
-        if (!initializedRef.current) return;
-        if (itemState === null) return;
-
-        const displayedSelection = displayedSelectionRef.current;
-        displayedSelectionRef.current = null;
-        if (
-            displayedSelection?.painter === painterRef.current &&
-            displayedSelection.item === itemState &&
-            displayedSelection.opt === optState
-        )
-            return;
-
-        const painter = painterRef.current;
-        const painterDisplay = async () => {
-            await painter.display(itemState, optState);
-        };
-        painterDisplay();
-    }, [itemState, optState]);
-
-    const handleSelect = async (path: string) => {
-        const painter = painterRef.current;
-        if (!painter) return;
-        await painter.display(path, optState ?? "");
-        displayedSelectionRef.current = { painter, item: path, opt: optState };
-        setItemState(path);
+      return origDisplay(obj, opt, dom);
     };
 
-    const resetBrowserState = useCallback(() => {
+    painterRef.current = painter;
+    const initPainter = async () => {
+      try {
+        for (const key in defaultDrawOpt) {
+          setDefaultDrawOpt(key, defaultDrawOpt[key]);
+        }
+        painter.setDisplay(layout, "myMainDiv");
+
+        painter.no_select = true;
+        // let enable scrollbars for hierarchy content, otherwise only HTML resize can be use to see elements
+        painter.show_overflow = true;
+        // open file and display element
+        const defaultPad = {
+          scale: { x: 10, y: 5, z: 10 },
+          padding: { x: 0, y: 0, z: 0 },
+          origin: { x: -5, y: 0.5, z: 1 },
+        };
+
+        drawnObjectsRef.current = {};
+        padsCounter.current = 0;
+
+        await painter.openRootFile(activeFile).then((v) => {
+          if (disposed) return;
+          const ps = getPads(v.disp_kind);
+          pads.current = ps;
+          const currentConfig = configSubjectGet().getValue();
+          const dedupedConfig = removeDuplicateHistogramPads(currentConfig);
+          if (dedupedConfig && dedupedConfig !== currentConfig) {
+            configSubjectGet().next(dedupedConfig);
+          }
+
+          const existingPadIds = getExistingPadIds(dedupedConfig);
+          const padsToAppend = ps.filter((padId) => !existingPadIds.has(padId));
+          if (padsToAppend.length > 0) {
+            configSubjectGet().appendPads(padsToAppend, v.disp_kind, defaultPad);
+          }
+          setHierarchy(painter);
+          setRootNode(painter.h);
+        });
+
+        if (disposed) return;
+
+        if (item) {
+          await painter.display(item, opt);
+          if (disposed) return;
+          setItemState(item);
+          setOptState(opt);
+        }
+      } catch (err) {
+        if (disposed) return;
+
+        console.error("Failed to open ROOT file:", err);
+
+        setFileStatus("error");
+
         setHierarchy(null);
         setRootNode(null);
 
         drawnObjectsRef.current = {};
         pads.current = [];
         padsCounter.current = 0;
-        displayedSelectionRef.current = null;
 
-        setItemState(item);
-        setOptState(opt);
-    }, [item, opt]);
+        painterRef.current = null;
+        initializedRef.current = false;
 
-    const handleOpenRootFile = useCallback(() => {
-        const nextFile = fileInputValue.trim();
+        setActiveFile(null);
+      }
+    };
+    initPainter();
 
-        if (!nextFile) {
-            setFileStatus("error");
-            console.log("ROOT file path is empty");
-            return;
-        }
+    return () => {
+      disposed = true;
+      initializedRef.current = false;
+      drawnObjectsRef.current = {};
+      painterRef.current = null;
+    };
+  }, [activeFile]);
 
-        if (fileStatus == "loading") {
-            return;
-        }
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    if (itemState === null) return;
 
-        if (activeFile == nextFile && initializedRef.current) {
-            return;
-        }
+    const displayedSelection = displayedSelectionRef.current;
+    displayedSelectionRef.current = null;
+    if (
+      displayedSelection?.painter === painterRef.current &&
+      displayedSelection.item === itemState &&
+      displayedSelection.opt === optState
+    )
+      return;
 
-        setFileStatus("loading");
+    const painter = painterRef.current;
+    const painterDisplay = async () => {
+      await painter.display(itemState, optState);
+    };
+    painterDisplay();
+  }, [itemState, optState]);
 
-        resetBrowserState();
+  const handleSelect = async (path: string) => {
+    const painter = painterRef.current;
+    if (!painter) return;
+    await painter.display(path, optState ?? "");
+    displayedSelectionRef.current = { painter, item: path, opt: optState };
+    setItemState(path);
+  };
 
-        setActiveFile(nextFile);
-    }, [activeFile, fileInputValue, fileStatus, resetBrowserState]);
+  const resetBrowserState = useCallback(() => {
+    setHierarchy(null);
+    setRootNode(null);
 
-    const showRootFileMenu = !activeFile && fileStatus !== "loading";
+    drawnObjectsRef.current = {};
+    pads.current = [];
+    padsCounter.current = 0;
+    displayedSelectionRef.current = null;
 
-    const rootFileMenu = showRootFileMenu ? (
-        <BrowserRootFileMenu
-            value={fileInputValue}
-            placeholder={"http://"}
-            status={fileStatus}
-            onChange={(value) => {
-                setFileInputValue(value);
-                setFileStatus("idle");
-            }}
-            onSubmit={handleOpenRootFile}
-        />
-    ) : null;
+    setItemState(item);
+    setOptState(opt);
+  }, [item, opt]);
 
-    const fileBrowserReady = Boolean(hierarchy && rootNode);
+  const handleOpenRootFile = useCallback(() => {
+    const nextFile = fileInputValue.trim();
 
-    return (
+    if (!nextFile) {
+      setFileStatus("error");
+      console.log("ROOT file path is empty");
+      return;
+    }
+
+    if (fileStatus == "loading") {
+      return;
+    }
+
+    if (activeFile == nextFile && initializedRef.current) {
+      return;
+    }
+
+    setFileStatus("loading");
+
+    resetBrowserState();
+
+    setActiveFile(nextFile);
+  }, [activeFile, fileInputValue, fileStatus, resetBrowserState]);
+
+  const showRootFileMenu = !activeFile && fileStatus !== "loading";
+
+  const rootFileMenu = showRootFileMenu ? (
+    <BrowserRootFileMenu
+      value={fileInputValue}
+      placeholder={"http://"}
+      status={fileStatus}
+      onChange={(value) => {
+        setFileInputValue(value);
+        setFileStatus("idle");
+      }}
+      onSubmit={handleOpenRootFile}
+    />
+  ) : null;
+
+  const fileBrowserReady = Boolean(hierarchy && rootNode);
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          display: !vrMode ? "flex" : "none",
+          width: "100%",
+          height: "100%",
+        }}
+      >
         <div
-            style={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-            }}
+          id="myTreeDiv"
+          ref={hiddenTreeDivRef}
+          style={{
+            width: "250px",
+            height: "100%",
+            float: "left",
+          }}
+        ></div>
+
+        <div id="myMainDiv" className="main-div"></div>
+      </div>
+
+      <div
+        className="main-div"
+
+        style={{
+          width: "100%",
+          height: "100%",
+          display: vrMode ? "flex" : "none",
+        }}
+      >
+        <NdmvrEnv
+          menuDefaultOpen={false}
+          browserConfig={{
+            hierarchy,
+            rootNode,
+            hierarchyDocRef: hiddenTreeDivRef,
+            onSelectItem: handleSelect,
+            setBrowser,
+            browser: fileBrowserReady,
+            setRendererMode,
+            rendererMode,
+            inputMenu: rootFileMenu,
+          }}
         >
-            <div
-                style={{
-                    display: !vrMode ? "flex" : "none",
-                    width: "100%",
-                    height: "100%",
-                }}
-            >
-                <div
-                    id="myTreeDiv"
-                    ref={hiddenTreeDivRef}
-                    style={{
-                        width: "250px",
-                        height: "100%",
-                        float: "left",
-                    }}
-                ></div>
+          {children}
+        </NdmvrEnv>
+      </div>
 
-                <div id="myMainDiv" className="main-div"></div>
-            </div>
+      {!vrMode && (
+        <>
+          <UIToggleButton />
+          <FullscreenButton />
+        </>
+      )}
 
-            <div
-                className="main-div"
-
-                style={{
-                    width: "100%",
-                    height: "100%",
-                    display: vrMode ? "flex" : "none",
-                }}
-            >
-                <NdmvrEnv
-                    menuDefaultOpen={false}
-                    browserConfig={{
-                        hierarchy,
-                        rootNode,
-                        hierarchyDocRef: hiddenTreeDivRef,
-                        onSelectItem: handleSelect,
-                        setBrowser,
-                        browser: fileBrowserReady,
-                        setRendererMode,
-                        rendererMode,
-                        inputMenu: rootFileMenu,
-                    }}
-                >
-                    {children}
-                </NdmvrEnv>
-            </div>
-
-            {!vrMode && (
-                <>
-                    <UIToggleButton />
-                    <FullscreenButton />
-                </>
-            )}
-
-            <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
-        </div>
-    );
+      <Switch startState={vrMode} onToggle={(checked) => setVRMode(checked)} />
+    </div>
+  );
 }

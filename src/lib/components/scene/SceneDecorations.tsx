@@ -5,24 +5,24 @@ const SKY_TOP_COLOR = "#96b9e7";
 const SKY_HORIZON_COLOR = "#bed6e3";
 
 function GradientSky() {
-    const uniforms = useMemo(
-        () => ({
-            topColor: { value: new THREE.Color(SKY_TOP_COLOR) },
-            horizonColor: { value: new THREE.Color(SKY_HORIZON_COLOR) },
-            exponent: { value: 0.75 },
-        }),
-        []
-    );
+  const uniforms = useMemo(
+    () => ({
+      topColor: { value: new THREE.Color(SKY_TOP_COLOR) },
+      horizonColor: { value: new THREE.Color(SKY_HORIZON_COLOR) },
+      exponent: { value: 0.75 },
+    }),
+    [],
+  );
 
-    return (
-        <mesh renderOrder={-1000}>
-            <sphereGeometry args={[500, 32, 16]} />
-            <shaderMaterial
-                side={THREE.BackSide}
-                depthWrite={false}
-                fog={false}
-                uniforms={uniforms}
-                vertexShader={`
+  return (
+    <mesh renderOrder={-1000}>
+      <sphereGeometry args={[500, 32, 16]} />
+      <shaderMaterial
+        side={THREE.BackSide}
+        depthWrite={false}
+        fog={false}
+        uniforms={uniforms}
+        vertexShader={`
                     varying vec3 vWorldPosition;
 
                     void main() {
@@ -31,7 +31,7 @@ function GradientSky() {
                         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                     }
                 `}
-                fragmentShader={`
+        fragmentShader={`
                     uniform vec3 topColor;
                     uniform vec3 horizonColor;
                     uniform float exponent;
@@ -43,18 +43,18 @@ function GradientSky() {
                         gl_FragColor = vec4(mix(horizonColor, topColor, gradient), 1.0);
                     }
                 `}
-            />
-        </mesh>
-    );
+      />
+    </mesh>
+  );
 }
 
 export default function SceneDecorations() {
-    return (
-        <>
-            <GradientSky />
-            <fog attach="fog" args={[SKY_HORIZON_COLOR, 45, 130]} />
-            <gridHelper args={[100, 100]} />
-            <axesHelper args={[5]} />
-        </>
-    );
+  return (
+    <>
+      <GradientSky />
+      <fog attach="fog" args={[SKY_HORIZON_COLOR, 45, 130]} />
+      <gridHelper args={[100, 100]} />
+      <axesHelper args={[5]} />
+    </>
+  );
 }

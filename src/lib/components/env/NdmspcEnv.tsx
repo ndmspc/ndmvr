@@ -13,92 +13,89 @@ import UIToggleButton from "../ui/desktop/UIToggleButton.tsx";
 import { shouldUseMobileControls } from "../../interactions/device/shouldUseMobileControls";
 
 export interface NdmspcEnvProps {
-    children?: React.ReactNode;
-    config?: NdmvrConfig | null;
-    setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
+  children?: React.ReactNode;
+  config?: NdmvrConfig | null;
+  setBrowser?: React.Dispatch<React.SetStateAction<NdmspcConfig | null>>;
 }
 
 function isEmptyObject(obj: unknown): boolean {
-    return (
-        obj != null &&
-        typeof obj === "object" &&
-        !Array.isArray(obj) &&
-        Object.keys(obj).length === 0
-    );
+  return (
+    obj != null && typeof obj === "object" && !Array.isArray(obj) && Object.keys(obj).length === 0
+  );
 }
 
 export default function NdmspcEnv({ children = null, config = null, setBrowser }: NdmspcEnvProps) {
-    const [vrMode, setVRMode] = useState(true);
-    const initializedRef = useRef(false);
+  const [vrMode, setVRMode] = useState(true);
+  const initializedRef = useRef(false);
 
-    const [touch, setTouch] = useState(() => shouldUseMobileControls());
+  const [touch, setTouch] = useState(() => shouldUseMobileControls());
 
-    const setUIHover = useSceneModeStore((state) => state.setUIHover);
-    const setVrEnabled = useSceneModeStore((state) => state.setVrEnabled);
+  const setUIHover = useSceneModeStore((state) => state.setUIHover);
+  const setVrEnabled = useSceneModeStore((state) => state.setVrEnabled);
 
-    useEffect(() => {
-        if (initializedRef.current) return;
-        initializedRef.current = true;
-        if (config && !isEmptyObject(config)) {
-            configSubjectGet().next(config);
-        } else {
-            configSubjectGet().getValue();
-        }
-    }, [config]);
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    if (config && !isEmptyObject(config)) {
+      configSubjectGet().next(config);
+    } else {
+      configSubjectGet().getValue();
+    }
+  }, [config]);
 
-    useEffect(() => {
-        const updateTouch = () => {
-            setTouch(shouldUseMobileControls());
-        };
+  useEffect(() => {
+    const updateTouch = () => {
+      setTouch(shouldUseMobileControls());
+    };
 
-        updateTouch();
+    updateTouch();
 
-        window.addEventListener("resize", updateTouch);
-        window.addEventListener("orientationchange", updateTouch);
+    window.addEventListener("resize", updateTouch);
+    window.addEventListener("orientationchange", updateTouch);
 
-        return () => {
-            window.removeEventListener("resize", updateTouch);
-            window.removeEventListener("orientationchange", updateTouch);
-        };
-    }, []);
+    return () => {
+      window.removeEventListener("resize", updateTouch);
+      window.removeEventListener("orientationchange", updateTouch);
+    };
+  }, []);
 
-    return (
-        <div style={{ width: "100%", height: "100%", position: "relative" }}>
-            <div
-                style={{
-                    display: vrMode ? "none" : "flex",
-                    width: "100%",
-                    height: "100%",
-                }}
-            >
-                <JsrootEnv />
-            </div>
-            <div
-                style={{
-                    display: vrMode ? "flex" : "none",
-                    width: "100%",
-                    height: "100%",
-                }}
-            >
-                <NdmvrEnv browserConfig={{ setBrowser }}>{children}</NdmvrEnv>
-            </div>
+  return (
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <div
+        style={{
+          display: vrMode ? "none" : "flex",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <JsrootEnv />
+      </div>
+      <div
+        style={{
+          display: vrMode ? "flex" : "none",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <NdmvrEnv browserConfig={{ setBrowser }}>{children}</NdmvrEnv>
+      </div>
 
-            <Switch
-                onMouseEnter={() => setUIHover(true)}
-                onMouseLeave={() => setUIHover(false)}
-                startState={true}
-                onToggle={(checked: boolean) => {
-                    setVrEnabled(checked);
-                    setVRMode(checked);
-                }}
-                {...(touch ? { label: "" } : {})}
-            />
-            {!vrMode && (
-                <>
-                    <FullscreenButton />
-                    <UIToggleButton />
-                </>
-            )}
-        </div>
-    );
+      <Switch
+        onMouseEnter={() => setUIHover(true)}
+        onMouseLeave={() => setUIHover(false)}
+        startState={true}
+        onToggle={(checked: boolean) => {
+          setVrEnabled(checked);
+          setVRMode(checked);
+        }}
+        {...(touch ? { label: "" } : {})}
+      />
+      {!vrMode && (
+        <>
+          <FullscreenButton />
+          <UIToggleButton />
+        </>
+      )}
+    </div>
+  );
 }

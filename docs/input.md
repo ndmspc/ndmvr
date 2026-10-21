@@ -20,16 +20,16 @@ keyboard collector. Children remain under XR as scene siblings of XROrigin.
 ```tsx
 // Inside Menu, before its hidden-state early return:
 useInputBinding({
-    keyboard: { code: "KeyM", ctrl: false },
-    vr: { hand: "right", button: "b-button", grip: false },
-    onPress: toggleMenu,
+  keyboard: { code: "KeyM", ctrl: false },
+  vr: { hand: "right", button: "b-button", grip: false },
+  onPress: toggleMenu,
 });
 
 // Inside BoundingFrameBox:
 useInputBinding({
-    keyboard: { code: ["ShiftLeft", "ShiftRight"] },
-    vr: { hand: "right", button: "xr-standard-trigger" },
-    onChange: setSnapPressed,
+  keyboard: { code: ["ShiftLeft", "ShiftRight"] },
+  vr: { hand: "right", button: "xr-standard-trigger" },
+  onChange: setSnapPressed,
 });
 ```
 

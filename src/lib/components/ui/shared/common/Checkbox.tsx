@@ -5,49 +5,49 @@ import { Check } from "@react-three/uikit-lucide";
 import { useState } from "react";
 
 interface CheckboxProps {
-    label?: string;
-    onCheck?: (checked: boolean) => void;
-    size?: number;
-    checked?: boolean;
+  label?: string;
+  onCheck?: (checked: boolean) => void;
+  size?: number;
+  checked?: boolean;
 }
 
 export default function Checkbox({
-    label = "",
-    onCheck,
-    size = 24,
-    checked: controlledChecked,
+  label = "",
+  onCheck,
+  size = 24,
+  checked: controlledChecked,
 }: CheckboxProps) {
-    const [internalChecked, setInternalChecked] = useState(false);
+  const [internalChecked, setInternalChecked] = useState(false);
 
-    const checked = controlledChecked !== undefined ? controlledChecked : internalChecked;
+  const checked = controlledChecked !== undefined ? controlledChecked : internalChecked;
 
-    const handleClick = (e) => {
-        e.stopPropagation();
-        const newValue = !checked;
-        if (controlledChecked === undefined) {
-            setInternalChecked(newValue);
-        }
-        onCheck?.(newValue);
-    };
+  const handleClick = (e) => {
+    e.stopPropagation();
+    const newValue = !checked;
+    if (controlledChecked === undefined) {
+      setInternalChecked(newValue);
+    }
+    onCheck?.(newValue);
+  };
 
-    return (
-        <Container
-            onClick={handleClick}
-            classList={["checkboxContainer"]}
-            flexDirection="row"
-            alignItems="center"
-            gap={8}
-        >
-            <Container
-                width={size}
-                height={size}
-                classList={["checkboxBox", checked ? "checkboxBoxChecked" : "foobar"]}
-                alignItems="center"
-                justifyContent="center"
-            >
-                {checked && <Check width={size * 0.7} height={size * 0.7} color={"#10b981"} />}
-            </Container>
-            {label && <Text classList={["checkboxLabel"]}>{label}</Text>}
-        </Container>
-    );
+  return (
+    <Container
+      onClick={handleClick}
+      classList={["checkboxContainer"]}
+      flexDirection="row"
+      alignItems="center"
+      gap={8}
+    >
+      <Container
+        width={size}
+        height={size}
+        classList={["checkboxBox", checked ? "checkboxBoxChecked" : "foobar"]}
+        alignItems="center"
+        justifyContent="center"
+      >
+        {checked && <Check width={size * 0.7} height={size * 0.7} color={"#10b981"} />}
+      </Container>
+      {label && <Text classList={["checkboxLabel"]}>{label}</Text>}
+    </Container>
+  );
 }
