@@ -114,6 +114,7 @@ export default function NdmspcDefaultBrowserEnv({
 }: NdmspcDefaultBrowserEnvProps) {
   const [vrMode, setVRMode] = useState(vr);
   const initializedRef = useRef(false);
+  const configInitializedRef = useRef(false);
   const painterRef = useRef<BrowserPainter | null>(null);
   const pads = useRef<string[]>([]);
   const padsCounter = useRef(0);
@@ -158,8 +159,12 @@ export default function NdmspcDefaultBrowserEnv({
   }, [rendererMode]);
 
   useEffect(() => {
-    if (config) {
+    if (configInitializedRef.current || !config || Object.keys(config).length === 0) return;
+    try {
       configSubjectGet().next(config);
+      configInitializedRef.current = true;
+    } catch (error) {
+      console.error("Failed to initialize NDMVR browser configuration", error);
     }
   }, [config]);
 
@@ -232,7 +237,11 @@ export default function NdmspcDefaultBrowserEnv({
           const currentConfig = configSubjectGet().getValue();
           const dedupedConfig = removeDuplicateHistogramPads(currentConfig);
           if (dedupedConfig && dedupedConfig !== currentConfig) {
-            configSubjectGet().next(dedupedConfig);
+            configSubjectGet().next({
+              config: {
+                environment: { histogramPads: dedupedConfig.config?.environment?.histogramPads },
+              },
+            });
           }
 
           const existingPadIds = getExistingPadIds(dedupedConfig);

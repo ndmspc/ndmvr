@@ -57,22 +57,6 @@ export function getShiftScaleStep(config: HistogramConfig): ShiftScaleStep {
   };
 }
 
-// Writes the edited bounding box position and scale back into a histogram pad config.
-export function applyHistogramPadBounds(
-  config: HistogramConfig,
-  id: string,
-  position: THREE.Vector3,
-  scale: THREE.Vector3,
-): boolean {
-  const pad = config.config?.environment?.histogramPads?.find((p) => p.id === id);
-  if (!pad) return false;
-
-  pad.position = { x: position.x, y: position.y, z: position.z };
-  pad.scale = { x: scale.x, y: scale.y, z: scale.z };
-
-  return true;
-}
-
 // Clones current frame values before storing them in React state.
 export function clonePainterLimits(position: THREE.Vector3, scale: THREE.Vector3): PainterLimits {
   return {
