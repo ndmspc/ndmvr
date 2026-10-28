@@ -11,6 +11,7 @@ import {
   flattenSchema,
   getSettingsDefaults,
   readSettings,
+  readGridSettings,
 } from "./settings-helpers";
 
 const envSchema = openapiSchema.components.schemas.Config.properties.environment;
@@ -27,17 +28,29 @@ export default function SettingsPanel() {
   const [settings, setSettings] = useState(() =>
     readSettings(scalarSchema, configSubjectGet().getValue()?.config?.environment),
   );
-  const [gridDraft, setGridDraft] = useState(() => getSettingsDefaults(gridSchema));
+  const [gridDraft, setGridDraft] = useState(() =>
+    readGridSettings(gridSchema, configSubjectGet().getHistogramGridConfig()),
+  );
   const gridDraftRef = useRef(gridDraft);
+  const [manualLayout, setManualLayout] = useState(
+    () => !configSubjectGet().getHistogramGridConfig(),
+  );
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const sub = configSubjectGet()
       .getObservable()
-      .subscribe((c) => {
-        // Each emission gets fresh scalar drafts, even if Core reuses
-        // its root object. Runtime pad arrays cannot describe a recipe.
-        const accepted = readSettings(scalarSchema, c?.config?.environment);
+      .subscribe(() => {
+        // Read both accepted values together, including after reentrant notifications.
+        const subject = configSubjectGet();
+        const accepted = readSettings(scalarSchema, subject.getValue()?.config?.environment);
+        const grid = subject.getHistogramGridConfig();
         setSettings(accepted);
+        setManualLayout(grid === null);
+        if (grid) {
+          const acceptedGrid = readGridSettings(gridSchema, grid);
+          gridDraftRef.current = acceptedGrid;
+          setGridDraft(acceptedGrid);
+        }
       });
     return () => sub.unsubscribe();
   }, []);
@@ -65,8 +78,7 @@ export default function SettingsPanel() {
   };
 
   const resetToDefaults = () => {
-    const defaults = getSettingsDefaults(flatSchema);
-    if (applyNow(defaults)) updateGridDraft(getSettingsDefaults(gridSchema));
+    applyNow(getSettingsDefaults(flatSchema));
   };
 
   const importConfig = () => {
@@ -96,7 +108,6 @@ export default function SettingsPanel() {
           if (Object.keys(imported.environment).length > 0) {
             configSubjectGet().next({ config: { environment: imported.environment } });
           }
-          if (imported.gridDraft) updateGridDraft(imported.gridDraft);
           setError(null);
         } catch (err) {
           setError(err instanceof Error ? err.message : "Invalid JSON config file");
@@ -119,48 +130,52 @@ export default function SettingsPanel() {
           height={100}
           scrollbarColor="#475569"
         >
-          {Object.entries(scalarSchema).map(([path, schema]) => (
-            <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-              <Text minWidth={400} fontSize={12}>
-                {(schema as { title?: string })?.title || path}:
-              </Text>
-              <Input
-                classList={["input"]}
-                fontSize={12}
-                value={String(settings[path] ?? "")}
-                onValueChange={(v) => {
-                  const updated = { ...settings, [path]: v };
-                  setSettings(updated);
-                  applyNow({ [path]: v });
-                }}
-                minWidth={100}
-              />
-            </Container>
-          ))}
+          {/* Keep content at its natural height; the viewport handles scrolling. */}
+          <Container flexDirection="column" flexShrink={0}>
+            {Object.entries(scalarSchema).map(([path, schema]) => (
+              <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+                <Text minWidth={400} fontSize={12}>
+                  {(schema as { title?: string })?.title || path}:
+                </Text>
+                <Input
+                  classList={["input"]}
+                  fontSize={12}
+                  value={String(settings[path] ?? "")}
+                  onValueChange={(v) => {
+                    const updated = { ...settings, [path]: v };
+                    setSettings(updated);
+                    applyNow({ [path]: v });
+                  }}
+                  minWidth={100}
+                />
+              </Container>
+            ))}
 
-          <Text classList={["menuHeader"]}>Replacement grid</Text>
-          <Text>
-            Accepted layout edits replace the current histogram pads. This draft is independent of
-            the current scene layout.
-          </Text>
-          {Object.entries(gridSchema).map(([path, schema]) => (
-            <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-              <Text minWidth={400} fontSize={12}>
-                {schema.title || path}:
-              </Text>
-              <Input
-                classList={["input"]}
-                fontSize={12}
-                value={String(gridDraft[path] ?? "")}
-                onValueChange={(value) => {
-                  const nextDraft = { ...gridDraftRef.current, [path]: value };
-                  updateGridDraft(nextDraft);
-                  applyNow(nextDraft);
-                }}
-                minWidth={100}
-              />
-            </Container>
-          ))}
+            <Text classList={["menuHeader"]}>Replacement grid</Text>
+            <Text>
+              {manualLayout
+                ? "Current layout: manual. Grid settings replace the layout."
+                : "Editing these settings replaces the current histogram pads."}
+            </Text>
+            {Object.entries(gridSchema).map(([path, schema]) => (
+              <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+                <Text minWidth={400} fontSize={12}>
+                  {schema.title || path}:
+                </Text>
+                <Input
+                  classList={["input"]}
+                  fontSize={12}
+                  value={String(gridDraft[path] ?? "")}
+                  onValueChange={(value) => {
+                    const nextDraft = { ...gridDraftRef.current, [path]: value };
+                    updateGridDraft(nextDraft);
+                    applyNow(nextDraft);
+                  }}
+                  minWidth={100}
+                />
+              </Container>
+            ))}
+          </Container>
         </Container>
 
         {error && <Text color="#ef4444">{error}</Text>}

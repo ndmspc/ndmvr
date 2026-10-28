@@ -100,9 +100,25 @@ declare module "@ndmspc/ndmvr-core" {
     remove(): void;
   }
 
+  export interface HistogramGridConfig {
+    type: string;
+    prefix: string;
+    scale: { x: number; y: number; z: number };
+    padding: { x: number; y: number; z: number };
+    origin: { x: number; y: number; z: number };
+  }
+
   export interface ConfigSubject {
     next(config: any): ReturnType<ConfigSubject["getValue"]>;
     getValue(): any;
+    getHistogramGridConfig(): HistogramGridConfig | null;
+    updateHistogramPad(
+      id: string,
+      bounds: {
+        position?: { x: number; y: number; z: number };
+        scale?: { x: number; y: number; z: number };
+      },
+    ): boolean;
     getObservable(): Observable<any>;
     appendPads(ids: string[], disp_kind: string, settings: Record<string, unknown>): void;
     mergeHistogramConfig(

@@ -55,6 +55,7 @@ function NdmspcNavigator({
       )}
       {localConfig?.type === "browser" && (
         <NdmspcDefaultBrowserEnv
+          config={ndmvrConfig}
           file={localConfig?.file}
           layout="simple"
           setBrowser={setBrowserConfig}

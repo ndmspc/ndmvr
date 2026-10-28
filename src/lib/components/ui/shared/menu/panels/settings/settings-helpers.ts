@@ -1,3 +1,4 @@
+import type { HistogramGridConfig } from "@ndmspc/ndmvr-core";
 import Ajv, { type ValidateFunction } from "ajv";
 
 export interface SchemaProperty {
@@ -147,6 +148,13 @@ export function readSettings(
       getDeep(environment, path) ?? schema.default ?? "",
     ]),
   );
+}
+
+export function readGridSettings(
+  flatSchema: Record<string, SchemaProperty>,
+  grid: HistogramGridConfig | null,
+): Record<string, unknown> {
+  return grid ? readSettings(flatSchema, { histogramPads: grid }) : getSettingsDefaults(flatSchema);
 }
 
 export function buildSettingsImport(

@@ -42,7 +42,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-core": "1.4.0-rc.2",
+    "@ndmspc/ndmvr-core": "1.4.0-rc.3",
     "@pmndrs/uikit": "^1.0.76",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",

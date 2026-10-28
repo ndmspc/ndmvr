@@ -147,14 +147,11 @@ export const defaultSceneModesConfig: SceneModesConfig = {
       onClick: () => {
         const cfg = configSubjectGet().getValue();
         if (!cfg?.config?.histogram?.scale?.scaleBy) return;
-        if (cfg.config.histogram.scale.scaleBy === "value") {
-          cfg.config.histogram.scale.scaleBy = "error";
-          useSceneModeStore.getState().showModeToolsNotification("Scale By error activated", 2000);
-        } else {
-          cfg.config.histogram.scale.scaleBy = "value";
-          useSceneModeStore.getState().showModeToolsNotification("Scale By value activated", 2000);
-        }
-        configSubjectGet().next(cfg);
+        const scaleBy = cfg.config.histogram.scale.scaleBy === "value" ? "error" : "value";
+        useSceneModeStore
+          .getState()
+          .showModeToolsNotification(`Scale By ${scaleBy} activated`, 2000);
+        configSubjectGet().next({ config: { histogram: { scale: { scaleBy } } } });
       },
       onHover: () => {
         const cfg = configSubjectGet().getValue();
@@ -183,14 +180,11 @@ export const defaultSceneModesConfig: SceneModesConfig = {
       onClick: () => {
         const cfg = configSubjectGet().getValue();
         if (!cfg?.config?.histogram?.color?.colorBy) return;
-        if (cfg.config.histogram.color.colorBy === "error") {
-          cfg.config.histogram.color.colorBy = "value";
-          useSceneModeStore.getState().showModeToolsNotification("Color By value activated", 2000);
-        } else {
-          cfg.config.histogram.color.colorBy = "error";
-          useSceneModeStore.getState().showModeToolsNotification("Color By error activated", 2000);
-        }
-        configSubjectGet().next(cfg);
+        const colorBy = cfg.config.histogram.color.colorBy === "error" ? "value" : "error";
+        useSceneModeStore
+          .getState()
+          .showModeToolsNotification(`Color By ${colorBy} activated`, 2000);
+        configSubjectGet().next({ config: { histogram: { color: { colorBy } } } });
       },
       onHover: () => {
         const cfg = configSubjectGet().getValue();
@@ -285,23 +279,22 @@ export const defaultSceneModesConfig: SceneModesConfig = {
         const cfg = configSubjectGet().getValue();
         const state = getActiveHistogramPadState();
         if (!state || !cfg?.config?.histogram?.wireframe) return;
-        cfg.config.histogram.wireframe.display.start =
-          cfg.config.histogram.wireframe.display.start + 1;
-        if (state?.availableAxes)
-          cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
-        if (
-          cfg.config.histogram.wireframe.display.start > cfg.config.histogram.wireframe.display.end
-        ) {
-          cfg.config.histogram.wireframe.display.start = 0;
-          cfg.config.histogram.wireframe.display.end = state.availableAxes.length;
+        const display = { ...cfg.config.histogram.wireframe.display };
+        display.start = display.start + 1;
+        if (state?.availableAxes) display.end = state.availableAxes.length;
+        if (display.start > display.end) {
+          display.start = 0;
+          display.end = state.availableAxes.length;
         }
         useSceneModeStore
           .getState()
           .showModeToolsNotification(
-            `Outline layers ${cfg.config.histogram.wireframe.display.start} to ${cfg.config.histogram.wireframe.display.end} shown`,
+            `Outline layers ${display.start} to ${display.end} shown`,
             2000,
           );
-        configSubjectGet().next(cfg);
+        configSubjectGet().next({
+          config: { histogram: { wireframe: { display: display } } },
+        });
       },
       onHover: () => {
         const cfg = configSubjectGet().getValue();

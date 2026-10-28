@@ -34,12 +34,12 @@ export default function NdmspcEnv({ children = null, config = null, setBrowser }
   const setVrEnabled = useSceneModeStore((state) => state.setVrEnabled);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-    if (config && !isEmptyObject(config)) {
+    if (initializedRef.current || !config || isEmptyObject(config)) return;
+    try {
       configSubjectGet().next(config);
-    } else {
-      configSubjectGet().getValue();
+      initializedRef.current = true;
+    } catch (error) {
+      console.error("Failed to initialize NDMVR configuration", error);
     }
   }, [config]);
 

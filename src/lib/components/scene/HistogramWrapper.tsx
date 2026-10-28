@@ -21,7 +21,6 @@ import BoundingFrameBox from "./BoundingFrameBox";
 import BinBox from "./BinBox";
 import {
   applyObjectBoundsTransform,
-  applyHistogramPadBounds,
   clonePainterLimits,
   getBoundingFramePosition,
   getBoundingFrameScale,
@@ -429,16 +428,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
   const applyHistogramModification = useCallback(
     (position: THREE.Vector3, scale: THREE.Vector3) => {
-      const currentConfig = configSubjectGet().getValue();
-
-      if (!currentConfig) return;
-
-      const newConfig = structuredClone(currentConfig);
-
-      const changed = applyHistogramPadBounds(newConfig, id, position, scale);
-      if (!changed) return;
-
-      configSubjectGet().next(newConfig);
+      configSubjectGet().updateHistogramPad(id, {
+        position: { x: position.x, y: position.y, z: position.z },
+        scale: { x: scale.x, y: scale.y, z: scale.z },
+      });
     },
     [id],
   );
