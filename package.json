@@ -30,6 +30,7 @@
     "./style.css": "./dist/ndmvr.css"
   },
   "scripts": {
+    "test": "node --experimental-test-module-mocks --import ./tests/register.mjs --test tests/*.test.mjs",
     "dev": "vite",
     "build": "tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
     "build-app": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build -c vite.config.app.ts",
@@ -42,7 +43,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ndmspc/ndmvr-core": "1.4.0-rc.3",
+    "@ndmspc/ndmvr-core": "1.4.0-rc.4",
     "@pmndrs/uikit": "^1.0.76",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",

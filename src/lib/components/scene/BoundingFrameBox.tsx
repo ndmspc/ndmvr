@@ -17,6 +17,7 @@ interface BoundingFrameBoxProps {
   scale: THREE.Vector3 | { x: number; y: number; z: number } | [number, number, number];
   shiftScaleStep?: { x: number; y: number; z: number };
   onChange?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
+  onDragStart?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
   onDragEnd?: (position: THREE.Vector3, scale: THREE.Vector3) => void;
 }
 
@@ -131,6 +132,7 @@ export default function BoundingFrameBox({
   scale,
   shiftScaleStep,
   onChange,
+  onDragStart,
   onDragEnd,
 }: BoundingFrameBoxProps) {
   const session = useXR((state) => state.session);
@@ -267,7 +269,11 @@ export default function BoundingFrameBox({
       showHover(null);
       restoreCursor();
       setInteracting(false);
-      if (notify) {
+      if (
+        notify &&
+        (!appliedBounds.current.position.equals(drag.startPosition) ||
+          !appliedBounds.current.scale.equals(drag.startScale))
+      ) {
         onDragEndRef.current?.(
           appliedBounds.current.position.clone(),
           appliedBounds.current.scale.clone(),
@@ -426,6 +432,7 @@ export default function BoundingFrameBox({
     showHover(null);
     setInteracting(true);
     setCursor("grabbing");
+    onDragStart?.(dragRef.current.startPosition.clone(), dragRef.current.startScale.clone());
   }
 
   function onPointerMove(event: ThreeEvent<PointerEvent>) {
