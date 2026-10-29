@@ -65,6 +65,23 @@ export function clonePainterLimits(position: THREE.Vector3, scale: THREE.Vector3
   };
 }
 
+// The frame encloses the rendered plot; Core stores the pad before axes fitting.
+export function getResizedHistogramPadBounds(
+  pad: PainterLimits,
+  frame: PainterLimits,
+  position: THREE.Vector3,
+  scale: THREE.Vector3,
+): PainterLimits {
+  const ratio = scale.clone().divide(getBoundingFrameScale(frame));
+  const offset = getBoundingFramePosition(frame).sub(getBoundingFramePosition(pad));
+  return clonePainterLimits(
+    getBoundingFramePosition(pad)
+      .add(position.clone().sub(getBoundingFramePosition(frame)))
+      .add(offset.multiply(new THREE.Vector3(1, 1, 1).sub(ratio))),
+    getBoundingFrameScale(pad).multiply(ratio),
+  );
+}
+
 // Reads object bounds from a rendered Three.js hierarchy.
 export function getObjectBounds(object: THREE.Object3D | null | undefined): ObjectBounds | null {
   if (!object) return null;

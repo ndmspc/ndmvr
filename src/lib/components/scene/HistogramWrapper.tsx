@@ -27,6 +27,7 @@ import {
   getHistogramPadBounds,
   getObjectBounds,
   getObjectPainterLimits,
+  getResizedHistogramPadBounds,
   getShiftScaleStep,
   type ObjectBounds,
   type PainterLimits,
@@ -251,6 +252,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const [wireframeObj, setWireframeObj] = useState<THREE.Object3D | null>(null);
   const [axesObj, setAxesObj] = useState<THREE.Object3D | null>(null);
   const [painterLimits, setPainterLimits] = useState<PainterLimits | null>(null);
+  const resizeBounds = useRef<{ pad: PainterLimits; frame: PainterLimits } | null>(null);
   const nestedMeshObject = useRef<THREE.Object3D | null>(null);
   const wireframeObject = useRef<THREE.Object3D | null>(null);
   const syncedWireframe = useRef<THnPainter["wireframe"] | null>(null);
@@ -272,6 +274,29 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     },
     [],
   );
+
+  // Subscribe after the JSROOT painter so its config handler cannot undo centering.
+  useEffect(() => {
+    if (!jsrootMesh) return;
+    const subscription = configSubjectGet()
+      .getObservable()
+      .subscribe((config) => {
+        if (
+          jsrootMeshObject.current !== jsrootMesh ||
+          pendingPainters.current.has(jsrootHistogram.current)
+        )
+          return;
+        const bounds = getHistogramPadBounds(config, id);
+        if (!bounds) return;
+        applyJsrootMeshBounds(
+          jsrootMesh,
+          getBoundingFramePosition(bounds),
+          getBoundingFrameScale(bounds),
+        );
+        setPainterLimits(bounds);
+      });
+    return () => subscription.unsubscribe();
+  }, [applyJsrootMeshBounds, id, jsrootMesh]);
 
   const isCurrentNestedPainter = useCallback(
     (painter: SyncablePainter | null | undefined) =>
@@ -426,6 +451,11 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     setPainterLimits(clonePainterLimits(position, scale));
   };
 
+  const onBoundingBoxDragStart = (position: THREE.Vector3, scale: THREE.Vector3) => {
+    const pad = getHistogramPadBounds(configSubjectGet().getValue(), id);
+    resizeBounds.current = pad ? { pad, frame: clonePainterLimits(position, scale) } : null;
+  };
+
   const applyHistogramModification = useCallback(
     (position: THREE.Vector3, scale: THREE.Vector3) => {
       configSubjectGet().updateHistogramPad(id, {
@@ -479,12 +509,13 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   }, [activeMode, getActiveConfigHistogramEvents, id, isCurrentNestedPainter, nestedMesh]);
 
   const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
-    if (isJsrootRenderer) {
-      applyJsrootMeshBounds(jsrootMesh, position, scale);
-      setPainterLimits(clonePainterLimits(position, scale));
-    }
-
-    applyHistogramModification(position.clone(), scale.clone());
+    const original = resizeBounds.current;
+    resizeBounds.current = null;
+    if (!original) return;
+    const bounds = isJsrootRenderer
+      ? clonePainterLimits(position, scale)
+      : getResizedHistogramPadBounds(original.pad, original.frame, position, scale);
+    applyHistogramModification(getBoundingFramePosition(bounds), getBoundingFrameScale(bounds));
   };
 
   const clearJsrootMesh = useCallback(() => {
@@ -919,6 +950,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
           scale={getBoundingFrameScale(painterLimits)}
           shiftScaleStep={currentShiftStep}
           onChange={onBoundingBoxChange}
+          onDragStart={onBoundingBoxDragStart}
           onDragEnd={onBoundingBoxDragEnd}
         />
       )}
