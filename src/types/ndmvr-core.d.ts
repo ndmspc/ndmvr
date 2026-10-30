@@ -77,6 +77,10 @@ declare module "@ndmspc/ndmvr-core" {
     pushVisibleInstances(): void;
     remove(): void;
     checkIntersectionBVH(ray: THREE.Ray): any[];
+    getBinPosScaleByIndexMC(
+      index: number[],
+      set?: string | null,
+    ): { position: Float32Array; scale: Float32Array };
     intersectionHandler(intersection: any, triggerSource: string): void;
   }
 
