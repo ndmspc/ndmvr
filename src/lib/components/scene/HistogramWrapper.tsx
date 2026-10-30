@@ -19,6 +19,7 @@ import { vector3ToArray } from "../../utils/vector3-to-array.ts";
 import { histogramEvents, useSceneModeStore } from "../../stores/sceneMode/store.ts";
 import BoundingFrameBox from "./BoundingFrameBox";
 import BinBox from "./BinBox";
+import { disableRaycast } from "./bin-box/bin-box-style";
 import {
   applyObjectBoundsTransform,
   clonePainterLimits,
@@ -50,6 +51,7 @@ type SourceRaycaster = THREE.Raycaster & {
 type HistogramIntersection = THREE.Intersection & {
   index?: unknown;
   range?: unknown;
+  set?: string;
   target?: THREE.Vector3;
   triggerSource?: string;
 };
@@ -62,91 +64,8 @@ type HistogramPointerEvent = ThreeEvent<MouseEvent | PointerEvent> & {
 type SyncablePainter = THnPainter & {
   _ndmvrMeshSyncInstalled?: boolean;
 };
-type HistogramCleanup = Partial<
-  Pick<
-    THnPainter,
-    | "functionSub"
-    | "configSub"
-    | "dispatchSub"
-    | "stateSub"
-    | "keyDownHandler"
-    | "keyUpHandler"
-    | "wireframe"
-    | "axes"
-    | "mesh"
-    | "remove"
-  >
-> &
-  Partial<Pick<HistogramJsrootClass, "sub" | "dummyEl" | "binInfoComponent" | "histogramGroup">>;
-type DisposableObject = THREE.Object3D & {
-  geometry?: THREE.BufferGeometry;
-  material?: THREE.Material | THREE.Material[];
-};
-
 const CLICK_DELAY_MS = 300;
 const XR_SYNTHETIC_CLICK_SUPPRESSION_MS = CLICK_DELAY_MS;
-
-function disposeThree(obj: THREE.Object3D | null | undefined, disposed = new Set<object>()) {
-  if (!obj) return;
-  const disposeResource = (resource: { dispose(): void } | undefined) => {
-    if (!resource || disposed.has(resource)) return;
-    disposed.add(resource);
-    resource.dispose?.();
-  };
-  const disposeOne = (object: DisposableObject) => {
-    disposeResource(object.geometry);
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-    materials.forEach(disposeResource);
-  };
-  if (obj.traverse) obj.traverse(disposeOne);
-  else disposeOne(obj);
-}
-
-function cleanupHistogramFallbacks(
-  histogram: HistogramCleanup,
-  label: string,
-  dummyEl = histogram.dummyEl,
-) {
-  if (!histogram) return;
-  const attempt = (cleanup: () => void) => {
-    try {
-      cleanup();
-    } catch (error) {
-      console.warn(`[HistogramWrapper] Failed to clean ${label}:`, error);
-    }
-  };
-
-  // Core removal can throw on detached objects before reaching these subscriptions.
-  for (const key of ["functionSub", "configSub", "dispatchSub", "stateSub", "sub"] as const) {
-    attempt(() => histogram[key]?.unsubscribe?.());
-  }
-  if (histogram.keyDownHandler)
-    attempt(() => window.removeEventListener("keydown", histogram.keyDownHandler!));
-  if (histogram.keyUpHandler) {
-    attempt(() => window.removeEventListener("keydown", histogram.keyUpHandler!));
-    attempt(() => window.removeEventListener("keyup", histogram.keyUpHandler!));
-  }
-  // Remove only this instance's element; a replacement can reuse its DOM id.
-  attempt(() => dummyEl?.parentNode?.removeChild(dummyEl));
-
-  const binInfo = histogram.binInfoComponent;
-  attempt(() => binInfo?.dispose?.());
-  attempt(() => binInfo?.queueSub?.unsubscribe?.());
-  attempt(() => histogram.wireframe?.stateSub?.unsubscribe?.());
-  attempt(() => histogram.axes?.configSub?.unsubscribe?.());
-
-  const disposed = new Set<object>();
-  for (const object of [
-    histogram.histogramGroup,
-    histogram.mesh,
-    histogram.wireframe?.wireframe,
-    histogram.axes?.axes,
-    binInfo?.group,
-  ]) {
-    attempt(() => object?.parent?.remove(object));
-    attempt(() => disposeThree(object, disposed));
-  }
-}
 
 function setRaycasterTriggerSource(raycaster: THREE.Raycaster, source: string) {
   (raycaster as SourceRaycaster)._triggerSource = source;
@@ -229,8 +148,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const nestedHistogram = useRef<SyncablePainter | null>(null);
   const retiredPainters = useRef(new WeakSet<object>());
   const pendingPainters = useRef(new WeakSet<object>());
-  const pendingAxes = useRef(new WeakSet<object>());
   const jsrootMeshObject = useRef<THREE.Object3D | null>(null);
+  const OVERLAY_OPACITY = 0.4;
 
   const activeMode = useSceneModeStore((state) => state.activeMode);
   const getActiveConfigHistogramEvents = useSceneModeStore(
@@ -255,7 +174,10 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const resizeBounds = useRef<{ pad: PainterLimits; frame: PainterLimits } | null>(null);
   const nestedMeshObject = useRef<THREE.Object3D | null>(null);
   const wireframeObject = useRef<THREE.Object3D | null>(null);
-  const syncedWireframe = useRef<THnPainter["wireframe"] | null>(null);
+  const binHoverOverlay = useRef<THREE.Mesh>(null);
+  const hideBinHoverOverlay = useCallback(() => {
+    if (binHoverOverlay.current) binHoverOverlay.current.visible = false;
+  }, []);
 
   const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearPendingClick = useCallback(() => {
@@ -310,42 +232,34 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       const mesh = painter?.mesh ?? null;
       const wireframe = painter?.wireframe?.wireframe ?? null;
 
-      if (syncedWireframe.current && syncedWireframe.current !== painter.wireframe) {
-        // Core replaces this helper without releasing its state subscription/material.
-        syncedWireframe.current.stateSub?.unsubscribe?.();
-        disposeThree(wireframeObject.current);
-      }
-      syncedWireframe.current = painter.wireframe;
-
       if (nestedMeshObject.current !== mesh) {
-        // Redraws replace the mesh but reuse its material (and sometimes geometry).
-        const reused = new Set<object>([
-          mesh.geometry,
-          ...(Array.isArray(mesh.material) ? mesh.material : [mesh.material]),
-        ]);
-        disposeThree(nestedMeshObject.current, reused);
+        hideBinHoverOverlay();
         mesh?.parent?.remove(mesh);
         nestedMeshObject.current = mesh;
-        mesh.raycast = function (raycasterArg: THREE.Raycaster, intersects: THREE.Intersection[]) {
-          if (
-            !isCurrentNestedPainter(painter) ||
-            nestedMeshObject.current !== mesh ||
-            pendingPainters.current.has(painter)
-          )
-            return;
-          try {
-            const hit = painter.checkIntersectionBVH(raycasterArg.ray)?.[0];
-            if (hit) {
-              intersects.push({
-                ...hit,
-                point: hit.target,
-                object: this,
-              } as THREE.Intersection);
+        if (mesh)
+          mesh.raycast = function (
+            raycasterArg: THREE.Raycaster,
+            intersects: THREE.Intersection[],
+          ) {
+            if (
+              !isCurrentNestedPainter(painter) ||
+              nestedMeshObject.current !== mesh ||
+              pendingPainters.current.has(painter)
+            )
+              return;
+            try {
+              const hit = painter.checkIntersectionBVH(raycasterArg.ray)?.[0];
+              if (hit) {
+                intersects.push({
+                  ...hit,
+                  point: hit.target,
+                  object: this,
+                } as THREE.Intersection);
+              }
+            } catch (error) {
+              console.error(error);
             }
-          } catch (error) {
-            console.error(error);
-          }
-        };
+          };
         setNestedMesh(() => mesh);
       }
 
@@ -360,7 +274,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       syncHistogramAxesVisibility(painter);
       setAxesObj(painter.axes?.axes ?? null);
     },
-    [isCurrentNestedPainter],
+    [hideBinHoverOverlay, isCurrentNestedPainter],
   );
 
   const installNestedPainterMeshSync = useCallback(
@@ -377,35 +291,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         return result;
       };
       painter._ndmvrMeshSyncInstalled = true;
-
-      const axes = painter.axes;
-      if (!axes) return;
-      const originalBuildAxes = axes.buildAxes.bind(axes);
-      axes.buildAxes = (...args) => {
-        if (!isCurrentNestedPainter(painter)) return;
-        const previousChildren = [...axes.axes.children];
-        const result = originalBuildAxes(...args);
-        const buildPromise = axes.axesBuildPromise;
-        pendingAxes.current.add(painter);
-        Promise.resolve(buildPromise)
-          .then(() => {
-            for (const child of previousChildren) {
-              if (child.parent !== axes.axes) disposeThree(child);
-            }
-          })
-          .catch((error: unknown) => {
-            if (isCurrentNestedPainter(painter)) {
-              console.warn("[HistogramWrapper] Failed to build histogram axes:", error);
-            }
-          })
-          .finally(() => {
-            if (axes.axesBuildPromise === buildPromise) pendingAxes.current.delete(painter);
-            if (retiredPainters.current.has(painter)) {
-              cleanupHistogramFallbacks(painter, "retired histogram axes");
-            }
-          });
-        return result;
-      };
     },
     [isCurrentNestedPainter, syncNestedPainterObjects],
   );
@@ -467,6 +352,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   );
 
   useEffect(() => {
+    hideBinHoverOverlay();
     if (
       !nestedMesh ||
       nestedMeshObject.current !== nestedMesh ||
@@ -506,7 +392,14 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     if (functionsToAdd.length > 0) {
       functionSubjectGet().addFunctions(functionsToAdd);
     }
-  }, [activeMode, getActiveConfigHistogramEvents, id, isCurrentNestedPainter, nestedMesh]);
+  }, [
+    activeMode,
+    getActiveConfigHistogramEvents,
+    hideBinHoverOverlay,
+    id,
+    isCurrentNestedPainter,
+    nestedMesh,
+  ]);
 
   const onBoundingBoxDragEnd = (position: THREE.Vector3, scale: THREE.Vector3) => {
     const original = resizeBounds.current;
@@ -519,7 +412,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   };
 
   const clearJsrootMesh = useCallback(() => {
-    disposeThree(jsrootMeshObject.current);
     jsrootMeshObject.current = null;
     setJsrootMesh(null);
     jsrootBaseBounds.current = null;
@@ -527,32 +419,27 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   }, []);
 
   const clearNestedMeshes = useCallback(() => {
-    const disposed = new Set<object>();
-    disposeThree(nestedMeshObject.current, disposed);
-    disposeThree(wireframeObject.current, disposed);
-    syncedWireframe.current?.stateSub?.unsubscribe?.();
-
-    syncedWireframe.current = null;
+    hideBinHoverOverlay();
     nestedMeshObject.current = null;
     wireframeObject.current = null;
     setNestedMesh(null);
     setWireframeObj(null);
     setAxesObj(null);
     setPainterLimits(null);
-  }, []);
+  }, [hideBinHoverOverlay]);
 
-  const safeRemoveHistogram = useCallback((histogram: HistogramCleanup | null, label: string) => {
-    if (!histogram || retiredPainters.current.has(histogram)) return;
-    retiredPainters.current.add(histogram);
-    const dummyEl = histogram.dummyEl;
-    try {
-      histogram.remove?.();
-    } catch (e) {
-      console.warn(`[HistogramWrapper] Failed to remove ${label}:`, e);
-    } finally {
-      cleanupHistogramFallbacks(histogram, label, dummyEl);
-    }
-  }, []);
+  const safeRemoveHistogram = useCallback(
+    (histogram: THnPainter | HistogramJsrootClass | null, label: string) => {
+      if (!histogram || retiredPainters.current.has(histogram)) return;
+      retiredPainters.current.add(histogram);
+      try {
+        histogram.remove();
+      } catch (e) {
+        console.warn(`[HistogramWrapper] Failed to remove ${label}:`, e);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     const sources = new Set<XRInputSource>();
@@ -569,6 +456,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       sources.clear();
       squeezeHeld.current = false;
       clearPendingClick();
+      hideBinHoverOverlay();
     };
     const block = () => {
       if (isInputBlocked() || document.hidden || (session && session.visibilityState !== "visible"))
@@ -602,7 +490,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       document.removeEventListener("visibilitychange", block);
       cancel();
     };
-  }, [clearPendingClick, session]);
+  }, [clearPendingClick, hideBinHoverOverlay, session]);
 
   function scheduleSingleClick(
     painter: SyncablePainter,
@@ -620,12 +508,16 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         document.hidden
       )
         return;
+      hideBinHoverOverlay();
       painter.intersectionHandler(hit, source);
     }, CLICK_DELAY_MS);
   }
 
   function raycastHandler(event: HistogramPointerEvent) {
-    if (isInputBlocked()) return;
+    if (isInputBlocked()) {
+      hideBinHoverOverlay();
+      return;
+    }
     const painter = nestedHistogram.current;
     if (
       !painter ||
@@ -679,16 +571,40 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       scheduleSingleClick(painter, hit, source);
     } else if (event.type === "dblclick") {
       clearPendingClick();
+      hideBinHoverOverlay();
 
       const source = isShift ? "shiftmousedbclick" : "mousedbclick";
       const hit = getHistogramIntersection(event, painter, source);
       if (!hit) return;
       painter.intersectionHandler(hit, source);
     } else if (event.type === "pointermove" || event.type === "pointerover") {
+      hideBinHoverOverlay();
       const hit = getHistogramIntersection(event, painter, "mousemove");
       if (!hit) {
         setHoveredBinFrameVisible(false);
         return;
+      }
+
+      const overlay = binHoverOverlay.current;
+      if (
+        overlay &&
+        getActiveConfigHistogramEvents?.mousemove != null &&
+        blockingIntersection?.object === event.object &&
+        painter.material.colorWrite &&
+        Array.isArray(hit.instanceId)
+      ) {
+        // The cache already includes nested placement and content/error scaling.
+        const { position, scale } = painter.getBinPosScaleByIndexMC(hit.instanceId, hit.set);
+        if (
+          position.length === 3 &&
+          scale.length === 3 &&
+          position.every(Number.isFinite) &&
+          scale.every((value) => Number.isFinite(value) && value > 0)
+        ) {
+          overlay.position.fromArray(position);
+          overlay.scale.fromArray(scale).multiplyScalar(1.001);
+          overlay.visible = true;
+        }
       }
 
       setHoveredBinFrameVisible(binBoxEnabled);
@@ -697,6 +613,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   }
 
   function clearHoveredBinFrame(event: ThreeEvent<PointerEvent>) {
+    hideBinHoverOverlay();
     if (hasBlockingIntersectionForObject(event.intersections, event.object)) {
       return;
     }
@@ -736,6 +653,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       .pipe(filter((e) => (e as { id: string | number }).id === id))
       .subscribe((histo: HistogramData) => {
         clearPendingClick();
+        hideBinHoverOverlay();
         const operation = ++revision;
         try {
           const isJsroot = histo?.opts?.render === "jsroot";
@@ -746,15 +664,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             retireNested();
             setJsrootError(null);
 
-            // Core mutates a shared group before its build promise settles.
-            // Replacing an in-flight instance prevents overlapping builds from
-            // appending stale objects to the currently displayed group.
-            if (jsrootHistogram.current && pendingPainters.current.has(jsrootHistogram.current)) {
-              retireJsroot();
-            }
             if (jsrootHistogram.current) {
-              // updateHistogram clears the group without disposing its old children.
-              disposeThree(jsrootMeshObject.current);
               jsrootHistogram.current.updateHistogram(histo.obj);
             } else {
               jsrootHistogram.current = new HistogramJsrootClass(id, histo.obj, camera);
@@ -785,35 +695,28 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
               .catch((error: unknown) => {
                 if (!isCurrentOperation(painter, operation, true)) return;
                 console.log(error);
-                setPainterLimits(null);
+                const mesh = jsrootMeshObject.current;
+                const configuredBounds = getHistogramPadBounds(configSubjectGet().getValue(), id);
+                if (mesh && configuredBounds) {
+                  applyJsrootMeshBounds(
+                    mesh,
+                    getBoundingFramePosition(configuredBounds),
+                    getBoundingFrameScale(configuredBounds),
+                  );
+                }
+                setPainterLimits(mesh ? (configuredBounds ?? getObjectPainterLimits(mesh)) : null);
                 setJsrootError(error);
               })
               .finally(() => {
-                pendingPainters.current.delete(painter);
-                if (retiredPainters.current.has(painter)) {
-                  // Core can create objects after remove(); never call remove twice.
-                  cleanupHistogramFallbacks(painter, "retired JSRoot histogram");
-                }
+                if (isCurrentOperation(painter, operation, true))
+                  pendingPainters.current.delete(painter);
               });
           } else {
             retireJsroot();
             setJsrootError(null);
-            // Core's update requires attached objects and cannot cancel a
-            // previous render. Keep the settled update path; retire unfinished
-            // or detached instances before starting the next operation.
-            if (
-              nestedHistogram.current &&
-              (pendingPainters.current.has(nestedHistogram.current) ||
-                pendingAxes.current.has(nestedHistogram.current) ||
-                !nestedHistogram.current.mesh?.parent ||
-                !nestedHistogram.current.wireframe?.wireframe?.parent)
-            ) {
-              retireNested();
-            }
             const updating = !!nestedHistogram.current;
             if (!updating) {
-              // Core subscribes to retained pad state before creating its mesh.
-              // Clear constructor-unsafe state while retaining valid draw choices.
+              // Normalize retained draw choices before constructing a new painter.
               const preparedState = prepareHistogramPadState(id, histo);
               const painter = new THnPainter(histo, id, histo?.opts);
               if (preparedState) {
@@ -831,7 +734,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             const painter = nestedHistogram.current!;
             installNestedPainterMeshSync(painter);
             pendingPainters.current.add(painter);
-            const previousWireframe = updating ? painter.wireframe : null;
             let renderPromise;
             try {
               renderPromise = updating
@@ -840,11 +742,6 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             } catch (error) {
               // Handle synchronous failures through the same owned operation.
               renderPromise = Promise.reject(error);
-            } finally {
-              if (previousWireframe && previousWireframe !== painter.wireframe) {
-                previousWireframe.stateSub?.unsubscribe?.();
-                disposeThree(previousWireframe.wireframe);
-              }
             }
             Promise.resolve(renderPromise)
               .then(() => {
@@ -859,10 +756,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
                 retireNested();
               })
               .finally(() => {
-                pendingPainters.current.delete(painter);
-                if (retiredPainters.current.has(painter)) {
-                  cleanupHistogramFallbacks(painter, "retired nested histogram");
-                }
+                if (isCurrentOperation(painter, operation, false))
+                  pendingPainters.current.delete(painter);
               });
           }
         } catch (e) {
@@ -889,6 +784,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
     installNestedPainterMeshSync,
     syncNestedPainterObjects,
     clearPendingClick,
+    hideBinHoverOverlay,
     clearJsrootMesh,
     clearNestedMeshes,
     safeRemoveHistogram,
@@ -943,6 +839,20 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
       {wireframeObj && <primitive object={wireframeObj} />}
       {axesObj && <primitive object={axesObj} />}
+
+      <mesh ref={binHoverOverlay} visible={false} raycast={disableRaycast}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial
+          color="white"
+          transparent
+          opacity={OVERLAY_OPACITY}
+          depthWrite={false}
+          toneMapped={false}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
+      </mesh>
 
       {painterLimits && activeMode === "modify" && (
         <BoundingFrameBox
