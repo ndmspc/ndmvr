@@ -36,6 +36,7 @@ export function useMoveAndRotation({
   const leftController = useXRInputSourceState("controller", "left");
 
   const { camera } = useThree();
+  const enabled = useThree((state) => state.events.enabled);
 
   const currentPos = useRef(new THREE.Vector3(offset.x, offset.y, offset.z));
   const orbitAngle = useRef(Math.atan2(offset.x, offset.z));
@@ -267,6 +268,10 @@ export function useMoveAndRotation({
   }, [saveOffset, saveRotation]);
 
   useEffect(() => {
+    if (!enabled) cancelInteraction();
+  }, [enabled, cancelInteraction]);
+
+  useEffect(() => {
     const cancel = (event: PointerEvent) => {
       if (capture.current && event.pointerId !== capture.current.pointerId) return;
       cancelInteraction();
@@ -290,7 +295,8 @@ export function useMoveAndRotation({
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
-    if (!isRightGripPressed.current) cancelInteraction();
+    if (!enabled || !isRightGripPressed.current) cancelInteraction();
+    if (!enabled) return;
 
     if (!session) {
       updateDesktopFrame(ctx);

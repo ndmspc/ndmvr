@@ -151,6 +151,7 @@ function areOverlayStatesEqual(a: OverlayState, b: OverlayState) {
 
 export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps) {
   const canvasSize = useThree((state) => state.size);
+  const enabled = useThree((state) => state.events.enabled);
   const setInteracting = useUIInteractionOwner();
   const [overlayReady, setOverlayReady] = useState(false);
   const [overlay, setOverlay] = useState<OverlayState>(() => readStoredOverlayState());
@@ -192,10 +193,11 @@ export default function DesktopMenuOverlay({ children }: DesktopMenuOverlayProps
   }, [canvasSize.width, canvasSize.height]);
 
   useEffect(() => {
+    if (!enabled) cleanupInteractionRef.current?.();
     return () => {
       cleanupInteractionRef.current?.();
     };
-  }, []);
+  }, [enabled]);
 
   const beginDrag = (event: unknown) => {
     const pointerEvent = getPointerEventSource(event);

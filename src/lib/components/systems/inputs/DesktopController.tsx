@@ -87,6 +87,7 @@ export default function DesktopController({
   speed = 5,
 }: DesktopControllerProps): null {
   const element = useThree((state) => state.gl.domElement);
+  const enabled = useThree((state) => state.events.enabled);
 
   const yaw = useRef(0);
   const pitch = useRef(0);
@@ -97,21 +98,21 @@ export default function DesktopController({
   const right = useRef(new THREE.Vector3());
   const up = useRef(new THREE.Vector3(0, 1, 0));
 
-  useEffect(
-    () =>
-      listenDesktopLook(
-        element,
-        (dx, dy) => {
-          yaw.current -= dx * 0.002;
-          pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current - dy * 0.002));
-        },
-        () => isInputBlocked() || useUIInteraction.getState().isInteracting,
-      ),
-    [element],
-  );
+  useEffect(() => {
+    if (!enabled) return;
+    return listenDesktopLook(
+      element,
+      (dx, dy) => {
+        yaw.current -= dx * 0.002;
+        pitch.current = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch.current - dy * 0.002));
+      },
+      () => isInputBlocked() || useUIInteraction.getState().isInteracting,
+    );
+  }, [element, enabled]);
 
   useEffect(() => {
     const held = mobile.current;
+    if (!enabled) return;
     const move = (event: Event) => {
       const detail = (event as CustomEvent<MobileMoveDetail>).detail;
       if (!detail) return;
@@ -131,10 +132,10 @@ export default function DesktopController({
       document.removeEventListener("visibilitychange", visibility);
       cancel();
     };
-  }, []);
+  }, [enabled]);
 
   useFrame((_, delta) => {
-    if (!originRef.current) return;
+    if (!enabled || !originRef.current) return;
     if (isInputBlocked() || document.hidden) return;
 
     const keys = useKeyboardStore.getState().keys;

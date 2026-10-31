@@ -25,6 +25,7 @@ export default function VRController({
   const left = useXRInputSourceState("controller", "left");
   const right = useXRInputSourceState("controller", "right");
   const camera = useThree((s) => s.camera);
+  const enabled = useThree((state) => state.events.enabled);
   const forward = useRef(new THREE.Vector3());
   const strafe = useRef(new THREE.Vector3());
   const movement = useRef(new THREE.Vector3());
@@ -68,7 +69,14 @@ export default function VRController({
 
   useFrame((_, delta) => {
     const origin = originRef.current;
-    if (!origin || ended.current || blurred.current || document.hidden || isInputBlocked()) {
+    if (
+      !enabled ||
+      !origin ||
+      ended.current ||
+      blurred.current ||
+      document.hidden ||
+      isInputBlocked()
+    ) {
       snapped.current = false;
       timer.current = 0;
       return;

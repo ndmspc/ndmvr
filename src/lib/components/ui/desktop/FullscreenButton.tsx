@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import icon from "../../../assets/icons/fullscreen.svg";
-import { useEffect } from "react";
+import { useEffect, useState, type RefObject } from "react";
 
 interface SafariDocument extends Document {
   webkitFullscreenElement?: Element | null;
@@ -40,7 +40,12 @@ const FullscreenImage = styled.img`
   pointer-events: none;
 `;
 
-export default function FullscreenButton() {
+export default function FullscreenButton({
+  containerRef,
+}: {
+  containerRef: RefObject<HTMLDivElement | null>;
+}) {
+  const [fullscreen, setFullscreen] = useState(false);
   const getFullscreenElement = () => {
     const safariDocument = document as SafariDocument;
 
@@ -49,10 +54,11 @@ export default function FullscreenButton() {
 
   const handleFullscreen = async () => {
     const safariDocument = document as SafariDocument;
-    const rootElement = document.documentElement as SafariHTMLElement;
+    const rootElement = containerRef.current as SafariHTMLElement | null;
+    if (!rootElement) return;
 
     try {
-      if (getFullscreenElement()) {
+      if (getFullscreenElement() === rootElement) {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
           return;
@@ -84,21 +90,32 @@ export default function FullscreenButton() {
   };
 
   useEffect(() => {
+    const update = () => setFullscreen(getFullscreenElement() === containerRef.current);
     const handleFullscreenError = (event: Event) => {
       console.error("Fullscreen event error:", event);
     };
 
     document.addEventListener("fullscreenerror", handleFullscreenError);
     document.addEventListener("webkitfullscreenerror", handleFullscreenError);
+    document.addEventListener("fullscreenchange", update);
+    document.addEventListener("webkitfullscreenchange", update);
+    update();
 
     return () => {
       document.removeEventListener("fullscreenerror", handleFullscreenError);
       document.removeEventListener("webkitfullscreenerror", handleFullscreenError);
+      document.removeEventListener("fullscreenchange", update);
+      document.removeEventListener("webkitfullscreenchange", update);
     };
-  }, []);
+  }, [containerRef]);
 
   return (
-    <FullscreenButtonWrapper onClick={handleFullscreen}>
+    <FullscreenButtonWrapper
+      type="button"
+      aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+      aria-pressed={fullscreen}
+      onClick={handleFullscreen}
+    >
       <FullscreenImage src={icon} alt={"Fullscreen Button"} />
     </FullscreenButtonWrapper>
   );

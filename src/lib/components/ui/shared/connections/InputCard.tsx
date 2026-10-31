@@ -1,5 +1,6 @@
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import { Text, Input } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import Input from "../common/Input.tsx";
 import { Container } from "@react-three/uikit";
 import { STAT, ConnectionStatus } from "../../../../stores/broker/constants.ts";
 import { useState } from "react";

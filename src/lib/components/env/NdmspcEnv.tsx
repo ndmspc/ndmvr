@@ -25,6 +25,7 @@ function isEmptyObject(obj: unknown): boolean {
 }
 
 export default function NdmspcEnv({ children = null, config = null, setBrowser }: NdmspcEnvProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [vrMode, setVRMode] = useState(true);
   const initializedRef = useRef(false);
 
@@ -60,7 +61,7 @@ export default function NdmspcEnv({ children = null, config = null, setBrowser }
   }, []);
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div ref={containerRef} style={{ width: "100%", height: "100%", position: "relative" }}>
       <div
         style={{
           display: vrMode ? "none" : "flex",
@@ -92,7 +93,7 @@ export default function NdmspcEnv({ children = null, config = null, setBrowser }
       />
       {!vrMode && (
         <>
-          <FullscreenButton />
+          <FullscreenButton containerRef={containerRef} />
           <UIToggleButton />
         </>
       )}

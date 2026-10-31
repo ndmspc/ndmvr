@@ -1,8 +1,12 @@
 import { useEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import { useKeyboardStore } from "../../../stores/keyboard/store";
 import { isInputBlocked } from "../../../interactions/input/useInputBinding";
 
+let listeners = 0;
+
 function listenKeyboard() {
+  ++listeners;
   const { setKey, clearKeys } = useKeyboardStore.getState();
   const shield = (event: KeyboardEvent) => {
     if (!isInputBlocked(event.target)) return;
@@ -38,11 +42,14 @@ function listenKeyboard() {
     window.removeEventListener("keydown", down);
     window.removeEventListener("keyup", up, true);
     window.removeEventListener("blur", clearKeys);
-    clearKeys();
+    if (--listeners === 0) clearKeys();
   };
 }
 
 export default function KeyboardListener() {
-  useEffect(listenKeyboard, []);
+  const enabled = useThree((state) => state.events.enabled);
+  useEffect(() => {
+    if (enabled) return listenKeyboard();
+  }, [enabled]);
   return null;
 }

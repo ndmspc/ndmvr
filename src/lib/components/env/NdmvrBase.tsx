@@ -8,6 +8,7 @@ import { canvasInputProps } from "@react-three/uikit";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 
 import CameraSync from "../systems/CameraSync.tsx";
+import SceneInteractions from "../systems/SceneInteractions.tsx";
 import Controllers from "../systems/inputs/Controllers.tsx";
 import KeyboardListener from "../systems/inputs/KeyboardListener.tsx";
 import MobileMoveController from "../systems/inputs/MobileMoveController.tsx";
@@ -23,6 +24,8 @@ import { store } from "../../stores/xr/store";
 
 export interface NdmvrBaseProps {
   children?: React.ReactNode;
+  /** Disable this scene's input without unmounting or pausing rendering. Defaults to true. */
+  interactive?: boolean;
 }
 
 type RuntimeConfig = {
@@ -33,7 +36,8 @@ type RuntimeConfig = {
   };
 };
 
-export default function NdmvrBase({ children }: NdmvrBaseProps) {
+export default function NdmvrBase({ children, interactive = true }: NdmvrBaseProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const xrOriginRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [config, setConfig] = useState<RuntimeConfig | null>(null);
@@ -74,10 +78,19 @@ export default function NdmvrBase({ children }: NdmvrBaseProps) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div
+      ref={containerRef}
+      inert={!interactive}
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        pointerEvents: interactive ? undefined : "none",
+      }}
+    >
       <Canvas
         {...canvasInputProps}
-        style={{ touchAction: "none" }}
+        style={{ touchAction: interactive ? "none" : "auto" }}
         shadows
         flat
         gl={{ localClippingEnabled: true }}
@@ -85,6 +98,7 @@ export default function NdmvrBase({ children }: NdmvrBaseProps) {
         <color attach="background" args={["#c7e8f6"]} />
         <PerspectiveCamera ref={cameraRef} makeDefault position={[x, y, z]} fov={75} />
         <XR store={store}>
+          <SceneInteractions interactive={interactive} />
           <CameraSync cameraRef={cameraRef} originRef={xrOriginRef} />
           <KeyboardListener />
           <ambientLight intensity={0.4} />
@@ -105,8 +119,10 @@ export default function NdmvrBase({ children }: NdmvrBaseProps) {
           <XROrigin ref={xrOriginRef} position={[x, y, z]} />
         </XR>
       </Canvas>
-      {touch && <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />}
-      <FullscreenButton />
+      {touch && interactive && (
+        <MobileMoveController onMoveStart={startMove} onMoveEnd={stopMove} />
+      )}
+      <FullscreenButton containerRef={containerRef} />
       <UIToggleButton />
     </div>
   );

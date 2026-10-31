@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import Checkbox from "../../common/Checkbox.tsx";
 import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
-import { Text, Input } from "@react-three/uikit";
+import { Text } from "@react-three/uikit";
+import Input from "../../common/Input.tsx";
 import { Container } from "@react-three/uikit";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
