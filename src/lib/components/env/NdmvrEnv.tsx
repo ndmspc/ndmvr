@@ -1,4 +1,4 @@
-import NdmvrBase from "./NdmvrBase.tsx";
+import NdmvrBase, { type NdmvrBaseProps } from "./NdmvrBase.tsx";
 import NdmvrContent from "../scene/NdmvrContent.tsx";
 import SceneDecorations from "../scene/SceneDecorations.tsx";
 import Menu from "../ui/shared/menu/Menu.tsx";
@@ -11,8 +11,7 @@ import SettingsPanel from "../ui/shared/menu/panels/settings/SettingsPanel.tsx";
 import BrowserContent from "../ui/shared/browser/BrowserContent.tsx";
 import type { BrowserConfig } from "../ui/shared/browser/BrowserContent.tsx";
 
-export interface NdmvrEnvProps {
-  children?: React.ReactNode;
+export interface NdmvrEnvProps extends NdmvrBaseProps {
   menuDefaultOpen?: boolean;
   browserConfig?: BrowserConfig;
 }
@@ -21,9 +20,10 @@ export default function NdmvrEnv({
   children,
   menuDefaultOpen = true,
   browserConfig,
+  interactive = true,
 }: NdmvrEnvProps) {
   return (
-    <NdmvrBase>
+    <NdmvrBase interactive={interactive}>
       <SceneDecorations />
       <NdmvrContent />
       <Menu defaultOpen={menuDefaultOpen}>

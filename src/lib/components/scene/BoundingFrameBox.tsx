@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useEffect, useMemo, useRef, useState } from "react";
-import type { ThreeEvent } from "@react-three/fiber";
+import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { useXR } from "@react-three/xr";
 import * as THREE from "three";
 import { Line2 } from "three/examples/jsm/lines/Line2";
@@ -136,6 +136,7 @@ export default function BoundingFrameBox({
   onDragEnd,
 }: BoundingFrameBoxProps) {
   const session = useXR((state) => state.session);
+  const enabled = useThree((state) => state.events.enabled);
   const groupRef = useRef<THREE.Group>(null);
   const normalizedScale = useMemo(() => toVector3(scale, new THREE.Vector3(2, 2, 2)), [scale]);
   const normalizedPosition = useMemo(
@@ -282,6 +283,12 @@ export default function BoundingFrameBox({
     },
     [restoreCursor, setInteracting, showHover],
   );
+
+  useLayoutEffect(() => {
+    if (enabled) return;
+    finishDrag();
+    showHover(null);
+  }, [enabled, finishDrag, showHover]);
 
   // R3F's capture remembers the hit object, so build every pickable object once.
   useLayoutEffect(() => {

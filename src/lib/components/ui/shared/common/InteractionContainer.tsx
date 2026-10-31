@@ -2,6 +2,7 @@ import { Container as UIKitContainer } from "@react-three/uikit";
 import { useUIInteractionOwner } from "../../../../stores/interaction/uiInteraction";
 import { useCallback, useEffect, useRef } from "react";
 import type { ComponentProps } from "react";
+import { useSceneInteractive } from "../../../../interactions/input/useSceneInteractive";
 
 type PointerHandler = Extract<
   ComponentProps<typeof UIKitContainer>["onPointerDown"],
@@ -16,6 +17,7 @@ type InteractionContainerProps = ComponentProps<typeof UIKitContainer> & {
 };
 
 export const InteractionContainer = (props: InteractionContainerProps) => {
+  const enabled = useSceneInteractive();
   const pointers = useRef(new Set<number>());
   const setInteracting = useUIInteractionOwner();
   const release = useCallback(
@@ -31,6 +33,7 @@ export const InteractionContainer = (props: InteractionContainerProps) => {
       pointers.current.clear();
       setInteracting(false);
     };
+    if (!enabled) cancel();
     const visibility = () => {
       if (document.hidden) cancel();
     };
@@ -45,7 +48,7 @@ export const InteractionContainer = (props: InteractionContainerProps) => {
       document.removeEventListener("visibilitychange", visibility);
       cancel();
     };
-  }, [release, setInteracting]);
+  }, [release, setInteracting, enabled]);
 
   return (
     <UIKitContainer

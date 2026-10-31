@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@react-three/uikit-default";
-import { Text, Input, Container } from "@react-three/uikit";
+import { Text, Container } from "@react-three/uikit";
+import Input from "../../../common/Input.tsx";
 import openapiSchema from "../../../../../../config/ndmvrConfigOpenApi.json";
 import { configSubjectGet } from "@ndmspc/ndmvr-core";
 

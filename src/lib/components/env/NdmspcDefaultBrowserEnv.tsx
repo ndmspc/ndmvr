@@ -112,6 +112,7 @@ export default function NdmspcDefaultBrowserEnv({
   defaultDrawOpt = { TH1: "hist", TH2: "col" },
   setBrowser,
 }: NdmspcDefaultBrowserEnvProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [vrMode, setVRMode] = useState(vr);
   const initializedRef = useRef(false);
   const configInitializedRef = useRef(false);
@@ -375,6 +376,7 @@ export default function NdmspcDefaultBrowserEnv({
 
   return (
     <div
+      ref={containerRef}
       style={{
         width: "100%",
         height: "100%",
@@ -431,7 +433,7 @@ export default function NdmspcDefaultBrowserEnv({
       {!vrMode && (
         <>
           <UIToggleButton />
-          <FullscreenButton />
+          <FullscreenButton containerRef={containerRef} />
         </>
       )}
 

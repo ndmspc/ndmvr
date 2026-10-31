@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useSceneInteractive } from "./useSceneInteractive";
 import { useXR, type XRControllerState } from "@react-three/xr";
 import { useKeyboardStore } from "../../stores/keyboard/store";
 
@@ -50,6 +51,7 @@ interface InputBinding {
 
 /** Internal feature binding. Requires the existing Canvas/XR ancestors, no input provider. */
 export function useInputBinding(binding: InputBinding) {
+  const enabled = useSceneInteractive();
   // Production bindings are fixed for the lifetime of their feature; callbacks may change.
   const [{ keyboard, vr }] = useState(() => ({ keyboard: binding.keyboard, vr: binding.vr }));
   const session = useXR((state) => (vr ? state.session : null));
@@ -61,14 +63,14 @@ export function useInputBinding(binding: InputBinding) {
         )
       : undefined,
   );
-  const latest = useRef({ binding, session, controller });
+  const latest = useRef({ binding, session, controller, enabled });
   const previous = useRef({ key: false, vr: false, held: false });
   const blurred = useRef(false);
   const ended = useRef(false);
 
   // Inline callbacks may change without resetting press edges or subscriptions.
   useLayoutEffect(() => {
-    latest.current = { binding, session, controller };
+    latest.current = { binding, session, controller, enabled };
   });
 
   const sample = useCallback(
@@ -93,7 +95,8 @@ export function useInputBinding(binding: InputBinding) {
       const vrMatches =
         vrPressed &&
         (vr?.grip === undefined || vr.grip === buttonPressed(pad, "xr-standard-squeeze"));
-      const blocked = blurred.current || document.hidden || isInputBlocked();
+      const blocked =
+        !latest.current.enabled || blurred.current || document.hidden || isInputBlocked();
       const held = !blocked && (keyMatches || vrMatches);
       const old = previous.current;
       previous.current = { key, vr: vrPressed, held };
@@ -110,7 +113,7 @@ export function useInputBinding(binding: InputBinding) {
   useEffect(() => {
     // Initialize held state, but never fire a toggle just because a feature mounted.
     sample(true);
-  }, [sample, session, controller]);
+  }, [sample, session, controller, enabled]);
 
   useEffect(() => {
     const update = () => sample();

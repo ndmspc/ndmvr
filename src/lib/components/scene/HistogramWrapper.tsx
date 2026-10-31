@@ -1,6 +1,6 @@
 import { isInputBlocked } from "../../interactions/input/useInputBinding";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useCallback, useMemo, useRef, useState } from "react";
 import { filter } from "rxjs";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -142,6 +142,8 @@ function syncHistogramAxesVisibility(painter: THnPainter) {
 
 export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const { scene, camera, raycaster } = useThree();
+  const enabled = useThree((state) => state.events.enabled);
+  const get = useThree((state) => state.get);
   const jsrootHistogram = useRef<HistogramJsrootClass | null>(null);
   // JSROOT needs the untransformed mesh bounds so drag-end scaling can be applied correctly.
   const jsrootBaseBounds = useRef<ObjectBounds | null>(null);
@@ -189,6 +191,14 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
   // Keep the last bin payload so re-entering the same bin can show the frame again.
   const [hoveredBinFrameVisible, setHoveredBinFrameVisible] = useState(false);
+
+  useLayoutEffect(() => {
+    if (enabled) return;
+    clearPendingClick();
+    hideBinHoverOverlay();
+    squeezeHeld.current = false;
+    lastXRTriggerRelease.current = 0;
+  }, [enabled, clearPendingClick, hideBinHoverOverlay]);
 
   const applyJsrootMeshBounds = useCallback(
     (mesh: THREE.Object3D | null | undefined, position: THREE.Vector3, scale: THREE.Vector3) => {
@@ -442,6 +452,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   );
 
   useEffect(() => {
+    if (!enabled) return;
     const sources = new Set<XRInputSource>();
     const onSqueezeStart = (event: XRInputSourceEvent) => {
       if (isInputBlocked() || document.hidden || session?.visibilityState !== "visible") return;
@@ -490,7 +501,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       document.removeEventListener("visibilitychange", block);
       cancel();
     };
-  }, [clearPendingClick, hideBinHoverOverlay, session]);
+  }, [clearPendingClick, hideBinHoverOverlay, session, enabled]);
 
   function scheduleSingleClick(
     painter: SyncablePainter,
@@ -504,6 +515,7 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       if (
         !isCurrentNestedPainter(painter) ||
         pendingPainters.current.has(painter) ||
+        !get().events.enabled ||
         isInputBlocked() ||
         document.hidden
       )
@@ -865,7 +877,8 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
         />
       )}
 
-      {binBoxEnabled &&
+      {enabled &&
+        binBoxEnabled &&
         hoveredBinFrameVisible &&
         hoveredBinFrameData &&
         activeMode !== "modify" && (
