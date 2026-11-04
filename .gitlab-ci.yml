@@ -1,8 +1,18 @@
 # One pipeline per push. Merge-request pipelines are switched off, so the branch
 # pipeline is the merge gate. Tags publish the npm package and the packaged page.
+#
+# Only feature branches and `develop` get a pipeline. `main` and the
+# `v<version>-patch` maintenance branches (v1.4-patch, ...) just receive merges
+# that already passed in their source branch pipeline, and the published
+# artifacts are built from `develop` (pages, release-next) or from tags, so
+# running a pipeline there would only repeat work.
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ /^v.*-patch$/
       when: never
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH
@@ -19,8 +29,8 @@ stages:
   - deploy
 
 # Gate job. Format and lint run first so a cheap oxfmt/oxlint finding fails
-# before the expensive builds. On the default branch only format and lint run:
-# the branch pipeline must already have passed, so the builds would duplicate
+# before the expensive builds. On `develop` only format and lint run: the branch
+# pipeline must already have passed, so the builds would duplicate
 # `pages`/`release-next`. Tags only publish artifacts.
 test:
   stage: build
@@ -37,7 +47,7 @@ test:
   rules:
     - if: "$CI_COMMIT_TAG"
       when: never
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - if: "$CI_COMMIT_BRANCH == 'develop'"
       variables:
         SKIP_BUILD: "1"
     - when: on_success
@@ -159,9 +169,9 @@ release-page:
   only:
     - tags
 
-# Publishes the page built from the default branch to a single over-writable
-# "next" slot in the Generic Package Registry. Each run deletes the previous
-# "next" package first, so the download URL always serves the newest build:
+# Publishes the page built from `develop` to a single over-writable "next" slot
+# in the Generic Package Registry. Each run deletes the previous "next" package
+# first, so the download URL always serves the newest build:
 #   $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/ndmvr-page/next/ndmvr-page.tar.gz
 release-next:
   stage: deploy
