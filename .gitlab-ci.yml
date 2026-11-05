@@ -68,7 +68,8 @@ pages:
   variables:
     GIT_DEPTH: 0
   script:
-    - mkdocs build -d public/docs
+    - zensical build --clean --strict
+    - mkdir -p public && mv site public/docs
     - npm config set legacy-peer-deps=true
     - CI=true npm ci
     - sed -i 's/eval(/(0,eval)(/g' node_modules/jsroot/node_modules/three/examples/jsm/libs/lottie_canvas.module.js

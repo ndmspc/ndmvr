@@ -1,3 +1,5 @@
+{% raw %}
+
 # BoundingFrameBox
 
 ## Introduction
@@ -154,3 +156,4 @@ These helpers are internal implementation details and are not part of the public
 ## Notes
 
 `BoundingFrameBox` is used to make histogram resizing more intuitive. Instead of changing numeric configuration values manually, the user can directly manipulate the histogram bounds in the 3D scene.
+{% endraw %}
