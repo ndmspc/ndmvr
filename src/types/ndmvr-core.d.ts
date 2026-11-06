@@ -87,6 +87,7 @@ declare module "@ndmspc/ndmvr-core" {
   export class HistogramJsrootClass {
     constructor(id: string, obj: any, camera: THREE.Camera);
     histogramGroup: THREE.Group;
+    rootObj: any;
     binInfoComponent: any;
     id: string;
     configSub: Subscription;
@@ -161,4 +162,22 @@ declare module "@ndmspc/ndmvr-core" {
   export function binInfoSubjectGet(): BinInfoSubject;
   export function dispatchSubjectGet(): DispatchSubject;
   export function stateSubjectGet(id: string): StateSubject;
+
+  export interface HistogramPrintResult {
+    bytes: Uint8Array;
+    triangleCount: number;
+    sizeMm: { x: number; y: number; z: number };
+    fileStem: string;
+    lines?: string[];
+  }
+
+  export function exportHistogramStl(
+    source: unknown,
+    options?: Record<string, unknown>,
+  ): HistogramPrintResult | null;
+
+  export function exportHistogramLabelStl(
+    source: unknown,
+    options?: Record<string, unknown>,
+  ): HistogramPrintResult | null;
 }

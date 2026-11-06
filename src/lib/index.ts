@@ -73,6 +73,18 @@ export {
   defaultSceneModesConfig,
 };
 
+export {
+  exportHistogramLabelStl,
+  exportHistogramStl,
+  listHistogramExportPads,
+} from "./export/histogramExport.ts";
+export type {
+  HistogramExportOptions,
+  HistogramExportResult,
+  HistogramLabelOptions,
+  HistogramSizeMm,
+} from "./export/histogramExport.ts";
+
 // Export types for component props
 export type { NdmspcEnvProps } from "./components/env/NdmspcEnv.tsx";
 export type { BrowserConfig } from "./components/ui/shared/browser/BrowserContent.tsx";

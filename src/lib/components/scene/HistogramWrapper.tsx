@@ -38,6 +38,10 @@ import {
   hasBlockingIntersectionForObject,
 } from "./histogram-wrapper/intersections";
 import { getHoveredBinFrameData, type HoveredBinLike } from "./histogram-wrapper/hovered-bin-frame";
+import {
+  registerHistogramExportSource,
+  unregisterHistogramExportSource,
+} from "../../export/histogramExport";
 import { activateHistogramPad, prepareHistogramPadState } from "../../stores/histogramWorkspace";
 
 export interface HistogramWrapperProps {
@@ -191,6 +195,13 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
   const [hoveredBin, setHoveredBin] = useState<HoveredBinLike | null>(null);
   // Keep the last bin payload so re-entering the same bin can show the frame again.
   const [hoveredBinFrameVisible, setHoveredBinFrameVisible] = useState(false);
+
+  // The STL export asks for a pad's painter by id; the getter always reads the current one.
+  const getExportSource = useCallback(() => jsrootHistogram.current ?? nestedHistogram.current, []);
+  useEffect(() => {
+    registerHistogramExportSource(id, getExportSource);
+    return () => unregisterHistogramExportSource(id, getExportSource);
+  }, [id, getExportSource]);
 
   useLayoutEffect(() => {
     if (enabled) return;
