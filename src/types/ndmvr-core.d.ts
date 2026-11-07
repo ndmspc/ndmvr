@@ -117,6 +117,8 @@ declare module "@ndmspc/ndmvr-core" {
     next(config: any): ReturnType<ConfigSubject["getValue"]>;
     getValue(): any;
     getHistogramGridConfig(): HistogramGridConfig | null;
+    /** The ids of the configured pads, in configuration order. */
+    getHistogramPadIds(): string[];
     updateHistogramPad(
       id: string,
       bounds: {
@@ -158,6 +160,8 @@ declare module "@ndmspc/ndmvr-core" {
   export function brokerManagerGet(): BrokerManager;
   export function histogramSubjectGet(): HistogramSubject;
   export function configSubjectGet(): ConfigSubject;
+  /** The ids of the configured histogram pads. */
+  export function histogramPadIdsGet(): string[];
   export function functionSubjectGet(): FunctionSubject;
   export function binInfoSubjectGet(): BinInfoSubject;
   export function dispatchSubjectGet(): DispatchSubject;

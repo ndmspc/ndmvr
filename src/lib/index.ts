@@ -76,6 +76,8 @@ export {
 export {
   exportHistogramLabelStl,
   exportHistogramStl,
+  histogramExportPadLabel,
+  listConfiguredHistogramPads,
   listHistogramExportPads,
 } from "./export/histogramExport.ts";
 export type {
