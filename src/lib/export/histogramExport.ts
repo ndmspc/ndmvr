@@ -1,6 +1,7 @@
 import {
   exportHistogramLabelStl as exportLabelWithCore,
   exportHistogramStl as exportWithCore,
+  histogramPadIdsGet,
 } from "@ndmspc/ndmvr-core";
 
 /** Plate text and layout options, forwarded to `exportHistogramLabelStl` in ndmvr-core. */
@@ -98,6 +99,26 @@ export function unregisterHistogramExportSource(padId: string, getter?: ExportSo
 /** Pad ids the 3D scene currently holds a painter for — the names `exportHistogramStl` accepts. */
 export function listHistogramExportPads(): string[] {
   return [...sources.keys()];
+}
+
+/**
+ * What to call a pad in a picker: its id, and the histogram it holds when that has a name
+ * (`pad2 · hpx`). A pad whose histogram carries no name reads as the id alone.
+ */
+export function histogramExportPadLabel(padId: string): string {
+  const getter = sources.get(padId);
+  const source = getter?.() as { rootObj?: { fName?: unknown } } | null | undefined;
+  const name = source?.rootObj?.fName;
+  return typeof name === "string" && name.trim() !== "" ? `${padId} · ${name.trim()}` : padId;
+}
+
+/**
+ * The pads the configuration describes, whether or not they hold a histogram yet — what tells a caller
+ * "configured but empty" from "not configured at all". The exportable set is
+ * `listHistogramExportPads()`.
+ */
+export function listConfiguredHistogramPads(): string[] {
+  return histogramPadIdsGet();
 }
 
 function resolveSource(padId: string): { source: unknown } | { reason: string } {
