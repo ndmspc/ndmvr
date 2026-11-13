@@ -84,6 +84,7 @@ export type {
   HistogramExportOptions,
   HistogramExportResult,
   HistogramLabelOptions,
+  HistogramFootprintMm,
   HistogramSizeMm,
 } from "./export/histogramExport.ts";
 
