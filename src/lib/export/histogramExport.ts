@@ -42,6 +42,15 @@ export interface HistogramLabelOptions {
 export interface HistogramExportOptions extends HistogramLabelOptions {
   /** Longest dimension of the model in millimetres. Default 100. */
   maxSizeMm?: number;
+  /**
+   * The footprint to build into, in millimetres — one number per axis.
+   *
+   * `maxSizeMm` fits the **longest** side, so a histogram that is long and thin (many bins on one axis,
+   * few on the other) comes out as a sliver. Naming both axes fills the footprint instead, stretching
+   * each axis to its own size. Height keeps its proportion to the footprint, and the model's real size
+   * comes back in the result.
+   */
+  sizeMm?: HistogramFootprintMm;
   /** `"auto"` writes the print model, `"mesh"` the rendered triangles. */
   mode?: "auto" | "mesh";
   /** Include the label plate (`true` or its options). */
@@ -68,6 +77,12 @@ export interface HistogramSizeMm {
   x: number;
   y: number;
   z: number;
+}
+
+/** A footprint to build into: how wide and how deep, in millimetres. Height follows the bars. */
+export interface HistogramFootprintMm {
+  x?: number;
+  y?: number;
 }
 
 export type HistogramExportResult =
@@ -142,12 +157,28 @@ export function exportHistogramStl(
 
   return {
     ok: true,
-    fileName: `${result.fileStem}-${options.maxSizeMm ?? 100}mm.stl`,
+    // Named after the size that was asked for, so two exports of one pad do not overwrite each other:
+    // `TH2D-100x100mm.stl` for a footprint, `TH2D-100mm.stl` for a single longest side.
+    fileName: `${result.fileStem}-${footprintLabel(options)}.stl`,
     bytes: result.bytes as Uint8Array,
     triangleCount: result.triangleCount,
     sizeMm: result.sizeMm,
     lines: result.lines ?? [],
   };
+}
+
+/** `100x100mm` for a footprint, `100mm` when only the longest side was named. */
+function footprintLabel(options: HistogramExportOptions): string {
+  const x = options.sizeMm?.x;
+  const y = options.sizeMm?.y;
+  if (x !== undefined && y !== undefined) return `${round(x)}x${round(y)}mm`;
+  if (x !== undefined) return `${round(x)}mm`;
+  if (y !== undefined) return `${round(y)}mm`;
+  return `${options.maxSizeMm ?? 100}mm`;
+}
+
+function round(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(Math.round(value * 10) / 10);
 }
 
 /** Writes the named pad's label plate as a standalone STL. */
