@@ -764,23 +764,25 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
             retireJsroot();
             setJsrootError(null);
             const updating = !!nestedHistogram.current;
-            if (!updating) {
-              // Normalize retained draw choices before constructing a new painter.
-              const preparedState = prepareHistogramPadState(id, histo);
-              const painter = new THnPainter(histo, id, histo?.opts);
-              if (preparedState) {
-                painter.selectedArray = preparedState.selectedArray;
-                if (preparedState.selectedSet.length > 0) {
-                  painter.selectedSet = preparedState.selectedSet;
-                }
-                Object.assign(stateSubjectGet(id).getValue(), {
-                  selectedArray: painter.selectedArray,
-                  selectedSet: painter.selectedSet,
-                });
+            // Normalize retained draw choices before the painter reads them — on **both** paths: a painter
+            // kept over the jsroot interlude is updated, and `updateHistogram` re-reads the draw choices from
+            // the core state (`init`). Without this the switch back dropped the reader's array selection and
+            // drew the pad as plain entry ids.
+            const preparedState = prepareHistogramPadState(id, histo);
+            const painter: SyncablePainter = updating
+              ? nestedHistogram.current!
+              : new THnPainter(histo, id, histo?.opts);
+            if (preparedState) {
+              painter.selectedArray = preparedState.selectedArray;
+              if (preparedState.selectedSet.length > 0) {
+                painter.selectedSet = preparedState.selectedSet;
               }
-              nestedHistogram.current = painter;
+              Object.assign(stateSubjectGet(id).getValue(), {
+                selectedArray: painter.selectedArray,
+                selectedSet: painter.selectedSet,
+              });
             }
-            const painter = nestedHistogram.current!;
+            nestedHistogram.current = painter;
             // Back on stage: the painter kept over the jsroot interlude draws again, carrying the level the
             // reader was on (`updateHistogram` walks its new pointer back down the same path).
             painter._ndmvrSetAside = false;
