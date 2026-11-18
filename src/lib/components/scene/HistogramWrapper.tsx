@@ -67,6 +67,8 @@ type HistogramPointerEvent = ThreeEvent<MouseEvent | PointerEvent> & {
 
 type SyncablePainter = THnPainter & {
   _ndmvrMeshSyncInstalled?: boolean;
+  /** Kept over a jsroot interlude: still the current painter, but off stage (see `setAsideNested`). */
+  _ndmvrSetAside?: boolean;
 };
 const CLICK_DELAY_MS = 300;
 const XR_SYNTHETIC_CLICK_SUPPRESSION_MS = CLICK_DELAY_MS;
@@ -243,7 +245,11 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
   const isCurrentNestedPainter = useCallback(
     (painter: SyncablePainter | null | undefined) =>
-      !!painter && nestedHistogram.current === painter && !retiredPainters.current.has(painter),
+      !!painter &&
+      nestedHistogram.current === painter &&
+      !retiredPainters.current.has(painter) &&
+      // Set aside for jsroot: it is still the current painter, but jsroot owns the scene until it comes back.
+      !painter._ndmvrSetAside,
     [],
   );
 
@@ -321,7 +327,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       .getObservable()
       .subscribe((config) => {
         setCurrentShiftStep(getShiftScaleStep(config));
-        if (nestedHistogram.current) syncHistogramAxesVisibility(nestedHistogram.current);
+        // A painter set aside for jsroot is off stage, so its axes must not be pushed at the config's pace.
+        const painter = nestedHistogram.current;
+        if (painter && !painter._ndmvrSetAside) syncHistogramAxesVisibility(painter);
       });
 
     return () => subscription.unsubscribe();
@@ -664,6 +672,22 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
       safeRemoveHistogram(painter, "nested histogram");
       clearNestedMeshes();
     };
+    /**
+     * The native painter set aside while jsroot draws, **not** destroyed.
+     *
+     * The painter holds the pointer — the level the reader has drilled to — and rebuilding it starts again at
+     * the root, so switching to jsroot and back would drop them there. It is kept with its meshes taken out of
+     * the scene, and the switch back updates it in place (`THnPainter.updateHistogram` carries the path
+     * across), which is what the `updating` branch below expects to find.
+     *
+     * `_ndmvrSetAside` is what tells the mesh-sync hooks it is off stage: without it a render it still had
+     * queued would put its meshes back into a scene jsroot is drawing.
+     */
+    const setAsideNested = () => {
+      const painter = nestedHistogram.current;
+      if (painter) painter._ndmvrSetAside = true;
+      clearNestedMeshes();
+    };
     const retireJsroot = () => {
       const painter = jsrootHistogram.current;
       jsrootHistogram.current = null;
@@ -684,7 +708,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
 
           if (isJsroot) {
             clearNestedHistogramFunctions(id);
-            retireNested();
+            // Set aside, not destroyed: the painter keeps the drill level for the way back (see
+            // `setAsideNested`).
+            setAsideNested();
             setJsrootError(null);
 
             if (jsrootHistogram.current) {
@@ -755,6 +781,9 @@ export default function HistogramWrapper({ id }: HistogramWrapperProps) {
               nestedHistogram.current = painter;
             }
             const painter = nestedHistogram.current!;
+            // Back on stage: the painter kept over the jsroot interlude draws again, carrying the level the
+            // reader was on (`updateHistogram` walks its new pointer back down the same path).
+            painter._ndmvrSetAside = false;
             installNestedPainterMeshSync(painter);
             pendingPainters.current.add(painter);
             let renderPromise;
