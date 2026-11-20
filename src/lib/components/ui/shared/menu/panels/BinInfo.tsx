@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Text } from "@react-three/uikit";
-import { Container } from "@react-three/uikit";
+import { Text, Container } from "@react-three/uikit";
 import { Color } from "three";
 import { binInfoSubjectGet } from "@ndmspc/ndmvr-core";
 
@@ -53,7 +52,8 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
 
   return (
     <Container
-      classList={["menuContainer"]}
+      flexDirection="column"
+      gap={12}
       fontFamilies={{
         noto: {
           medium: NotoRegular,
@@ -61,15 +61,7 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
         },
       }}
     >
-      <Text classList={["menuHeader"]}>Bin information</Text>
-
-      <Container
-        classList={["section", "sectionInner"]}
-        minWidth={250}
-        flexDirection="column"
-        padding={10}
-        borderRadius={8}
-      >
+      <Container minWidth={250} flexDirection="column" gap={6}>
         <Container flexDirection="row" alignItems="center" gap={4}>
           <Text fontSize={12} fontWeight="bold">
             Level:
@@ -95,15 +87,15 @@ export default function BinInfo({ precision = 2 }: BinInfoProps) {
 
         return (
           <Container
-            classList={["section", "sectionInner"]}
             minWidth={360}
             flexDirection="column"
             key={i}
-            padding={10}
-            borderRadius={8}
+            paddingTop={8}
+            borderTopWidth={1}
+            borderColor="#334155"
             gap={6}
           >
-            <Container gap={5}>
+            <Container flexDirection="row" alignItems="center" gap={6}>
               <DotIcon color={color} />
               <Text fontSize={13} fontWeight="bold">
                 {coord.name ?? "Unnamed"} [bin={coord.bin}]

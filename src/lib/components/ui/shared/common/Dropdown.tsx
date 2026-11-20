@@ -101,9 +101,9 @@ export default function Dropdown({
             overflowX="scroll"
             height="100%"
           >
-            {options.map((opt) => (
+            {options.map((opt, index) => (
               <Container
-                key={opt}
+                key={`${opt}-${index}`}
                 classList={["dropdownItem", selected === opt ? "dropdownItemSelected" : "foobar"]}
                 hover={{ backgroundColor: "#059669" }}
                 onClick={(e) => {

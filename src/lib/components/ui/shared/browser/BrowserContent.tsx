@@ -46,3 +46,6 @@ export default function BrowserContent({ browserConfig }: BrowserContentProps) {
     </>
   );
 }
+
+BrowserContent.menuName = "browser";
+BrowserContent.menuLabel = "File Browser";

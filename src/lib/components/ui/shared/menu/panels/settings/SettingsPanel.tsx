@@ -37,11 +37,11 @@ export default function SettingsPanel() {
     () => !configSubjectGet().getHistogramGridConfig(),
   );
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const sub = configSubjectGet()
       .getObservable()
       .subscribe(() => {
-        // Read both accepted values together, including after reentrant notifications.
         const subject = configSubjectGet();
         const accepted = readSettings(scalarSchema, subject.getValue()?.config?.environment);
         const grid = subject.getHistogramGridConfig();
@@ -121,81 +121,77 @@ export default function SettingsPanel() {
   };
 
   return (
-    <Container classList={["menuContainer"]}>
-      <Text classList={["menuHeader"]}>Settings</Text>
-      <Container classList={["section", "sectionInner"]} height={300} width={600} minWidth={300}>
-        <Container
-          flexDirection="column"
-          flexGrow={1}
-          overflow="scroll"
-          height={100}
-          scrollbarColor="#475569"
-        >
-          {/* Keep content at its natural height; the viewport handles scrolling. */}
-          <Container flexDirection="column" flexShrink={0}>
-            {Object.entries(scalarSchema).map(([path, schema]) => (
-              <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-                <Text minWidth={400} fontSize={12}>
-                  {(schema as { title?: string })?.title || path}:
-                </Text>
-                <Input
-                  classList={["input"]}
-                  fontSize={12}
-                  value={String(settings[path] ?? "")}
-                  onValueChange={(v) => {
-                    const updated = { ...settings, [path]: v };
-                    setSettings(updated);
-                    applyNow({ [path]: v });
-                  }}
-                  minWidth={100}
-                />
-              </Container>
-            ))}
+    <Container flexDirection="column" gap={12} height={300} width={600} minWidth={300}>
+      <Container
+        flexDirection="column"
+        flexGrow={1}
+        overflow="scroll"
+        height={100}
+        scrollbarColor="#475569"
+      >
+        <Container flexDirection="column" flexShrink={0}>
+          {Object.entries(scalarSchema).map(([path, schema]) => (
+            <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+              <Text minWidth={400} fontSize={12}>
+                {(schema as { title?: string })?.title || path}:
+              </Text>
+              <Input
+                classList={["input"]}
+                fontSize={12}
+                value={String(settings[path] ?? "")}
+                onValueChange={(v) => {
+                  const updated = { ...settings, [path]: v };
+                  setSettings(updated);
+                  applyNow({ [path]: v });
+                }}
+                minWidth={100}
+              />
+            </Container>
+          ))}
 
-            <Text classList={["menuHeader"]}>Replacement grid</Text>
-            <Text>
-              {manualLayout
-                ? "Current layout: manual. Grid settings replace the layout."
-                : "Editing these settings replaces the current histogram pads."}
-            </Text>
-            {Object.entries(gridSchema).map(([path, schema]) => (
-              <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
-                <Text minWidth={400} fontSize={12}>
-                  {schema.title || path}:
-                </Text>
-                <Input
-                  classList={["input"]}
-                  fontSize={12}
-                  value={String(gridDraft[path] ?? "")}
-                  onValueChange={(value) => {
-                    const nextDraft = { ...gridDraftRef.current, [path]: value };
-                    updateGridDraft(nextDraft);
-                    applyNow(nextDraft);
-                  }}
-                  minWidth={100}
-                />
-              </Container>
-            ))}
-          </Container>
+          <Text classList={["menuHeader"]}>Replacement grid</Text>
+          <Text>
+            {manualLayout
+              ? "Current layout: manual. Grid settings replace the layout."
+              : "Editing these settings replaces the current histogram pads."}
+          </Text>
+          {Object.entries(gridSchema).map(([path, schema]) => (
+            <Container key={path} flexDirection="row" margin={25} gap={8} alignItems="center">
+              <Text minWidth={400} fontSize={12}>
+                {schema.title || path}:
+              </Text>
+              <Input
+                classList={["input"]}
+                fontSize={12}
+                value={String(gridDraft[path] ?? "")}
+                onValueChange={(value) => {
+                  const nextDraft = { ...gridDraftRef.current, [path]: value };
+                  updateGridDraft(nextDraft);
+                  applyNow(nextDraft);
+                }}
+                minWidth={100}
+              />
+            </Container>
+          ))}
         </Container>
+      </Container>
 
-        {error && <Text color="#ef4444">{error}</Text>}
+      {error && <Text color="#ef4444">{error}</Text>}
 
-        <Container
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
-          gap={12}
-          marginTop={8}
-        >
-          <Button hover={{ backgroundColor: "#059669" }} onClick={resetToDefaults} minWidth={120}>
-            <Text>Reset to default</Text>
-          </Button>
+      <Container
+        flexDirection="row"
+        justifyContent="center"
+        alignItems="center"
+        gap={12}
+        marginTop={8}
+      >
+        <Button hover={{ backgroundColor: "#059669" }} onClick={resetToDefaults} minWidth={120}>
+          <Text>Reset to default</Text>
+        </Button>
 
-          <Button hover={{ backgroundColor: "#059669" }} onClick={importConfig} minWidth={120}>
-            <Text>Import JSON</Text>
-          </Button>
-        </Container>
+        <Button hover={{ backgroundColor: "#059669" }} onClick={importConfig} minWidth={120}>
+          <Text>Import JSON</Text>
+        </Button>
       </Container>
     </Container>
   );

@@ -4,9 +4,12 @@ import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
 import { useXR } from "@react-three/xr";
 import { useInputBinding } from "../../../../interactions/input/useInputBinding";
 import { useMenuStore } from "../../../../stores/menu/store";
+import { FeatureKey, useFeatureFlagStore } from "../../../../stores/feature/store";
 import DesktopMenuOverlay from "./DesktopMenuOverlay";
 import FloatingContainer from "../common/FloatingContainer";
+import { DropdownProvider } from "../common/Dropdown";
 import WebsocketBanner from "../connections/WebsocketBanner";
+import Frame from "./Frame";
 
 const DEFAULT_OFFSET = { x: 0, y: 1.2, z: -4 };
 
@@ -20,6 +23,7 @@ export interface MenuProps {
 export default function Menu({ defaultOpen = false, ...props }: MenuProps) {
   const { showMenu, setShowMenu, setMenuExists, toggleMenu } = useMenuStore();
   const initialOpen = useRef(defaultOpen);
+
   useEffect(() => {
     setMenuExists(true);
     setShowMenu(initialOpen.current);
@@ -39,6 +43,22 @@ export default function Menu({ defaultOpen = false, ...props }: MenuProps) {
 function MenuContent({ children, offset = DEFAULT_OFFSET, scale = 1 }: MenuProps) {
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const session = useXR((state) => state.session);
+  const isXR = session !== null && session !== undefined;
+  const { isFeatureEnabled } = useFeatureFlagStore();
+  const enabled = isFeatureEnabled(FeatureKey.DuplicateWindow, isXR);
+
+  const [windows, setWindows] = useState<Array<{ id: string; menuName?: string }>>(() => [
+    { id: crypto.randomUUID() },
+  ]);
+
+  const handleSpawn = (menuName: string) => {
+    setWindows((prev) => [...prev, { id: crypto.randomUUID(), menuName }]);
+  };
+
+  const handleClose = (id: string) => {
+    setWindows((prev) => prev.filter((win) => win.id !== id));
+  };
+
   const items = Children.toArray(children)
     .filter(isValidElement)
     .map((child) => {
@@ -56,6 +76,8 @@ function MenuContent({ children, offset = DEFAULT_OFFSET, scale = 1 }: MenuProps
       return { child, menuName: metadata?.menuName, menuLabel: metadata?.menuLabel };
     })
     .filter((item) => item.menuName);
+
+  // old menu content
   const content =
     activeTab === null ? (
       <Container classList={["menuContainer"]}>
@@ -76,22 +98,53 @@ function MenuContent({ children, offset = DEFAULT_OFFSET, scale = 1 }: MenuProps
         </Container>
       </Container>
     ) : (
-      items.filter((item) => item.menuName === activeTab).map((item) => item.child)
+      items
+        .filter((item) => item.menuName === activeTab)
+        .map((item) => (
+          <Container key={item.menuName} classList={["menuContainer"]}>
+            <Text classList={["menuHeader"]}>{item.menuLabel ?? item.menuName}</Text>
+            <DropdownProvider>
+              <Container classList={["section", "sectionInner"]}>{item.child}</Container>
+            </DropdownProvider>
+          </Container>
+        ))
     );
 
-  return session ? (
-    <FloatingContainer
-      renderOrder={5000}
-      offset={offset}
-      transformScaleX={scale}
-      transformScaleY={scale}
-      transformScaleZ={scale}
-      depthTest={false}
-      depthWrite={false}
-    >
-      {content}
-    </FloatingContainer>
-  ) : (
-    <DesktopMenuOverlay>{content}</DesktopMenuOverlay>
+  const panels = enabled
+    ? windows.map((win) => ({
+        id: win.id,
+        content: (
+          <Frame
+            parentMenuName={win.menuName}
+            onSpawn={handleSpawn}
+            onClose={windows.length > 1 ? () => handleClose(win.id) : undefined}
+          >
+            {children}
+          </Frame>
+        ),
+      }))
+    : [{ id: "menu", content: content }];
+
+  return (
+    <>
+      {panels.map((panel, index) =>
+        session ? (
+          <FloatingContainer
+            key={panel.id}
+            renderOrder={5000 + index}
+            offset={enabled ? undefined : offset}
+            transformScaleX={scale}
+            transformScaleY={scale}
+            transformScaleZ={scale}
+            depthTest={false}
+            depthWrite={false}
+          >
+            {panel.content}
+          </FloatingContainer>
+        ) : (
+          <DesktopMenuOverlay key={panel.id}>{panel.content}</DesktopMenuOverlay>
+        ),
+      )}
+    </>
   );
 }
