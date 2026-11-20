@@ -39,7 +39,9 @@ export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
   if (!origin) return;
 
   const input = ctx.getSpatialInput();
-  if (input.active) {
+  const isInteracting = ctx.isDragging.current || ctx.isRotating.current;
+
+  if (input.active && isInteracting) {
     const rawX = input.x;
     const rawY = input.y;
 
@@ -52,21 +54,26 @@ export function updateVRFrame(ctx: MoveAndRotationCtx, delta: number) {
     }
 
     if (yVal !== 0) {
-      ctx.radius.current += yVal * ctx.ZOOM_SPEED * delta;
+      const prevX = ctx.currentPos.current.x;
+      const prevZ = ctx.currentPos.current.z;
+
+      ctx.radius.current = Math.max(0.5, ctx.radius.current + yVal * ctx.ZOOM_SPEED * delta);
 
       const x = Math.sin(ctx.orbitAngle.current) * ctx.radius.current;
       const z = Math.cos(ctx.orbitAngle.current) * ctx.radius.current;
 
       ctx.currentPos.current.x = x;
       ctx.currentPos.current.z = z;
-    }
-  }
 
-  if (!input.active && ctx.lastRightSqueeze.current) {
+      if (ctx.isDragging.current) {
+        ctx.dragPlane.current.translate(ctx.tmpWorld.current.set(x - prevX, 0, z - prevZ));
+      }
+    }
+  } else if (ctx.lastRightSqueeze.current) {
     ctx.saveOffset();
     ctx.saveRotation();
   }
-  ctx.lastRightSqueeze.current = input.active;
+  ctx.lastRightSqueeze.current = input.active && isInteracting;
 
   const baseOrigin = ctx.followEnabled.current ? origin.position : ctx.originAnchor.current;
 
