@@ -36,6 +36,9 @@ import {
   functionSubjectGet,
   stateSubjectGet,
 } from "@ndmspc/ndmvr-core";
+import Chat from "./components/ui/shared/menu/panels/Chat.tsx";
+import ChatMessage from "./components/ui/shared/menu/panels/ChatMessage.tsx";
+import ChatAvatar from "./components/ui/shared/menu/panels/ChatAvatar.tsx";
 
 export {
   NdmspcNavigator,
@@ -53,6 +56,9 @@ export {
   DrawOptions,
   SettingsPanel,
   Demo,
+  Chat,
+  ChatMessage,
+  ChatAvatar,
   ModeToolsPanel,
   WsConnectionMenu,
   HttpConnectionMenu,
@@ -110,6 +116,11 @@ export type { DesktopControllerProps } from "./components/systems/inputs/Desktop
 export type { VRControllerProps } from "./components/systems/inputs/VRController.tsx";
 export type { MenuProps } from "./components/ui/shared/menu/Menu.tsx";
 export type { BinInfoProps } from "./components/ui/shared/menu/panels/BinInfo.tsx";
+export type {
+  ChatMessageProps,
+  ChatMessageData,
+} from "./components/ui/shared/menu/panels/ChatMessage.tsx";
+export type { ChatAvatarProps } from "./components/ui/shared/menu/panels/ChatAvatar.tsx";
 export type { NdmspcConfig } from "./interfaces/NdmspcConfig.ts";
 export type { NdmvrConfig } from "./interfaces/NdmvrConfig.ts";
 
