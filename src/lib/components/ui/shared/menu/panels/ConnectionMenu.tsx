@@ -31,10 +31,10 @@ HttpConnectionMenu.menuLabel = "Fetch via HTTP";
 function ConnectionMenu({ type }: ConnectionMenuProps) {
   const [selectedHistogram, setSelectedHistogram] = useState(null);
 
-  const [availableArrays, setAvailableArrays] = useState([]);
+  const [availableArrays, setAvailableArrays] = useState(["content"]);
   const [selectedArray, setSelectedArray] = useState("content");
 
-  const [availableSets, setAvailableSets] = useState(["content"]);
+  const [availableSets, setAvailableSets] = useState([]);
   const [selectedSets, setSelectedSets] = useState([]);
 
   const [selectedRenderer, setSelectedRenderer] = useState("ndmvr");
@@ -59,12 +59,6 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
         if (e.arrays) setAvailableArrays(e.arrays);
         if (e.selectedArray) setSelectedArray(e.selectedArray);
       });
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAvailableSets([]);
-    setSelectedSets([]);
-    setAvailableArrays(["content"]);
-    setSelectedArray("content");
 
     return () => {
       stateSubject.unsubscribe();
@@ -193,110 +187,105 @@ function ConnectionMenu({ type }: ConnectionMenuProps) {
   };
 
   return (
-    <Container classList={["menuContainer"]}>
-      <Text classList={["menuHeader"]}>
-        {type === "http" ? "Fetch via HTTP" : "Live Stream (WebSocket)"}
-      </Text>
-      <DropdownProvider>
-        <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
-          {type === "http" && <WebsocketBanner />}
+    <DropdownProvider>
+      <WebsocketBanner showTransient={true} />
 
-          <InputCard
-            type="http"
-            placeholder="http://"
-            firstValue={inputValues.http}
-            onChange={(v) => {
-              if (v !== inputValues.http) {
-                httpRequestRef.current?.abort();
-                httpRequestRef.current = null;
-                setHttpLoading(false);
-              }
-              setInputValues((p) => ({ ...p, http: v }));
-              setValidationStatus((p) => ({ ...p, http: null }));
-            }}
-            status={validationStatus.http}
-            modeSelected={type}
-            loading={httpLoading}
-            loaded={httpLoaded}
-            onSubmit={() => handleLoadClick("http")}
-          />
+      <Container flexDirection="column" gap={12}>
+        <InputCard
+          type="http"
+          placeholder="http://"
+          firstValue={inputValues.http}
+          onChange={(v) => {
+            if (v !== inputValues.http) {
+              httpRequestRef.current?.abort();
+              httpRequestRef.current = null;
+              setHttpLoading(false);
+            }
+            setInputValues((p) => ({ ...p, http: v }));
+            setValidationStatus((p) => ({ ...p, http: null }));
+          }}
+          status={validationStatus.http}
+          modeSelected={type}
+          loading={httpLoading}
+          loaded={httpLoaded}
+          onSubmit={() => handleLoadClick("http")}
+        />
 
-          <InputCard
-            type="ws"
-            placeholder="ws://"
-            firstValue={inputValues.ws}
-            onChange={(v) => {
-              setInputValues((p) => ({ ...p, ws: v }));
-              setValidationStatus((p) => ({ ...p, ws: null }));
-            }}
-            status={validationStatus.ws}
-            modeSelected={type}
-            connStatus={connectionStatus}
-            connError={error}
-            onSubmit={() => handleLoadClick("ws")}
-          />
+        <InputCard
+          type="ws"
+          placeholder="ws://"
+          firstValue={inputValues.ws}
+          onChange={(v) => {
+            setInputValues((p) => ({ ...p, ws: v }));
+            setValidationStatus((p) => ({ ...p, ws: null }));
+          }}
+          status={validationStatus.ws}
+          modeSelected={type}
+          connStatus={connectionStatus}
+          connError={error}
+          onSubmit={() => handleLoadClick("ws")}
+        />
 
-          {clicked === true && (
-            <>
-              <Divider />
-              <Container gap={12} alignItems="center" flexDirection={"column"}>
-                <Dropdown
-                  placeholder={"Select array"}
-                  options={availableArrays}
-                  defaultValue={"content"}
-                  onSelect={(value) => {
-                    handleArraySelect(value);
-                  }}
-                  width={300}
-                />
+        {clicked === true && (
+          <>
+            <Divider />
+            <Container gap={12} alignItems="center" flexDirection={"column"}>
+              <Dropdown
+                placeholder={"Select array"}
+                options={availableArrays}
+                defaultValue={"content"}
+                onSelect={(value) => {
+                  handleArraySelect(value);
+                }}
+                width={300}
+              />
 
-                <Container gap={50}>
-                  {type === "http" && (
-                    <Container flexDirection="column" gap={8}>
-                      <Text>Select Renderer:</Text>
-                      <RadioGroup
-                        defaultValue="ndmvr"
-                        onValueChange={(value) => {
-                          handleRendererSelect(value);
-                        }}
-                      >
-                        <RadioGroupItem value="ndmvr">
-                          <Label>
-                            <Text fontSize={16} fontWeight={"normal"}>
-                              ndmvr
-                            </Text>
-                          </Label>
-                        </RadioGroupItem>
-                        <RadioGroupItem value="jsroot">
-                          <Label>
-                            <Text fontSize={16} fontWeight={"normal"}>
-                              jsroot
-                            </Text>
-                          </Label>
-                        </RadioGroupItem>
-                      </RadioGroup>
-                    </Container>
-                  )}
-                  {selectedRenderer === "ndmvr" && (
-                    <Container flexDirection="column" gap={8}>
-                      {availableSets.length > 0 && <Text>Select Sets:</Text>}
-                      {availableSets.map((setValue) => (
-                        <Checkbox
-                          key={setValue}
-                          label={setValue}
-                          checked={selectedSets.includes(setValue)}
-                          onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
-                          size={24}
-                        />
-                      ))}
-                    </Container>
-                  )}
-                </Container>
+              <Container gap={50}>
+                {type === "http" && (
+                  <Container flexDirection="column" gap={8}>
+                    <Text>Select Renderer:</Text>
+                    <RadioGroup
+                      defaultValue="ndmvr"
+                      onValueChange={(value) => {
+                        handleRendererSelect(value);
+                      }}
+                    >
+                      <RadioGroupItem value="ndmvr">
+                        <Label>
+                          <Text fontSize={16} fontWeight={"normal"}>
+                            ndmvr
+                          </Text>
+                        </Label>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="jsroot">
+                        <Label>
+                          <Text fontSize={16} fontWeight={"normal"}>
+                            jsroot
+                          </Text>
+                        </Label>
+                      </RadioGroupItem>
+                    </RadioGroup>
+                  </Container>
+                )}
+                {selectedRenderer === "ndmvr" && (
+                  <Container flexDirection="column" gap={8}>
+                    {availableSets.length > 0 && <Text>Select Sets:</Text>}
+                    {availableSets.map((setValue) => (
+                      <Checkbox
+                        key={setValue}
+                        label={setValue}
+                        checked={selectedSets.includes(setValue)}
+                        onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                        size={24}
+                      />
+                    ))}
+                  </Container>
+                )}
               </Container>
-            </>
-          )}
-        </Container>
-      </DropdownProvider>
-    </Container>
+            </Container>
+          </>
+        )}
+      </Container>
+    </DropdownProvider>
   );
 }

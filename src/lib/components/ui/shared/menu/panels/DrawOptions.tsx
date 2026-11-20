@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Checkbox from "../../common/Checkbox.tsx";
-import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
+import Dropdown from "../../common/Dropdown.tsx";
 import { Text } from "@react-three/uikit";
 import Input from "../../common/Input.tsx";
 import { Container } from "@react-three/uikit";
 import { Button, Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 import {
   activateHistogramPad,
   setHistogramPadRenderer,
@@ -80,8 +79,6 @@ const toNumberOrNull = (value: string) => {
 };
 
 export default function DrawOptions() {
-  const [minMaxForm, setMinMaxForm] = useState<MinMaxFieldValues>(EMPTY_MIN_MAX_FORM);
-
   const pads = useHistogramWorkspace((state) => state.pads);
   const activePadId = useHistogramWorkspace((state) => state.activePadId);
   const histogram = useHistogramWorkspace((state) =>
@@ -99,16 +96,21 @@ export default function DrawOptions() {
   const minMaxValue = activePadState?.minMaxValue ?? null;
   const selectedRenderer = histogram?.opts?.render ?? "ndmvr";
 
-  useEffect(() => {
-    if (!minMaxValue?.length) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMinMaxForm(EMPTY_MIN_MAX_FORM);
-      return;
-    }
+  const latestMinMax = minMaxValue?.length
+    ? minMaxValue[minMaxValue.length - 1]?.[selectedArray]
+    : null;
 
-    const latestMinMax = minMaxValue[minMaxValue.length - 1]?.[selectedArray];
+  const [minMaxForm, setMinMaxForm] = useState<MinMaxFieldValues>(() =>
+    extractMinMaxForm(latestMinMax),
+  );
+  const [prevMinMax, setPrevMinMax] = useState(minMaxValue);
+  const [prevArray, setPrevArray] = useState(selectedArray);
+
+  if (minMaxValue !== prevMinMax || selectedArray !== prevArray) {
+    setPrevMinMax(minMaxValue);
+    setPrevArray(selectedArray);
     setMinMaxForm(extractMinMaxForm(latestMinMax));
-  }, [minMaxValue, selectedArray]);
+  }
 
   const updateStateSubject = (updates) => {
     if (!activePadId) return;
@@ -182,121 +184,115 @@ export default function DrawOptions() {
   };
 
   return (
-    <Container classList={["menuContainer"]}>
-      <Text classList={["menuHeader"]}>Histogram Draw Option</Text>
-      <WebsocketBanner />
-      <DropdownProvider>
-        <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
-          {pads.length > 1 && (
-            <Dropdown
-              key={`pad-${activePadId ?? "none"}`}
-              placeholder={"Select pad"}
-              options={pads.map((pad) => pad.id)}
-              defaultValue={activePadId}
-              onSelect={activateHistogramPad}
-              width={300}
-            />
-          )}
-          <Dropdown
-            key={`array-${activePadId ?? "none"}-${selectedArray}`}
-            placeholder={"Select array"}
-            options={availableArrays}
-            defaultValue={selectedArray || (availableArrays.length > 0 ? availableArrays[0] : "")}
-            onSelect={(value) => {
-              handleArraySelect(value);
-            }}
-            width={300}
+    <Container flexDirection="column" gap={12}>
+      {pads.length > 1 && (
+        <Dropdown
+          key={`pad-${activePadId ?? "none"}`}
+          placeholder={"Select pad"}
+          options={pads.map((pad) => pad.id)}
+          defaultValue={activePadId}
+          onSelect={activateHistogramPad}
+          width={300}
+        />
+      )}
+      <Dropdown
+        key={`array-${activePadId ?? "none"}-${selectedArray}`}
+        placeholder={"Select array"}
+        options={availableArrays}
+        defaultValue={selectedArray || (availableArrays.length > 0 ? availableArrays[0] : "")}
+        onSelect={(value) => {
+          handleArraySelect(value);
+        }}
+        width={300}
+      />
+      <Container flexDirection="column" gap={8}>
+        <Text>Value:</Text>
+        <Container gap={8}>
+          <Input
+            classList={["input"]}
+            minWidth={140}
+            value={minMaxForm.valueMin}
+            onValueChange={(value) => handleMinMaxChange("valueMin", value)}
+            placeholder="min"
           />
-          <Container flexDirection="column" gap={8}>
-            <Text>Value:</Text>
-            <Container gap={8}>
-              <Input
-                classList={["input"]}
-                minWidth={140}
-                value={minMaxForm.valueMin}
-                onValueChange={(value) => handleMinMaxChange("valueMin", value)}
-                placeholder="min"
-              />
-              <Input
-                classList={["input"]}
-                minWidth={140}
-                value={minMaxForm.valueMax}
-                onValueChange={(value) => handleMinMaxChange("valueMax", value)}
-                placeholder="max"
-              />
-            </Container>
-
-            <Text>Error:</Text>
-            <Container gap={8}>
-              <Input
-                classList={["input"]}
-                minWidth={140}
-                value={minMaxForm.errorMin}
-                onValueChange={(value) => handleMinMaxChange("errorMin", value)}
-                placeholder="min"
-              />
-              <Input
-                classList={["input"]}
-                minWidth={140}
-                value={minMaxForm.errorMax}
-                onValueChange={(value) => handleMinMaxChange("errorMax", value)}
-                placeholder="max"
-              />
-            </Container>
-
-            <Button
-              classList={["buttonPrimary"]}
-              hover={{ backgroundColor: "#059669" }}
-              onClick={handleSubmitMinMax}
-            >
-              <Text>Apply min/max</Text>
-            </Button>
-          </Container>
-
-          <Container gap={50}>
-            <Container flexDirection="column" gap={8}>
-              <Text>Select Renderer:</Text>
-              <RadioGroup
-                key={`${activePadId ?? "none"}-${selectedRenderer}`}
-                defaultValue={selectedRenderer}
-                onValueChange={(value) => {
-                  handleRendererSelect(value);
-                }}
-              >
-                <RadioGroupItem value="ndmvr">
-                  <Label>
-                    <Text fontSize={16} fontWeight={"normal"}>
-                      ndmvr
-                    </Text>
-                  </Label>
-                </RadioGroupItem>
-                <RadioGroupItem value="jsroot">
-                  <Label>
-                    <Text fontSize={16} fontWeight={"normal"}>
-                      jsroot
-                    </Text>
-                  </Label>
-                </RadioGroupItem>
-              </RadioGroup>
-            </Container>
-
-            {selectedRenderer === "ndmvr" && (
-              <Container flexDirection="column" gap={8}>
-                {availableSets.length > 0 && <Text>Select Sets:</Text>}
-                {availableSets.map((setValue) => (
-                  <Checkbox
-                    key={setValue}
-                    label={setValue}
-                    checked={selectedSets.includes(setValue)}
-                    onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
-                    size={24}
-                  />
-                ))}
-              </Container>
-            )}
-          </Container>
+          <Input
+            classList={["input"]}
+            minWidth={140}
+            value={minMaxForm.valueMax}
+            onValueChange={(value) => handleMinMaxChange("valueMax", value)}
+            placeholder="max"
+          />
         </Container>
-      </DropdownProvider>
+
+        <Text>Error:</Text>
+        <Container gap={8}>
+          <Input
+            classList={["input"]}
+            minWidth={140}
+            value={minMaxForm.errorMin}
+            onValueChange={(value) => handleMinMaxChange("errorMin", value)}
+            placeholder="min"
+          />
+          <Input
+            classList={["input"]}
+            minWidth={140}
+            value={minMaxForm.errorMax}
+            onValueChange={(value) => handleMinMaxChange("errorMax", value)}
+            placeholder="max"
+          />
+        </Container>
+
+        <Button
+          classList={["buttonPrimary"]}
+          hover={{ backgroundColor: "#059669" }}
+          onClick={handleSubmitMinMax}
+        >
+          <Text>Apply min/max</Text>
+        </Button>
+      </Container>
+
+      <Container gap={50}>
+        <Container flexDirection="column" gap={8}>
+          <Text>Select Renderer:</Text>
+          <RadioGroup
+            key={`${activePadId ?? "none"}-${selectedRenderer}`}
+            defaultValue={selectedRenderer}
+            onValueChange={(value) => {
+              handleRendererSelect(value);
+            }}
+          >
+            <RadioGroupItem value="ndmvr">
+              <Label>
+                <Text fontSize={16} fontWeight={"normal"}>
+                  ndmvr
+                </Text>
+              </Label>
+            </RadioGroupItem>
+            <RadioGroupItem value="jsroot">
+              <Label>
+                <Text fontSize={16} fontWeight={"normal"}>
+                  jsroot
+                </Text>
+              </Label>
+            </RadioGroupItem>
+          </RadioGroup>
+        </Container>
+
+        {selectedRenderer === "ndmvr" && (
+          <Container flexDirection="column" gap={8}>
+            {availableSets.length > 0 && <Text>Select Sets:</Text>}
+            {availableSets.map((setValue) => (
+              <Checkbox
+                key={setValue}
+                label={setValue}
+                checked={selectedSets.includes(setValue)}
+                onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                size={24}
+              />
+            ))}
+          </Container>
+        )}
+      </Container>
     </Container>
   );
 }

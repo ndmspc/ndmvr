@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import Checkbox from "../../common/Checkbox.tsx";
-import Dropdown, { DropdownProvider } from "../../common/Dropdown.tsx";
+import Dropdown from "../../common/Dropdown.tsx";
 import { histogramSubjectGet, stateSubjectGet } from "@ndmspc/ndmvr-core";
-import { Text } from "@react-three/uikit";
-import { Container } from "@react-three/uikit";
+import { Text, Container } from "@react-three/uikit";
+import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
+
 import h3scat from "../../../../../data/h3scat.json";
 import histo125 from "../../../../../data/nested/test_125.json";
 import histo12_5 from "../../../../../data/nested/test_12_5.json";
@@ -11,9 +12,6 @@ import histo1_25 from "../../../../../data/nested/test_1_25.json";
 import histo1_2_5 from "../../../../../data/nested/test_1_2_5.json";
 import histo5_2_1 from "../../../../../data/nested/test_5_2_1.json";
 import cernstaff_145_369 from "../../../../../data/nested/cernstaff_145_369.json";
-
-import { Label, RadioGroup, RadioGroupItem } from "@react-three/uikit-default";
-import WebsocketBanner from "../../connections/WebsocketBanner.tsx";
 
 export default function Demo() {
   const [selectedHistogram, setSelectedHistogram] = useState(null);
@@ -137,73 +135,67 @@ export default function Demo() {
   };
 
   return (
-    <Container classList={["menuContainer"]}>
-      <Text classList={["menuHeader"]}>Demo</Text>
-      <WebsocketBanner />
-      <DropdownProvider>
-        <Container classList={["section", "sectionInner"]} flexDirection="column" gap={12}>
-          <Dropdown
-            placeholder={"Select histogram"}
-            options={histogramOptions}
-            onSelect={(value) => {
-              handleHistogramSelect(value);
+    <Container flexDirection="column" gap={12}>
+      <Dropdown
+        placeholder={"Select histogram"}
+        options={histogramOptions}
+        onSelect={(value) => {
+          handleHistogramSelect(value);
+        }}
+        width={300}
+      />
+
+      <Dropdown
+        placeholder={"Select array"}
+        options={availableArrays}
+        defaultValue={"content"}
+        onSelect={(value) => {
+          handleArraySelect(value);
+        }}
+        width={300}
+      />
+
+      <Container gap={50}>
+        <Container flexDirection="column" gap={8}>
+          <Text>Select Renderer:</Text>
+          <RadioGroup
+            defaultValue="ndmvr"
+            onValueChange={(value) => {
+              handleRendererSelect(value);
             }}
-            width={300}
-          />
-
-          <Dropdown
-            placeholder={"Select array"}
-            options={availableArrays}
-            defaultValue={"content"}
-            onSelect={(value) => {
-              handleArraySelect(value);
-            }}
-            width={300}
-          />
-
-          <Container gap={50}>
-            <Container flexDirection="column" gap={8}>
-              <Text>Select Renderer:</Text>
-              <RadioGroup
-                defaultValue="ndmvr"
-                onValueChange={(value) => {
-                  handleRendererSelect(value);
-                }}
-              >
-                <RadioGroupItem value="ndmvr">
-                  <Label>
-                    <Text fontSize={16} fontWeight={"normal"}>
-                      ndmvr
-                    </Text>
-                  </Label>
-                </RadioGroupItem>
-                <RadioGroupItem value="jsroot">
-                  <Label>
-                    <Text fontSize={16} fontWeight={"normal"}>
-                      jsroot
-                    </Text>
-                  </Label>
-                </RadioGroupItem>
-              </RadioGroup>
-            </Container>
-
-            {selectedRenderer === "ndmvr" && (
-              <Container flexDirection="column" gap={8}>
-                {availableSets.length > 0 && <Text>Select Sets:</Text>}
-                {availableSets.map((setValue) => (
-                  <Checkbox
-                    key={setValue}
-                    label={setValue}
-                    checked={selectedSets.includes(setValue)}
-                    onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
-                    size={24}
-                  />
-                ))}
-              </Container>
-            )}
-          </Container>
+          >
+            <RadioGroupItem value="ndmvr">
+              <Label>
+                <Text fontSize={16} fontWeight={"normal"}>
+                  ndmvr
+                </Text>
+              </Label>
+            </RadioGroupItem>
+            <RadioGroupItem value="jsroot">
+              <Label>
+                <Text fontSize={16} fontWeight={"normal"}>
+                  jsroot
+                </Text>
+              </Label>
+            </RadioGroupItem>
+          </RadioGroup>
         </Container>
-      </DropdownProvider>
+
+        {selectedRenderer === "ndmvr" && (
+          <Container flexDirection="column" gap={8}>
+            {availableSets.length > 0 && <Text>Select Sets:</Text>}
+            {availableSets.map((setValue) => (
+              <Checkbox
+                key={setValue}
+                label={setValue}
+                checked={selectedSets.includes(setValue)}
+                onCheck={(isChecked) => handleSetsSelect(setValue, isChecked)}
+                size={24}
+              />
+            ))}
+          </Container>
+        )}
+      </Container>
     </Container>
   );
 }
