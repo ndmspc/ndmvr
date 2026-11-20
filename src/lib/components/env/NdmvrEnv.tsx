@@ -10,6 +10,7 @@ import DrawOptions from "../ui/shared/menu/panels/DrawOptions.tsx";
 import SettingsPanel from "../ui/shared/menu/panels/settings/SettingsPanel.tsx";
 import BrowserContent from "../ui/shared/browser/BrowserContent.tsx";
 import type { BrowserConfig } from "../ui/shared/browser/BrowserContent.tsx";
+import Chat from "../ui/shared/menu/panels/Chat.tsx";
 
 export interface NdmvrEnvProps extends NdmvrBaseProps {
   menuDefaultOpen?: boolean;
@@ -31,6 +32,7 @@ export default function NdmvrEnv({
         <HttpConnectionMenu />
         <WsConnectionMenu />
         <BrowserMenu browserConfig={browserConfig} />
+        <Chat />
         <BinInfo />
         <DrawOptions />
         <SettingsPanel />
