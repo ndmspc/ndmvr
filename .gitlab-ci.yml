@@ -28,6 +28,13 @@ stages:
   - build
   - deploy
 
+# The page builds below run with `--mode pages`, so Vite loads `.env.pages`
+# by itself. Fail loudly if the file is missing rather than shipping a page
+# without its build flags.
+.pages-env:
+  before_script: &pages_env
+    - test -f .env.pages || { echo ".env.pages is missing; the pages build needs it"; exit 1; }
+
 # Gate job. Format and lint run first so a cheap oxfmt/oxlint finding fails
 # before the expensive builds. On `develop` only format and lint run: the branch
 # pipeline must already have passed, so the builds would duplicate
@@ -65,6 +72,7 @@ pages:
   image: registry.gitlab.com/ndmspc/docs/ndmspc-doc
   tags:
     - ndmspc-hosted
+  before_script: *pages_env
   variables:
     GIT_DEPTH: 0
   script:
@@ -111,6 +119,7 @@ build-page:
   image: $IMAGE
   tags:
     - ndmspc-hosted
+  before_script: *pages_env
   script:
     - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"'${CI_COMMIT_REF_NAME/v/}'\\\",/g' package.json"
     - npm config set legacy-peer-deps=true
@@ -180,6 +189,7 @@ release-next:
   tags:
     - ndmspc-hosted
   resource_group: release-next
+  before_script: *pages_env
   script:
     - "sed -i -e 's/^  \\\"version\\\".*/  \\\"version\\\": \\\"0.0.0-next.'${CI_PIPELINE_IID}'\\\",/g' package.json"
     - npm config set legacy-peer-deps=true
